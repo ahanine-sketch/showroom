@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #725c00;
+  --primary-container: #b8960c;
+  --on-primary-container: #3d3000;
+  --surface: #fbf9f4;
+  --surface-container-low: #f5f3ee;
+  --surface-container-lowest: #ffffff;
+  --outline: #7e7662;
+  --outline-variant: #d0c6af;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-surface antialiased font-body;
+  }
+}
+
+@layer components {
+  .inset-frame {
+    @apply border border-outline-variant/30;
+    pointer-events: none;
+  }
+
+  .ghost-border {
+    @apply border border-outline-variant/40 hover:border-primary-container transition-all;
+  }
+
+  .luxury-gradient {
+    @apply bg-gradient-to-tr from-[#725c00] via-[#b8960c] to-[#725c00] bg-size-200 animate-gradient-x;
+  }
+}
+
+@layer utilities {
+  .animate-gradient-x {
+    animation: gradient-x 3s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .bg-size-200 {
+    background-size: 200% 200%;
+  }
+}

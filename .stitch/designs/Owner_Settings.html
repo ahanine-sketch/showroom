@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Manrope:wght@200..800&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#736331",
+                    "on-tertiary-fixed-variant": "#283f95",
+                    "background": "#fbf9f4",
+                    "on-surface-variant": "#4d4635",
+                    "on-primary-fixed-variant": "#564500",
+                    "on-tertiary-fixed": "#001454",
+                    "secondary-fixed-dim": "#dac589",
+                    "surface-tint": "#725c00",
+                    "surface-bright": "#fbf9f4",
+                    "inverse-surface": "#30312e",
+                    "on-tertiary-container": "#0b287f",
+                    "inverse-on-surface": "#f2f1ec",
+                    "on-primary": "#ffffff",
+                    "secondary": "#6d5d2c",
+                    "primary": "#725c00",
+                    "surface-container": "#f0eee9",
+                    "error": "#ba1a1a",
+                    "tertiary": "#4258af",
+                    "on-surface": "#1b1c19",
+                    "primary-container": "#b8960c",
+                    "surface-variant": "#e4e2dd",
+                    "surface": "#fbf9f4",
+                    "primary-fixed": "#ffe082",
+                    "secondary-fixed": "#f7e1a3",
+                    "tertiary-fixed-dim": "#b8c4ff",
+                    "outline-variant": "#d0c6af",
+                    "on-secondary-fixed-variant": "#544516",
+                    "secondary-container": "#f7e1a3",
+                    "surface-container-low": "#f5f3ee",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#231b00",
+                    "tertiary-fixed": "#dde1ff",
+                    "primary-fixed-dim": "#e9c340",
+                    "outline": "#7e7662",
+                    "tertiary-container": "#7f94ef",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1b1c19",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#e9c340",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#231b00",
+                    "surface-container-highest": "#e4e2dd",
+                    "surface-dim": "#dbdad5",
+                    "on-primary-container": "#3d3000",
+                    "surface-container-high": "#eae8e3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Newsreader"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"],
+                    "mono": ["DM Mono"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .serif-text { font-family: 'Newsreader', serif; }
+        .mono-text { font-family: 'DM Mono', monospace; }
+        .glass-header { backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Component -->
+<nav class="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col h-full border-r border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-950 shadow-[20px_0_40px_rgba(27,28,25,0.03)]">
+<div class="px-8 py-10">
+<span class="text-[28px] font-serif italic text-yellow-600 dark:text-yellow-500 tracking-tight">SIQ</span>
+<p class="text-[10px] mono-text uppercase tracking-widest text-stone-400 mt-1">ShowroomIQ</p>
+</div>
+<div class="flex-1 flex flex-col gap-1 px-4">
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3 group" href="#">
+<span class="material-symbols-outlined text-[20px]">diamond</span>
+<span class="text-sm">Collections</span>
+</a>
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+<span class="text-sm">Showrooms</span>
+</a>
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="text-sm">Inventory</span>
+</a>
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="text-sm">Clients</span>
+</a>
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span class="text-sm">Reports</span>
+</a>
+<div class="mt-8 pt-8 border-t border-stone-50">
+<a class="text-yellow-700 dark:text-yellow-500 border-l-2 border-yellow-600 pl-4 py-2 font-medium bg-stone-50/50 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+<a class="text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 transition-colors duration-300 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="text-sm">Support</span>
+</a>
+</div>
+</div>
+<div class="p-8">
+<button class="w-full py-3 bg-gradient-to-r from-primary to-primary-container text-white rounded-lg text-sm font-medium shadow-lg shadow-primary/20 scale-98 active:opacity-80 transition-all">
+                New Collection
+            </button>
+</div>
+</nav>
+<!-- Main Content Shell -->
+<main class="ml-[240px] min-h-screen">
+<!-- TopNavBar Component -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-[60px] z-40 flex items-center justify-between px-8 bg-white/80 dark:bg-stone-950/80 backdrop-blur-xl">
+<div class="flex items-center gap-4">
+<span class="mono-text text-[11px] uppercase tracking-[0.2em] text-stone-400">Settings / Configuration</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-6 mr-6 border-r border-stone-100 pr-6">
+<a class="text-stone-400 hover:text-yellow-600 transition-all mono-text text-[11px] uppercase tracking-widest" href="#">Dashboard</a>
+<a class="text-stone-400 hover:text-yellow-600 transition-all mono-text text-[11px] uppercase tracking-widest" href="#">Exhibition</a>
+<a class="text-stone-400 hover:text-yellow-600 transition-all mono-text text-[11px] uppercase tracking-widest" href="#">Archives</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-400 cursor-pointer hover:text-primary">notifications</span>
+<span class="material-symbols-outlined text-stone-400 cursor-pointer hover:text-primary">search</span>
+<div class="w-8 h-8 rounded-full bg-stone-200 overflow-hidden border border-stone-100">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional portrait of a luxury showroom manager in a modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2lMDXgJ0K1T8amilYKiKreBaTZ6HyEFRsWiht4K1mB9UplHwon64Kz-CjZHkq5v1sh5IJn3OYUQRJEk4bpSWJiWwVUDaKiPniSHlxkM2fcMTP5imCkD6-h_vjRtAz_sNSZO-pH5YyOUfcyuFy9GyHPm4gJe3W5AOwm2FtD-1oK1Cvz9YTPF-xF4d2tl9pFeOVwLJth96a3BzFz8J1PUjJqjQDteI6DQ0phmNWx17S5xZ1wYP-GTO5KUqSp7ZVmOovUlu4969mQquU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<div class="pt-24 px-12 pb-20 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="flex items-end justify-between mb-12">
+<div class="max-w-2xl">
+<h1 class="serif-text text-5xl font-light text-on-surface mb-4 tracking-tight">Configuration du scoring</h1>
+<p class="text-stone-500 font-light leading-relaxed">
+                        Ajustez les pondérations et les seuils critiques pour vos indicateurs de performance. Ces métriques définissent le score de santé global de vos showrooms et collections.
+                    </p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<span class="mono-text text-[10px] uppercase tracking-widest text-stone-400">Total Validé</span>
+<div class="bg-error-container/30 border border-error/10 px-4 py-2 rounded-full flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="mono-text font-bold text-error">85 / 100</span>
+</div>
+</div>
+</div>
+<!-- Configuration Table Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_rgba(27,28,25,0.03)] overflow-hidden border border-stone-100/50">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-5 mono-text text-[12px] font-medium text-stone-400 uppercase tracking-widest">Métrique</th>
+<th class="px-6 py-5 mono-text text-[12px] font-medium text-stone-400 uppercase tracking-widest text-center">Max Pts</th>
+<th class="px-6 py-5 mono-text text-[12px] font-medium text-stone-400 uppercase tracking-widest text-center">Seuils Critiques (%)</th>
+<th class="px-8 py-5 mono-text text-[12px] font-medium text-stone-400 uppercase tracking-widest text-right">Visualisation</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-stone-50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-8 py-6">
+<span class="font-medium text-on-surface block">% Atteinte Objectif</span>
+<span class="text-[11px] text-stone-400 uppercase tracking-tighter">Ventes vs Prévisions</span>
+</td>
+<td class="px-6 py-6 text-center">
+<input class="w-20 bg-surface-container-low border-none rounded px-3 py-2 mono-text text-sm focus:ring-1 focus:ring-primary text-center" type="number" value="40"/>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center justify-center gap-2">
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" placeholder="Min" type="number" value="60"/>
+<span class="text-stone-300">—</span>
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" placeholder="Mid" type="number" value="85"/>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3">
+<div class="w-6 h-6 rounded-full bg-error/20 border-2 border-error"></div>
+<div class="w-6 h-6 rounded-full bg-yellow-400/20 border-2 border-yellow-500"></div>
+<div class="w-6 h-6 rounded-full bg-emerald-500/20 border-2 border-emerald-600"></div>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-8 py-6">
+<span class="font-medium text-on-surface block">Close Rate</span>
+<span class="text-[11px] text-stone-400 uppercase tracking-tighter">Conversion prospects</span>
+</td>
+<td class="px-6 py-6 text-center">
+<input class="w-20 bg-surface-container-low border-none rounded px-3 py-2 mono-text text-sm focus:ring-1 focus:ring-primary text-center" type="number" value="25"/>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center justify-center gap-2">
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="15"/>
+<span class="text-stone-300">—</span>
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="30"/>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3">
+<div class="w-6 h-6 rounded-full bg-orange-600/20 border-2 border-orange-700"></div>
+<div class="w-6 h-6 rounded-full bg-yellow-400/20 border-2 border-yellow-500"></div>
+<div class="w-6 h-6 rounded-full bg-blue-500/20 border-2 border-blue-600"></div>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-8 py-6">
+<span class="font-medium text-on-surface block">Panier Moyen</span>
+<span class="text-[11px] text-stone-400 uppercase tracking-tighter">Valeur par transaction</span>
+</td>
+<td class="px-6 py-6 text-center">
+<input class="w-20 bg-surface-container-low border-none rounded px-3 py-2 mono-text text-sm focus:ring-1 focus:ring-primary text-center" type="number" value="20"/>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center justify-center gap-2">
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="50"/>
+<span class="text-stone-300">—</span>
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="75"/>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3">
+<div class="w-6 h-6 rounded-full bg-error/20 border-2 border-error"></div>
+<div class="w-6 h-6 rounded-full bg-stone-300/20 border-2 border-stone-400"></div>
+<div class="w-6 h-6 rounded-full bg-primary/20 border-2 border-primary"></div>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-8 py-6">
+<span class="font-medium text-on-surface block">Taux de Retour</span>
+<span class="text-[11px] text-stone-400 uppercase tracking-tighter">Satisfaction client</span>
+</td>
+<td class="px-6 py-6 text-center">
+<input class="w-20 bg-surface-container-low border-none rounded px-3 py-2 mono-text text-sm focus:ring-1 focus:ring-primary text-center" type="number" value="15"/>
+</td>
+<td class="px-6 py-6">
+<div class="flex items-center justify-center gap-2">
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="5"/>
+<span class="text-stone-300">—</span>
+<input class="w-16 bg-surface-container-low border-none rounded px-2 py-2 mono-text text-xs focus:ring-1 focus:ring-primary text-center" type="number" value="12"/>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center justify-end gap-3">
+<div class="w-6 h-6 rounded-full bg-emerald-500/20 border-2 border-emerald-600"></div>
+<div class="w-6 h-6 rounded-full bg-yellow-400/20 border-2 border-yellow-500"></div>
+<div class="w-6 h-6 rounded-full bg-error/20 border-2 border-error"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Actions -->
+<div class="mt-12 flex items-center justify-between">
+<div class="flex items-center gap-2 text-stone-400 mono-text text-[11px]">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>Modifié par Admin le 12/10/2023</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-8 py-3 mono-text text-xs uppercase tracking-widest text-stone-500 hover:text-on-surface transition-colors">
+                        Réinitialiser
+                    </button>
+<button class="px-10 py-3 bg-primary text-white rounded-lg text-sm font-medium shadow-xl shadow-primary/20 hover:translate-y-[-1px] active:translate-y-[1px] transition-all">
+                        Sauvegarder les modifications
+                    </button>
+</div>
+</div>
+<!-- Auxiliary Editorial Section (Bento Style) -->
+<div class="mt-24 grid grid-cols-12 gap-6">
+<div class="col-span-8 p-12 bg-surface-container-low rounded-xl relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="serif-text text-2xl mb-4">Pourquoi le scoring ?</h3>
+<p class="text-stone-600 leading-relaxed max-w-md">
+                            Le système de scoring intelligent ShowroomIQ permet de standardiser l'excellence opérationnelle à travers votre réseau. En définissant des seuils précis, vous recevez des alertes proactives avant que les performances ne chutent.
+                        </p>
+</div>
+<div class="absolute right-[-40px] bottom-[-20px] w-64 h-64 opacity-10">
+<span class="material-symbols-outlined text-[200px]">auto_graph</span>
+</div>
+</div>
+<div class="col-span-4 p-8 bg-stone-900 text-white rounded-xl flex flex-col justify-between">
+<div class="w-12 h-12 rounded-lg bg-yellow-600/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-yellow-500">verified</span>
+</div>
+<div>
+<p class="mono-text text-[10px] uppercase tracking-widest text-stone-500 mb-2">Statut du Système</p>
+<h4 class="text-xl font-medium mb-1">Optimisation Active</h4>
+<p class="text-stone-400 text-sm">Vos algorithmes de prédiction utilisent actuellement 88% des données historiques.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

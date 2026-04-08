@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --primary: #B8960C;
+            --primary-light: #D4AF37;
+            --primary-soft: #FDF6E3;
+            --bg-page: #F7F5F0;
+            --bg-card: #FFFFFF;
+            --bg-elevated: #FAFAF8;
+            --bg-muted: #F0EDE6;
+            --border: #E5E0D8;
+            --border-strong: #C8C0B4;
+            --text-primary: #1A1814;
+            --text-secondary: #5C5750;
+            --text-muted: #9C9690;
+            --success: #2A7D4F;
+            --success-soft: #EBF7F1;
+            --warning: #C07A1A;
+            --warning-soft: #FEF3E2;
+            --danger: #C0392B;
+            --danger-soft: #FDEDEB;
+            --shadow-sm: 0 1px 3px rgba(26,24,20,0.06);
+            --shadow-md: 0 4px 16px rgba(26,24,20,0.08);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+        }
+        .font-cormorant { font-family: 'Cormorant Garamond', serif; }
+        .font-mono { font-family: 'DM Mono', monospace; }
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+        .metric-cell-tint-success { background-color: rgba(42, 125, 79, 0.08); }
+        .metric-cell-tint-warning { background-color: rgba(192, 122, 26, 0.08); }
+        .metric-cell-tint-danger { background-color: rgba(192, 57, 43, 0.08); }
+        .glass-header {
+            background: rgba(247, 245, 240, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .gauge-container {
+            width: 140px;
+            height: 70px;
+            overflow: hidden;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="antialiased">
+<aside class="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col border-r border-[var(--border)] bg-white shadow-sm">
+<div class="p-8">
+<h1 class="text-[28px] font-cormorant italic text-[var(--primary)] tracking-tight">SIQ</h1>
+<p class="font-mono text-[11px] uppercase tracking-widest text-[var(--text-muted)] mt-1">ShowroomIQ</p>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-8">
+<a class="flex items-center gap-3 text-[var(--text-secondary)] pl-4 py-2 hover:bg-[var(--bg-muted)] transition-colors rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="diamond">diamond</span>
+<span class="text-[14px]">Collections</span>
+</a>
+<a class="flex items-center gap-3 text-[var(--text-secondary)] pl-4 py-2 hover:bg-[var(--bg-muted)] transition-colors rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="text-[14px]">Showrooms</span>
+</a>
+<a class="flex items-center gap-3 text-[var(--primary)] border-l-2 border-[var(--primary)] pl-4 py-2 font-medium bg-[var(--primary-soft)]" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="text-[14px]">Commercials</span>
+</a>
+<a class="flex items-center gap-3 text-[var(--text-secondary)] pl-4 py-2 hover:bg-[var(--bg-muted)] transition-colors rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-[14px]">Reports</span>
+</a>
+</nav>
+<div class="p-6 mt-auto border-t border-[var(--border)]">
+<button class="w-full bg-[var(--primary)] text-white py-3 rounded-[var(--radius-sm)] text-[12px] font-bold uppercase tracking-widest hover:bg-[var(--primary-light)] transition-all">
+            New Audit
+        </button>
+</div>
+</aside>
+<main class="ml-[240px] min-h-screen">
+<header class="sticky top-0 z-40 h-[100px] glass-header flex items-center justify-between px-12">
+<div class="flex items-center gap-6">
+<div class="relative">
+<div class="w-[72px] h-[72px] rounded-full p-[3px] bg-gradient-to-tr from-[var(--primary)] to-[var(--primary-light)]">
+<img alt="Youssef Benali" class="w-full h-full rounded-full object-cover border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOK1_g4Nq5cF4KqYX2Zcu1dnYDbibufhu9zJwuF-SRls6k9aXV-e4uilWyr78C53n_is3GOmGUDSyhVf43MkUFRbtiVKdCypHn6xofQj55LP9Ns9OZ1mgwpoyY4t8r_37zG-_U6tqnSdUCiyE7XMZUE1OeFnX8BaSkOXQ_uq8baO7HpePp1xY41AUHZEZoyrBgJ31LqW9SMdcN_03CXdYb6pJOpbc5b6u1uqJ4TlCBFw_ARAqKCXaPri-YW3k60DILTwtMWt-XphzQ"/>
+</div>
+</div>
+<div>
+<h2 class="font-cormorant text-[28px] font-semibold text-[var(--text-primary)]">Youssef Benali</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Commercial Performance</span>
+<span class="px-2 py-0.5 bg-[var(--primary-soft)] text-[var(--primary)] text-[10px] font-bold rounded-full uppercase tracking-tighter border border-[var(--primary-light)]">Paris Showroom</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex flex-col items-end">
+<span class="font-mono text-[14px] font-semibold text-[var(--warning)] px-4 py-2 bg-[var(--warning-soft)] border border-[var(--warning)] rounded-full">Score Ventes: 35 / 45 pts</span>
+</div>
+</div>
+</header>
+<nav class="flex px-12 gap-10 border-b border-[var(--border)] bg-white sticky top-[100px] z-30">
+<a class="py-4 border-b-2 border-[var(--primary)] text-[var(--primary)] font-medium text-[14px]" href="#">Ventes</a>
+<a class="py-4 border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-[14px]" href="#">Comportement</a>
+<a class="py-4 border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-[14px]" href="#">Calendrier</a>
+<a class="py-4 border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-[14px]" href="#">Ressources</a>
+</nav>
+<section class="p-12 space-y-6 max-w-[1400px] mx-auto">
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-cormorant text-[32px] font-semibold text-[var(--text-primary)]">Comprehensive Sales Audit Report</h3>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-muted)] border border-[var(--border)] rounded-[var(--radius-sm)]">
+<span class="material-symbols-outlined text-[14px] text-[var(--text-muted)]">edit</span>
+<span class="text-[12px] text-[var(--text-secondary)]">Saisie manuelle</span>
+<span class="text-[var(--text-muted)]">|</span>
+<span class="text-[12px] text-[var(--text-muted)] italic">Dolibarr — à venir</span>
+</div>
+<button class="bg-[var(--primary)] text-white px-4 h-[36px] rounded-[var(--radius-sm)] text-[13px] font-medium hover:bg-[var(--primary-light)] transition-colors flex items-center gap-2">
+                    Modifier les données
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4">
+<div class="col-span-4 card p-5 flex items-center gap-6">
+<div class="gauge-container">
+<svg class="w-full h-full" viewBox="0 0 100 50">
+<path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--bg-muted)" stroke-width="10"></path>
+<path d="M 10 50 A 40 40 0 0 1 50 10" fill="none" stroke="var(--danger)" stroke-dasharray="0 100" stroke-width="10"></path>
+<path d="M 10 50 A 40 40 0 0 1 70 14" fill="none" stroke="var(--warning)" stroke-dasharray="100 100" stroke-dashoffset="30" stroke-width="10"></path>
+<line stroke="var(--text-primary)" stroke-linecap="round" stroke-width="2" x1="50" x2="80" y1="50" y2="25"></line>
+<circle cx="50" cy="50" fill="var(--primary)" r="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-end justify-center pb-1">
+<span class="font-mono text-[14px] font-bold text-[var(--warning)]">80%</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[12px] text-[var(--text-muted)] uppercase tracking-wide">Objectif Likely</span>
+<span class="font-mono text-[14px] font-bold text-[var(--warning)]">22 / 30 pts</span>
+</div>
+<p class="text-[13px] text-[var(--text-secondary)]">CA: <span class="font-mono font-semibold">1 200 000 MAD</span></p>
+<div class="mt-2 w-full bg-[var(--bg-muted)] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[var(--warning)] h-full w-[80%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="col-span-8 card p-5 flex items-center justify-between">
+<div class="flex flex-col border-r border-[var(--border)] pr-10">
+<span class="text-[11px] text-[var(--text-muted)] uppercase tracking-widest mb-1">Close Rate</span>
+<div class="flex items-baseline gap-2">
+<span class="font-mono text-[32px] font-bold text-[var(--warning)]">42%</span>
+<span class="text-[var(--success)] flex items-center text-[12px] font-bold">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>5%
+                        </span>
+</div>
+</div>
+<div class="flex-1 px-10 grid grid-cols-4 gap-4">
+<div class="text-center">
+<span class="text-[10px] text-[var(--text-muted)] uppercase">Créés</span>
+<p class="font-mono text-[18px] font-semibold">21</p>
+</div>
+<div class="text-center">
+<span class="text-[10px] text-[var(--text-muted)] uppercase">Ouverts</span>
+<p class="font-mono text-[18px] font-semibold text-[var(--warning)]">8</p>
+</div>
+<div class="text-center">
+<span class="text-[10px] text-[var(--text-muted)] uppercase">Validés</span>
+<p class="font-mono text-[18px] font-semibold text-[var(--success)]">9</p>
+</div>
+<div class="text-center">
+<span class="text-[10px] text-[var(--text-muted)] uppercase">Délai</span>
+<p class="font-mono text-[18px] font-semibold">8.5j</p>
+</div>
+</div>
+<div class="pl-10 flex flex-col items-end">
+<span class="font-mono text-[14px] font-bold text-[var(--warning)] px-3 py-1 bg-[var(--warning-soft)] border border-[var(--warning)] rounded-full">12 / 15 pts</span>
+<span class="text-[10px] text-[var(--text-muted)] mt-1 italic">Score Close Rate</span>
+</div>
+</div>
+</div>
+<div class="card overflow-hidden">
+<div class="px-8 py-5 border-b border-[var(--border)] flex justify-between items-center bg-[var(--bg-elevated)]">
+<h4 class="font-cormorant text-[24px] font-semibold">Tableau des Métriques Hebdomadaires</h4>
+<div class="flex items-center gap-6">
+<span class="text-[12px] text-[var(--text-muted)]">Semaine du 14 au 18 Avril 2025</span>
+<span class="font-mono text-[15px] font-semibold text-[var(--warning)] px-4 py-1.5 bg-[var(--warning-soft)] border border-[var(--warning)] rounded-full">Score Métriques: 10 / 15 pts</span>
+</div>
+</div>
+<div class="grid grid-cols-9 bg-[var(--bg-muted)] border-b border-[var(--border)]">
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">shopping_bag</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]"># Ventes</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">payments</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Avg Basket</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">group</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Nb Clients</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">person_check</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Unique Cl.</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">person_cancel</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Non-Repeat</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">person_add</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">New Clients</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">percent</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">% Remise</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1 border-r border-[var(--border)]">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">category</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">MAD/Catég.</span>
+</div>
+<div class="p-3 text-center flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-[var(--text-muted)]">inventory_2</span>
+<span class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Art./Catég.</span>
+</div>
+</div>
+<div class="grid grid-cols-9 items-stretch h-[100px]">
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-success border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--success)]">47</span>
+<span class="text-[10px] text-[var(--text-muted)]">Conclues</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-warning border-r border-[var(--border)]">
+<span class="font-mono text-[22px] font-medium text-[var(--warning)]">26 450</span>
+<span class="text-[10px] text-[var(--text-muted)]">MAD</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-success border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--success)]">52</span>
+<span class="text-[10px] text-[var(--text-muted)]">Servis</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-success border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--success)]">39</span>
+<span class="text-[10px] text-[var(--text-muted)]">Distincts</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-warning border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--warning)]">13</span>
+<span class="text-[10px] text-[var(--text-muted)]">Impact CA</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-warning border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--warning)]">8</span>
+<span class="text-[10px] text-[var(--text-muted)]">Acquis</span>
+</div>
+<div class="p-4 flex flex-col justify-center items-center metric-cell-tint-warning border-r border-[var(--border)]">
+<span class="font-mono text-[26px] font-medium text-[var(--warning)]">18%</span>
+<span class="text-[10px] text-[var(--text-muted)]">Moyen</span>
+</div>
+<div class="p-3 flex flex-col justify-center border-r border-[var(--border)] bg-[var(--bg-elevated)] relative group cursor-pointer">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[11px] font-mono">
+<span class="text-[var(--text-secondary)]">Salon</span>
+<span class="font-bold">780K</span>
+</div>
+<div class="flex justify-between text-[11px] font-mono">
+<span class="text-[var(--text-secondary)]">Cuisine</span>
+<span class="font-bold">450K</span>
+</div>
+</div>
+<button class="text-[10px] text-[var(--primary)] font-bold mt-1 text-left">+ voir tout</button>
+</div>
+<div class="p-3 flex flex-col justify-center bg-[var(--bg-elevated)]">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[11px] font-mono">
+<span class="text-[var(--text-secondary)]">Salon</span>
+<span class="font-bold">12</span>
+</div>
+<div class="flex justify-between text-[11px] font-mono">
+<span class="text-[var(--text-secondary)]">Cuisine</span>
+<span class="font-bold">8</span>
+</div>
+</div>
+<button class="text-[10px] text-[var(--primary)] font-bold mt-1 text-left">+ détails</button>
+</div>
+</div>
+<div class="bg-[var(--bg-elevated)] border-t border-[var(--border)] p-8">
+<div class="flex justify-between items-center mb-6">
+<h5 class="font-cormorant text-[20px] font-semibold">Répartition par Catégorie de Produits</h5>
+<button class="text-[11px] text-[var(--danger)] font-bold uppercase flex items-center gap-1">Fermer ✕</button>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<div class="grid grid-cols-5 items-center px-6 py-3 border-b border-[var(--border)] font-mono text-[13px]">
+<span class="font-sans font-medium text-[var(--text-primary)]">Salon</span>
+<span class="font-bold">780 000 MAD</span>
+<span class="text-[var(--text-muted)]">42% du total</span>
+<span class="text-[var(--text-muted)]">12 articles</span>
+<div class="w-[120px] h-2 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--primary)] w-[42%]"></div>
+</div>
+</div>
+<div class="grid grid-cols-5 items-center px-6 py-3 border-b border-[var(--border)] font-mono text-[13px]">
+<span class="font-sans font-medium text-[var(--text-primary)]">Cuisine</span>
+<span class="font-bold">450 000 MAD</span>
+<span class="text-[var(--text-muted)]">24% du total</span>
+<span class="text-[var(--text-muted)]">8 articles</span>
+<div class="w-[120px] h-2 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--primary)] w-[24%]"></div>
+</div>
+</div>
+<div class="grid grid-cols-5 items-center px-6 py-3 border-b border-[var(--border)] font-mono text-[13px]">
+<span class="font-sans font-medium text-[var(--text-primary)]">Chambre</span>
+<span class="font-bold">320 000 MAD</span>
+<span class="text-[var(--text-muted)]">17% du total</span>
+<span class="text-[var(--text-muted)]">6 articles</span>
+<div class="w-[120px] h-2 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--primary)] w-[17%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-8 py-3 bg-[var(--bg-muted)] flex justify-between text-[11px] text-[var(--text-muted)]">
+<span>Objectifs définis par: Admin — Rachid Alami</span>
+<span class="italic">Score auto-calculé chaque dimanche</span>
+</div>
+</div>
+<div class="card overflow-hidden">
+<div class="px-8 py-4 border-b border-[var(--border)] flex justify-between items-center cursor-pointer hover:bg-[var(--bg-muted)] transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[var(--primary)]">expand_more</span>
+<h4 class="font-cormorant text-[24px] font-semibold">Détail des Objectifs Individuels</h4>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[12px] text-[var(--text-muted)]">Défini par Admin</span>
+<button class="text-[var(--primary)] font-bold text-[13px]">Modifier les cibles</button>
+</div>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead class="bg-[var(--bg-muted)] border-b border-[var(--border)] text-[11px] uppercase tracking-widest text-[var(--text-muted)] font-bold">
+<tr>
+<th class="px-8 py-4 font-bold">Métrique de Performance</th>
+<th class="px-8 py-4 font-bold">Objectif Défini</th>
+<th class="px-8 py-4 font-bold">Résultat Actuel</th>
+<th class="px-8 py-4 font-bold text-right">Delta Performance</th>
+</tr>
+</thead>
+<tbody class="text-[14px]">
+<tr class="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Chiffre d'Affaires Hebdomadaire</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">1 500 000 MAD</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--warning)]">1 200 000 MAD</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--danger)]">-300K</td>
+</tr>
+<tr class="border-b border-[var(--border)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Nombre de Ventes</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">55</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--warning)]">47</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--danger)]">−8</td>
+</tr>
+<tr class="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Panier Moyen (Avg Basket)</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">27 000 MAD</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--warning)]">26 450 MAD</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--warning)]">−550</td>
+</tr>
+<tr class="border-b border-[var(--border)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Total Clients Servis</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">50</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--success)]">52</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--success)]">+2</td>
+</tr>
+<tr class="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Nouveaux Clients Acquis</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">10</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--warning)]">8</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--danger)]">−2</td>
+</tr>
+<tr class="border-b border-[var(--border)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Close Rate &amp; Conversion</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">50%</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--warning)]">42%</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--danger)]">−8%</td>
+</tr>
+<tr class="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
+<td class="px-8 py-4 font-medium text-[var(--text-primary)]">Taux de Remise Maximum</td>
+<td class="px-8 py-4 font-mono text-[var(--text-secondary)]">15%</td>
+<td class="px-8 py-4 font-mono font-bold text-[var(--danger)]">18%</td>
+<td class="px-8 py-4 font-mono text-right text-[var(--danger)]">+3%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-8 py-4 border-t border-[var(--border)] bg-[var(--bg-elevated)] flex justify-between">
+<p class="text-[12px] text-[var(--text-muted)] italic">Modifié le 12 Avril 2025 par Rachid Alami (Admin)</p>
+<div class="flex gap-4">
+<span class="text-[11px] px-3 py-1 bg-[var(--bg-muted)] border border-[var(--border)] rounded-full font-mono">Cons: 1M MAD</span>
+<span class="text-[11px] px-3 py-1 bg-[var(--bg-muted)] border border-[var(--border)] rounded-full font-mono">Likely: 1.5M MAD</span>
+<span class="text-[11px] px-3 py-1 bg-[var(--bg-muted)] border border-[var(--border)] rounded-full font-mono">Stretch: 2M MAD</span>
+</div>
+</div>
+</div>
+<div class="card p-8">
+<h5 class="font-cormorant text-[24px] font-semibold mb-6">Récapitulatif Global de l'Audit Ventes</h5>
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<div class="w-1/3">
+<p class="text-[15px] font-medium text-[var(--text-primary)]">% Atteinte Objectif Principal</p>
+<p class="text-[12px] text-[var(--text-muted)]">Impact majeur sur le score global (max 30 pts)</p>
+</div>
+<div class="flex-1 px-12">
+<div class="w-full h-2.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--warning)] w-[73%] rounded-full"></div>
+</div>
+</div>
+<div class="w-48 text-right">
+<span class="font-mono text-[20px] font-bold text-[var(--warning)]">22 / 30 pts</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-[var(--border)] pt-6">
+<div class="w-1/3">
+<p class="text-[15px] font-medium text-[var(--text-primary)]">Efficacité Commerciale (Close Rate)</p>
+<p class="text-[12px] text-[var(--text-muted)]">Mesure de la conversion devis/ventes (max 15 pts)</p>
+</div>
+<div class="flex-1 px-12">
+<div class="w-full h-2.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--warning)] w-[80%] rounded-full"></div>
+</div>
+</div>
+<div class="w-48 text-right">
+<span class="font-mono text-[20px] font-bold text-[var(--warning)]">12 / 15 pts</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-[var(--border)] pt-6">
+<div class="w-1/3">
+<p class="text-[15px] font-medium text-[var(--text-primary)]">Qualité des Métriques de Vente</p>
+<p class="text-[12px] text-[var(--text-muted)]">Panier moyen, nouveaux clients, remises (max 15 pts)</p>
+</div>
+<div class="flex-1 px-12">
+<div class="w-full h-2.5 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--warning)] w-[66%] rounded-full"></div>
+</div>
+</div>
+<div class="w-48 text-right">
+<span class="font-mono text-[20px] font-bold text-[var(--warning)]">10 / 15 pts</span>
+</div>
+</div>
+<div class="mt-8 p-6 bg-[var(--primary-soft)] rounded-[var(--radius-sm)] flex items-center justify-between border border-[var(--primary-light)]">
+<div>
+<h6 class="font-bold text-[var(--primary)] uppercase tracking-widest text-[13px]">Total Audit Ventes</h6>
+<p class="text-[11px] text-[var(--text-muted)] italic mt-1">Calculé sur la période du 14 au 18 Avril</p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-mono text-[36px] font-bold text-[var(--primary)]">44 / 60 pts</span>
+<span class="text-[11px] text-[var(--primary)] font-bold">Zone de Performance: Stable</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+</body></html>

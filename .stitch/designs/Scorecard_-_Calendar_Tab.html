@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Manrope:wght@200..800&amp;family=DM+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#736331",
+                    "on-tertiary-fixed-variant": "#283f95",
+                    "background": "#fbf9f4",
+                    "on-surface-variant": "#4d4635",
+                    "on-primary-fixed-variant": "#564500",
+                    "on-tertiary-fixed": "#001454",
+                    "secondary-fixed-dim": "#dac589",
+                    "surface-tint": "#725c00",
+                    "surface-bright": "#fbf9f4",
+                    "inverse-surface": "#30312e",
+                    "on-tertiary-container": "#0b287f",
+                    "inverse-on-surface": "#f2f1ec",
+                    "on-primary": "#ffffff",
+                    "secondary": "#6d5d2c",
+                    "primary": "#725c00",
+                    "surface-container": "#f0eee9",
+                    "error": "#ba1a1a",
+                    "tertiary": "#4258af",
+                    "on-surface": "#1b1c19",
+                    "primary-container": "#b8960c",
+                    "surface-variant": "#e4e2dd",
+                    "surface": "#fbf9f4",
+                    "primary-fixed": "#ffe082",
+                    "secondary-fixed": "#f7e1a3",
+                    "tertiary-fixed-dim": "#b8c4ff",
+                    "outline-variant": "#d0c6af",
+                    "on-secondary-fixed-variant": "#544516",
+                    "secondary-container": "#f7e1a3",
+                    "surface-container-low": "#f5f3ee",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#231b00",
+                    "tertiary-fixed": "#dde1ff",
+                    "primary-fixed-dim": "#e9c340",
+                    "outline": "#7e7662",
+                    "tertiary-container": "#7f94ef",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1b1c19",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#e9c340",
+                    "surface-container-lowest": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#231b00",
+                    "surface-container-highest": "#e4e2dd",
+                    "surface-dim": "#dbdad5",
+                    "on-primary-container": "#3d3000",
+                    "surface-container-high": "#eae8e3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Newsreader", "serif"],
+                    "body": ["Manrope", "sans-serif"],
+                    "label": ["Manrope", "sans-serif"],
+                    "mono": ["DM Mono", "monospace"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body antialiased">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col h-full border-r border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-950 shadow-[20px_0_40px_rgba(27,28,25,0.03)]">
+<div class="p-8">
+<h1 class="text-[28px] font-serif italic text-yellow-600 dark:text-yellow-500 tracking-tight">SIQ</h1>
+<p class="font-mono text-[10px] uppercase tracking-widest text-stone-400">ShowroomIQ</p>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors duration-300" href="#">
+<span class="material-symbols-outlined">diamond</span>
+<span class="text-sm font-label">Collections</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors duration-300" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-sm font-label">Showrooms</span>
+</a>
+<a class="flex items-center gap-3 text-yellow-700 dark:text-yellow-500 border-l-2 border-yellow-600 pl-4 py-2 font-medium bg-stone-50/50" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-label">Inventory</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors duration-300" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-sm font-label">Clients</span>
+</a>
+<a class="flex items-center gap-3 text-stone-500 dark:text-stone-400 pl-4 py-2 hover:text-stone-900 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors duration-300" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-sm font-label">Reports</span>
+</a>
+</nav>
+<div class="p-8 space-y-4">
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label text-xs uppercase tracking-widest transition-all active:opacity-80 scale-98">
+                New Collection
+            </button>
+<div class="pt-4 border-t border-stone-100 flex flex-col gap-2">
+<a class="flex items-center gap-3 text-stone-400 hover:text-stone-900 text-sm font-label" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 text-stone-400 hover:text-stone-900 text-sm font-label" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-[60px] min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-[60px] z-40 bg-white/80 dark:bg-stone-950/80 backdrop-blur-xl flex items-center justify-between px-8 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-serif text-yellow-600 dark:text-yellow-500">ShowroomIQ</span>
+<div class="flex items-center gap-6">
+<a class="text-stone-400 dark:text-stone-500 hover:text-yellow-600 font-mono text-[11px] uppercase" href="#">Dashboard</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-yellow-600 font-mono text-[11px] uppercase" href="#">Exhibition</a>
+<a class="text-stone-900 dark:text-stone-50 border-b border-yellow-600 pb-1 font-mono text-[11px] uppercase" href="#">Archives</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-500 cursor-pointer hover:text-yellow-600">search</span>
+<span class="material-symbols-outlined text-stone-500 cursor-pointer hover:text-yellow-600">notifications</span>
+<div class="w-8 h-8 rounded-full bg-stone-200 overflow-hidden">
+<img alt="User Profile" data-alt="portrait of a professional creative director in a minimal studio setting, soft neutral lighting, high-end editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC8dK2AyvNcO25dkoSijSuyOJvU7u50lxDnUQl6651GtT9JkzvvJMyVURjQZPfNP2fffCiBLhkELYqLM_jZUKG0m5vgtVK1Wa8UzYP5DACxNjxxKdo6YHs56eCKzLxM31_0DoTMz4dOmiY_1CYWRWRlapYcpejFF5kVx-70tH9PeQEP91P-vZLycoOw0q6EkfMA5JUNIVzvUZm1Ab3FiUvcIegiBCYf1hVn1Vt_52nyl4ajaywbFXiIc1x-mQFdi0kzOJqXaPZe_lc"/>
+</div>
+</div>
+</header>
+<section class="p-12 max-w-7xl mx-auto">
+<!-- Breadcrumbs Editorial Style -->
+<div class="mb-12">
+<p class="font-mono text-[11px] text-stone-400 mb-2 tracking-widest uppercase">ADMINISTRATION / LOGISTIQUE / 03</p>
+<h2 class="text-5xl font-headline italic tracking-tight text-on-surface">Calendrier</h2>
+</div>
+<div class="grid grid-cols-12 gap-12">
+<!-- Left: Monthly Calendar -->
+<div class="col-span-8">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_20px_40px_rgba(27,28,25,0.03)] relative">
+<!-- Calendar Header -->
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-2xl font-headline text-on-surface">Avril 2025</h3>
+<div class="flex gap-4">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Days Header -->
+<div class="calendar-grid text-center font-mono text-[10px] text-stone-400 uppercase tracking-widest mb-4">
+<div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+</div>
+<!-- Calendar Days -->
+<div class="calendar-grid border-t border-surface-container-high">
+<!-- Empty cells for padding if month doesn't start on Mon -->
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-20 bg-surface-container-low font-mono text-sm">31</div>
+<!-- Active Month Days -->
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors group cursor-pointer">
+<span class="font-mono text-sm">01</span>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+</div>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">02</span>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+</div>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">03</span>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">04</span>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+</div>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high bg-surface-container-low opacity-40">
+<span class="font-mono text-sm">05</span>
+</div>
+<div class="aspect-square p-2 border-b border-surface-container-high bg-surface-container-low opacity-40">
+<span class="font-mono text-sm">06</span>
+</div>
+<!-- Row 2 -->
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">07</span>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer ring-2 ring-primary ring-inset ring-offset-2">
+<span class="font-mono text-sm font-bold text-primary">08</span>
+<!-- Admin Popover (Mockup) -->
+<div class="absolute top-full left-0 mt-2 w-64 bg-white shadow-2xl rounded-xl z-20 p-6 border border-surface-container-high">
+<p class="font-mono text-[10px] uppercase text-stone-400 mb-3">Statut du Jour</p>
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm font-label py-2 px-3 mb-4 focus:ring-1 focus:ring-primary">
+<option>Présence Standard</option>
+<option>Retard</option>
+<option>Absence</option>
+<option>Congé</option>
+</select>
+<textarea class="w-full bg-surface-container-low border-none rounded-lg text-sm font-label py-2 px-3 h-20 resize-none focus:ring-1 focus:ring-primary" placeholder="Ajouter une note..."></textarea>
+<button class="w-full mt-4 bg-primary text-white py-2 rounded-lg text-xs font-label uppercase tracking-widest">Enregistrer</button>
+</div>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">09</span>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">10</span>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+</div>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high relative hover:bg-surface-container transition-colors cursor-pointer">
+<span class="font-mono text-sm">11</span>
+</div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high bg-surface-container-low opacity-40">
+<span class="font-mono text-sm">12</span>
+</div>
+<div class="aspect-square p-2 border-b border-surface-container-high bg-surface-container-low opacity-40">
+<span class="font-mono text-sm">13</span>
+</div>
+<!-- Row 3+ Padding out the grid visually -->
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">14</span></div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">15</span></div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">16</span></div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">17</span></div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">18</span></div>
+<div class="aspect-square p-2 border-b border-r border-surface-container-high bg-surface-container-low opacity-40"><span class="font-mono text-sm">19</span></div>
+<div class="aspect-square p-2 border-b border-surface-container-high bg-surface-container-low opacity-40"><span class="font-mono text-sm">20</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">21</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">22</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">23</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">24</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high opacity-60"><span class="font-mono text-sm">25</span></div>
+<div class="aspect-square p-2 border-r border-surface-container-high bg-surface-container-low opacity-40"><span class="font-mono text-sm">26</span></div>
+<div class="aspect-square p-2 bg-surface-container-low opacity-40"><span class="font-mono text-sm">27</span></div>
+</div>
+<!-- Legend -->
+<div class="mt-8 flex gap-6 pt-6 border-t border-surface-container-high">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span class="text-[10px] font-mono uppercase tracking-wider text-stone-500">Retard</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+<span class="text-[10px] font-mono uppercase tracking-wider text-stone-500">Absence</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+<span class="text-[10px] font-mono uppercase tracking-wider text-stone-500">Congé</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Summary Cards & LOG Journalier -->
+<div class="col-span-4 space-y-6">
+<!-- Summary Stats -->
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-transparent hover:border-surface-container-high transition-all group">
+<p class="font-mono text-[10px] text-stone-400 uppercase tracking-widest mb-1">TOTAL RETARDS</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-mono text-amber-600">04</span>
+<span class="text-[10px] font-mono text-stone-300 uppercase">Ce mois</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-transparent hover:border-surface-container-high transition-all group">
+<p class="font-mono text-[10px] text-stone-400 uppercase tracking-widest mb-1">TOTAL ABSENCES</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-mono text-red-600">01</span>
+<span class="text-[10px] font-mono text-stone-300 uppercase">Ce mois</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-transparent hover:border-surface-container-high transition-all group">
+<p class="font-mono text-[10px] text-stone-400 uppercase tracking-widest mb-1">TOTAL CONGÉS</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-mono text-blue-600">03</span>
+<span class="text-[10px] font-mono text-stone-300 uppercase">Utilisés</span>
+</div>
+</div>
+</div>
+<!-- LOG Journalier -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_20px_40px_rgba(27,28,25,0.03)] border-t-2 border-primary">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-headline text-xl">LOG Journalier</h4>
+<div class="bg-primary-container/10 px-3 py-1 rounded-full">
+<span class="font-mono text-xs text-primary-container font-bold">SCORE: 3/5</span>
+</div>
+</div>
+<p class="font-label text-xs text-stone-500 mb-6 leading-relaxed">Suivi de performance hebdomadaire basé sur la ponctualité et la conformité.</p>
+<!-- Week Row -->
+<div class="flex justify-between items-center bg-surface-container-low p-4 rounded-lg">
+<div class="flex flex-col items-center gap-2">
+<span class="font-mono text-[9px] uppercase text-stone-400">Lun</span>
+<div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 border border-green-200">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-mono text-[9px] uppercase text-stone-400">Mar</span>
+<div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 border border-amber-200">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-mono text-[9px] uppercase text-stone-400">Mer</span>
+<div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 border border-green-200">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-mono text-[9px] uppercase text-stone-400">Jeu</span>
+<div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-700 border border-red-200">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2">
+<span class="font-mono text-[9px] uppercase text-stone-400">Ven</span>
+<div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 border border-green-200">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<div class="mt-8 space-y-4">
+<div class="p-3 bg-surface-container-lowest rounded-lg border-l-2 border-amber-500 shadow-sm">
+<p class="text-[10px] font-mono text-stone-400 mb-1">08 AVRIL / 09:15</p>
+<p class="text-xs font-label">Retard de 15min. Notification client effectuée par l'admin.</p>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-lg border-l-2 border-red-500 shadow-sm">
+<p class="text-[10px] font-mono text-stone-400 mb-1">04 AVRIL / ALL DAY</p>
+<p class="text-xs font-label">Absence non justifiée. Dossier en attente de pièces.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>
