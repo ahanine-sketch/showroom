@@ -57,7 +57,7 @@ const ObjectiveSalesCard = ({
 
 
   return (
-    <div className={`bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm flex flex-col items-center relative min-h-[440px] justify-between ${className}`}>
+    <div className={`bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm flex flex-col items-center relative min-h-[430px] justify-between ${className}`}>
       {/* Internal Title Header */}
       <div className="absolute top-8 left-10 flex items-center gap-4">
         <div className={`w-12 h-12 rounded-xl ${iconBgColor} ${iconColor} flex items-center justify-center shadow-sm`}>
@@ -66,18 +66,18 @@ const ObjectiveSalesCard = ({
         <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">{title}</h4>
       </div>
 
-      <div className="w-full h-10"></div> {/* Spacer for header */}
+      <div className="w-full h-16"></div> {/* Reduced spacer */}
 
-      <div className="w-full flex justify-between items-start mb-2 px-2">
+      <div className="w-full flex justify-between items-start mb-0 px-2">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-start translate-x-2">
-            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-2 opacity-60">% Atteint</span>
-            <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-yellow-50/50 rounded-xl text-yellow-600 border border-yellow-100 shadow-sm leading-none">
+            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">% atteint ( Likely)</span>
+            <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-stone-50 rounded-xl text-stone-900 border border-stone-100 shadow-sm leading-none">
               {percentage}%
             </span>
           </div>
           <div className="flex flex-col items-start translate-x-2">
-            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-2 opacity-60">CA Généré</span>
+            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">CA Généré</span>
             <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-yellow-50/50 rounded-xl text-yellow-600 border border-yellow-100 shadow-sm leading-none">
               {caGenerated} <span className="text-[10px] opacity-60 ml-0.5">MAD</span>
             </span>
@@ -89,7 +89,7 @@ const ObjectiveSalesCard = ({
         </div>
       </div>
 
-      <div className="w-full max-w-[340px] mt-2 flex flex-col items-center">
+      <div className="w-full max-w-[280px] -mt-10 flex flex-col items-center">
         <svg className="w-full overflow-visible" viewBox="0 0 100 65">
           <defs>
             <filter id="needleShadow" x="-20%" y="-20%" width="140%" height="140%">

@@ -53,8 +53,8 @@ export default function TeamPage() {
       metrics: {
         ventes: { value: 43, max: 65, color: 'bg-orange-400' },
         comportement: { value: 12, max: 30, color: 'bg-orange-400' },
-        presence: { value: 3, max: 5, color: 'bg-yellow-400' }, 
-        bonus: { value: 2, max: 5, color: 'bg-stone-300' }
+        presence: { value: 1, max: 5, color: 'bg-orange-400' }, 
+        bonus: { value: 3, max: 5, color: 'bg-stone-300' }
       },
       perfColor: 'bg-orange-400'
     }

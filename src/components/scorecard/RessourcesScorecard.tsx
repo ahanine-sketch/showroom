@@ -42,8 +42,8 @@ const RessourcesScorecard = ({ role, activeTab }: ScorecardProps) => {
         <ProfileHeader role={role} />
         <div className="flex justify-end mb-6">
           {(role === 'owner' || role === 'admin') && (
-             <button className="flex items-center gap-2 px-5 py-2.5 bg-stone-900 text-white rounded-xl text-[13px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors shadow-lg">
-                <span className="material-symbols-outlined text-[18px]">upload_file</span>
+             <button className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[12px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl active:scale-95 group border border-emerald-500/50">
+                <span className="material-symbols-outlined text-[18px]">add_circle</span>
                 Ajouter un document
              </button>
           )}
@@ -53,7 +53,7 @@ const RessourcesScorecard = ({ role, activeTab }: ScorecardProps) => {
           {/* Left Column - Documents */}
           <div className="col-span-8 space-y-8">
             {/* Fiche de Poste */}
-            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-16 transition-all hover:shadow-md">
+            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-24 transition-all hover:shadow-md">
               <div className="absolute top-8 left-10 flex items-center gap-4">
                  <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-600 shadow-sm">
                    <span className="material-symbols-outlined text-[24px]">badge</span>
@@ -77,7 +77,7 @@ const RessourcesScorecard = ({ role, activeTab }: ScorecardProps) => {
             </section>
 
             {/* Processus */}
-            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-16 transition-all hover:shadow-md">
+            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-24 transition-all hover:shadow-md">
               <div className="absolute top-8 left-10 flex items-center gap-4">
                  <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-600 shadow-sm">
                    <span className="material-symbols-outlined text-[24px]">account_tree</span>
@@ -118,7 +118,7 @@ const RessourcesScorecard = ({ role, activeTab }: ScorecardProps) => {
             </section>
 
             {/* Autres Documents */}
-            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-16 transition-all hover:shadow-md">
+            <section className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-24 transition-all hover:shadow-md">
               <div className="absolute top-8 left-10 flex items-center gap-4">
                  <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-600 shadow-sm">
                    <span className="material-symbols-outlined text-[24px]">folder_open</span>
@@ -146,42 +146,42 @@ const RessourcesScorecard = ({ role, activeTab }: ScorecardProps) => {
 
           {/* Right Column - Formations */}
           <div className="col-span-4 space-y-6">
-            <div className="bg-stone-950 text-white p-10 rounded-3xl shadow-2xl relative overflow-hidden group">
+            <div className="bg-white border border-stone-200/60 rounded-3xl p-10 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
                <div className="relative z-10">
-                 <div className="flex items-center gap-4 mb-10 pb-6 border-b border-white/5">
-                   <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shadow-inner">
-                     <span className="material-symbols-outlined text-[24px] text-emerald-400">school</span>
+                 <div className="flex items-center gap-4 mb-10 pb-6 border-b border-stone-50">
+                   <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shadow-sm">
+                     <span className="material-symbols-outlined text-[24px] text-emerald-600">school</span>
                    </div>
-                   <h4 className="font-headline text-[32px] font-bold tracking-tight text-white">Formations</h4>
+                   <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Formations</h4>
                  </div>
 
                  <div className="space-y-4">
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
+                    <div className="bg-stone-50 border border-stone-100 p-5 rounded-xl transition-all hover:bg-stone-100/50">
                       <div className="flex justify-between items-start mb-3">
-                         <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/20 w-fit">En cours</span>
-                         <span className="text-[11px] font-mono text-white/40">35%</span>
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 w-fit">En cours</span>
+                         <span className="text-[11px] font-mono text-stone-400">35%</span>
                       </div>
-                      <h5 className="text-[14px] font-bold mb-4 line-clamp-2 leading-tight">Masterclass Closing Objections Clients (Niveau Avancé)</h5>
-                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 w-[35%] rounded-full shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                      <h5 className="text-[14px] font-bold mb-4 line-clamp-2 leading-tight text-stone-900">Masterclass Closing Objections Clients (Niveau Avancé)</h5>
+                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 w-[35%] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
                       </div>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-xl opacity-70">
+                    <div className="bg-stone-50 border border-stone-100 p-5 rounded-xl opacity-70">
                       <div className="flex justify-between items-start mb-3">
-                         <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20 w-fit">À venir</span>
-                         <span className="material-symbols-outlined text-[16px] text-white/30">lock</span>
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 w-fit">À venir</span>
+                         <span className="material-symbols-outlined text-[16px] text-stone-300">lock</span>
                       </div>
-                      <h5 className="text-[14px] font-bold line-clamp-2 leading-tight">Expertise Matières: Marbres et Céramiques</h5>
+                      <h5 className="text-[14px] font-bold line-clamp-2 leading-tight text-stone-600">Expertise Matières: Marbres et Céramiques</h5>
                     </div>
                  </div>
                  
-                 <button className="w-full mt-6 py-3 border border-white/20 rounded-xl text-[12px] font-bold uppercase tracking-widest hover:bg-white/10 transition-colors">
+                 <button className="w-full mt-8 py-3.5 bg-stone-50 border border-stone-200 rounded-xl text-[12px] font-bold uppercase tracking-widest text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-all active:scale-[0.98]">
                    Accéder au LMS
                  </button>
                </div>
                
-               <div className="absolute top-[-20px] right-[-20px] w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl"></div>
+               <div className="absolute top-[-20px] right-[-20px] w-48 h-48 bg-emerald-50/50 rounded-full blur-3xl"></div>
             </div>
           </div>
         </div>

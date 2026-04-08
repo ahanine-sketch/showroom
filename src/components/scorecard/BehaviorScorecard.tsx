@@ -55,7 +55,7 @@ const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
                 <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Avis</h4>
               </div>
 
-              <div className="w-full h-10"></div> {/* Spacer for header */}
+              <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-10 pb-6 border-b border-stone-50 px-2">
                 <ScoreBadge score={4} max={10} status="MOYEN" />
@@ -122,7 +122,7 @@ const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
                 <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">SAV</h4>
               </div>
               
-              <div className="w-full h-10"></div> {/* Spacer for header */}
+              <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
                 <ScoreBadge score={0} max={10} status="MAUVAIS" />
@@ -155,10 +155,10 @@ const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
                 <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm">
                   <span className="material-symbols-outlined text-[24px]">assignment_turned_in</span>
                 </div>
-                <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Respect des Processus</h4>
+                <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Processus</h4>
               </div>
               
-              <div className="w-full h-10"></div> {/* Spacer for header */}
+              <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
                 <ScoreBadge score={4} max={10} status="MOYEN" />
@@ -169,7 +169,7 @@ const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
                    <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl space-y-6 shadow-inner">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400 flex items-center gap-3">
                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
-                       Notifier un écart
+                       Donner un avertisment
                      </p>
                      
                      <div className="grid grid-cols-1 gap-4">

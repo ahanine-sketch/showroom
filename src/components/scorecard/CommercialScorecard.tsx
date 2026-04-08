@@ -95,11 +95,11 @@ const CommercialScorecard = ({ role, activeTab }: ScorecardProps) => {
                 <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Devis</h4>
               </div>
 
-              <div className="w-full h-10"></div>
+              <div className="w-full h-16"></div>
 
               <div className="flex justify-between items-start mb-6 px-2">
                 <div className="flex flex-col">
-                  <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-1.5 opacity-60">Taux de Conversion</span>
+                  <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-3 opacity-60">Taux de Conversion</span>
                   <div className="flex items-baseline gap-1.5">
                     <span className="font-mono text-[42px] font-black text-stone-900 leading-none tracking-tighter">55%</span>
                   </div>
@@ -112,15 +112,15 @@ const CommercialScorecard = ({ role, activeTab }: ScorecardProps) => {
               <div className="flex-1 space-y-8 px-2 py-4 flex flex-col justify-between">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 border-stone-100 py-1 transition-all hover:bg-stone-50/50 rounded-lg">
-                    <span className="text-[9px] text-stone-400 uppercase font-black tracking-widest block mb-0.5 opacity-60">Créés</span>
+                    <span className="text-[9px] text-stone-400 uppercase font-black tracking-widest block mb-1.5 opacity-60">Créés</span>
                     <p className="font-mono text-[20px] font-bold text-stone-800">11</p>
                   </div>
                   <div className="flex-1 border-emerald-200 py-1 transition-all hover:bg-emerald-50/20 rounded-lg">
-                    <span className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest block mb-0.5">Validés</span>
+                    <span className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest block mb-1.5">Validés</span>
                     <p className="font-mono text-[20px] font-bold text-emerald-600">6</p>
                   </div>
                   <div className="flex-1 border-red-200 py-1 transition-all hover:bg-red-50/20 rounded-lg">
-                    <span className="text-[9px] text-red-500/60 uppercase font-black tracking-widest block mb-0.5">Perdus</span>
+                    <span className="text-[9px] text-red-500/60 uppercase font-black tracking-widest block mb-1.5">Perdus</span>
                     <p className="font-mono text-[20px] font-bold text-red-500">1</p>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ const CommercialScorecard = ({ role, activeTab }: ScorecardProps) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-stone-200/60 shadow-sm overflow-hidden mb-12 relative pt-16 mt-12 transition-all hover:shadow-md">
+        <div className="bg-white rounded-3xl border border-stone-200/60 shadow-sm overflow-hidden mb-12 relative pt-24 mt-12 transition-all hover:shadow-md">
            <div className="absolute top-8 left-10 flex items-center gap-4">
              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
                <span className="material-symbols-outlined text-[24px]">analytics</span>

@@ -45,32 +45,28 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
 
 
         <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-8 bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-16">
+          <div className="col-span-8 bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm relative pt-24">
             {/* Internal Title Header */}
-            <div className="absolute top-8 left-10 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
-                <span className="material-symbols-outlined text-[24px]">calendar_today</span>
+            <div className="absolute top-8 left-10 flex flex-col items-start gap-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                  <span className="material-symbols-outlined text-[24px]">calendar_today</span>
+                </div>
+                <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900 leading-none">Calendrier</h4>
               </div>
-              <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Calendrier</h4>
               
-              <div className="flex bg-stone-50 border border-stone-100 shadow-sm p-1.5 rounded-xl ml-6">
-                <button className="px-5 py-2 text-[12px] font-black text-stone-900 font-mono tracking-tighter uppercase">Mars 2026</button>
+              <div className="flex items-center bg-stone-50 border border-stone-100 shadow-sm p-1.5 rounded-xl">
+                <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-95">
+                  <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                </button>
+                <span className="px-5 py-0.5 text-[11px] font-black text-stone-900 font-mono tracking-tighter uppercase">Mars 2026</span>
+                <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-95">
+                  <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                </button>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mb-10 px-2 pt-2">
-              <div className="flex gap-3">
-                <button className="p-3 rounded-xl border border-stone-100 bg-stone-50 hover:bg-stone-100 transition-all hover:scale-105 active:scale-95 shadow-sm">
-                  <span className="material-symbols-outlined text-[22px]">chevron_left</span>
-                </button>
-                <button className="p-3 rounded-xl border border-stone-100 bg-stone-50 hover:bg-stone-100 transition-all hover:scale-105 active:scale-95 shadow-sm">
-                  <span className="material-symbols-outlined text-[22px]">chevron_right</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <ScoreBadge score={1} max={5} status="MOYEN" />
-              </div>
-            </div>
+            <div className="w-full h-32"></div> {/* Increased gap for the two-line header */}
 
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
@@ -119,7 +115,7 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
               })}
             </div>
 
-            <div className="mt-10 flex gap-10 pt-8 border-t border-stone-50">
+            <div className="mt-10 flex flex-wrap gap-x-10 gap-y-4 pt-8 border-t border-stone-50">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-amber-500"></div>
                 <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-stone-400 font-bold">Retard</span>
@@ -131,6 +127,14 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                 <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-stone-400 font-bold">Congé</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-500 font-black text-sm">+</span>
+                <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-stone-400 font-bold">Note Positive</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-rose-500 font-black text-sm">-</span>
+                <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-stone-400 font-bold">Note Négative</span>
               </div>
             </div>
 
@@ -147,22 +151,22 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
                    </div>
                    
                    <div className="space-y-4">
-                     <div className="grid grid-cols-2 gap-3">
-                       <div className="relative">
-                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Statut</label>
-                         <select className="w-full appearance-none bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm">
-                           <option>Présent</option>
-                           <option>Retard</option>
-                           <option>Absence</option>
-                           <option>Congé</option>
-                         </select>
-                         <span className="material-symbols-outlined absolute right-4 top-[34px] -translate-y-1/2 text-stone-400 pointer-events-none scale-75">keyboard_arrow_down</span>
-                       </div>
-                       <div>
-                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Score Présence</label>
-                         <input type="number" min="0" max="5" placeholder="0-5" className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm" />
-                       </div>
-                     </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="relative">
+                          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Statut</label>
+                          <select className="w-full appearance-none bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm">
+                            <option>Présent</option>
+                            <option>Retard</option>
+                            <option>Absence</option>
+                            <option>Congé</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-[34px] -translate-y-1/2 text-stone-400 pointer-events-none scale-75">keyboard_arrow_down</span>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Date</label>
+                          <input type="date" className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-100 shadow-sm" />
+                        </div>
+                      </div>
                      
                      <div>
                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Description / Motif</label>
@@ -185,7 +189,7 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
                    </div>
 
                    <div className="space-y-4">
-                     <div className="grid grid-cols-1">
+                     <div className="grid grid-cols-2 gap-3">
                        <div className="relative">
                          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Type de Note</label>
                          <select className="w-full appearance-none bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-100 shadow-sm">
@@ -193,6 +197,10 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
                            <option>Note Négative</option>
                          </select>
                          <span className="material-symbols-outlined absolute right-4 top-[34px] -translate-y-1/2 text-stone-400 pointer-events-none scale-75">keyboard_arrow_down</span>
+                       </div>
+                       <div>
+                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5 ml-1">Date</label>
+                         <input type="date" className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 text-[13px] font-medium text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-100 shadow-sm" />
                        </div>
                      </div>
 
@@ -211,58 +219,57 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
           </div>
 
           <div className="col-span-4">
-            <div className="bg-stone-950 border border-stone-800 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden group">
-              <div className="flex items-center gap-4 mb-8 pb-6 border-b border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-white/5 text-white/60 flex items-center justify-center shadow-inner">
+            <div className="bg-white border border-stone-200/60 rounded-3xl p-8 shadow-sm text-stone-900 relative transition-all hover:shadow-md">
+              <div className="w-full flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-stone-50 text-stone-400 flex items-center justify-center shadow-sm">
                   <span className="material-symbols-outlined text-[22px]">analytics</span>
                 </div>
-                <div>
-                  <h4 className="font-headline text-2xl font-bold tracking-tight leading-none">Statistiques</h4>
-                  <span className="text-[10px] text-stone-500 uppercase tracking-widest font-bold mt-2 inline-block">Mars 2026</span>
-                </div>
+                <h4 className="font-headline text-2xl font-bold tracking-tight leading-none uppercase">Overview</h4>
+              </div>
+
+              <div className="flex justify-end items-center mb-12 pb-6 border-b border-stone-50">
+                <ScoreBadge score={1} max={5} status="MOYEN" />
               </div>
               
               <div className="space-y-4 relative z-10">
-                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:bg-white/10 transition-all duration-300">
+                 <div className="bg-stone-50/50 border border-stone-100 p-5 rounded-2xl transition-all duration-300">
                     <span className="text-[10px] text-stone-400 uppercase tracking-widest font-bold block mb-2">Retards Cumulés</span>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-[32px] font-bold font-mono text-amber-400 tracking-tighter">00</span>
-                      <span className="text-[10px] text-white/30 uppercase font-mono tracking-widest">Fois</span>
+                      <span className="text-[32px] font-bold font-mono text-amber-500 tracking-tighter">00</span>
+                      <span className="text-[10px] text-stone-300 uppercase font-mono tracking-widest">Fois</span>
                     </div>
                  </div>
 
-                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:bg-white/10 transition-all duration-300">
+                 <div className="bg-stone-50/50 border border-stone-100 p-5 rounded-2xl transition-all duration-300">
                     <span className="text-[10px] text-stone-400 uppercase tracking-widest font-bold block mb-2 font-headline">Absences</span>
                     <div className="flex items-baseline gap-3">
                       <span className="text-[32px] font-bold font-mono text-red-500 tracking-tighter">02</span>
-                      <span className="text-[10px] text-white/30 uppercase font-mono tracking-widest">Jour</span>
+                      <span className="text-[10px] text-stone-300 uppercase font-mono tracking-widest">Jour</span>
                     </div>
                  </div>
 
-                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:bg-emerald-500/10 transition-all duration-300 border-l-4 border-l-emerald-500/50">
+                 <div className="bg-emerald-50/10 border border-emerald-100 p-5 rounded-2xl transition-all duration-300 border-l-4 border-l-emerald-500/50">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] text-emerald-400/50 uppercase tracking-widest font-extrabold block">Notes positives</span>
+                      <span className="text-[10px] text-emerald-600 uppercase tracking-widest font-extrabold block">Notes positives</span>
                       <span className="material-symbols-outlined text-[14px] text-emerald-500/50">add_reaction</span>
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-[32px] font-bold font-mono text-emerald-400 tracking-tighter">03</span>
-                      <span className="text-[10px] text-white/30 uppercase font-mono tracking-widest">Entrées</span>
+                      <span className="text-[32px] font-bold font-mono text-emerald-600 tracking-tighter">03</span>
+                      <span className="text-[10px] text-stone-300 uppercase font-mono tracking-widest">Entrées</span>
                     </div>
                  </div>
 
-                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl hover:bg-rose-500/10 transition-all duration-300 border-l-4 border-l-rose-500/50">
+                 <div className="bg-rose-50/10 border border-rose-100 p-5 rounded-2xl transition-all duration-300 border-l-4 border-l-rose-500/50">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] text-rose-400/50 uppercase tracking-widest font-extrabold block">Notes négatives</span>
+                      <span className="text-[10px] text-rose-600 uppercase tracking-widest font-extrabold block">Notes négatives</span>
                       <span className="material-symbols-outlined text-[14px] text-rose-500/50">sentiment_neutral</span>
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-[32px] font-bold font-mono text-rose-400 tracking-tighter">01</span>
-                      <span className="text-[10px] text-white/30 uppercase font-mono tracking-widest">Entrées</span>
+                      <span className="text-[32px] font-bold font-mono text-rose-600 tracking-tighter">01</span>
+                      <span className="text-[10px] text-stone-300 uppercase font-mono tracking-widest">Entrées</span>
                     </div>
                  </div>
               </div>
-
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 blur-[80px] rounded-full pointer-events-none"></div>
             </div>
 
             {/* Historique des Notes Qualitatives */}
