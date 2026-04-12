@@ -5,41 +5,45 @@ import ScoreBadge from './ScoreBadge';
 interface ScorecardProps {
   role: 'admin' | 'owner';
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
+  hideNav?: boolean;
+  isDashboard?: boolean;
 }
 
-const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
+const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
 
   return (
     <>
-      <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/commercial`}
-        >
-          Ventes
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/behavior`}
-        >
-          Comportement
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/calendar`}
-        >
-          Calendrier
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/ressources`}
-        >
-          Ressources
-        </a>
-      </nav>
+      {!hideNav && (
+        <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/commercial`}
+          >
+            Ventes
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/behavior`}
+          >
+            Comportement
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/calendar`}
+          >
+            Calendrier
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/ressources`}
+          >
+            Ressources
+          </a>
+        </nav>
+      )}
 
-      <div className="p-12 space-y-6 max-w-[1400px] mx-auto">
+      <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto`}>
         <ProfileHeader role={role} />
 
         <div className="grid grid-cols-12 gap-6">
@@ -165,7 +169,7 @@ const BehaviorScorecard = ({ role, activeTab }: ScorecardProps) => {
               </div>
               
               <div className="space-y-8 px-2">
-                 {(role === 'owner' || role === 'admin') && (
+                 {role === 'owner' && (
                    <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl space-y-6 shadow-inner">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400 flex items-center gap-3">
                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>

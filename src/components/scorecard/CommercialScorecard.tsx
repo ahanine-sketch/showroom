@@ -9,42 +9,46 @@ import ObjectiveSalesCard from './ObjectiveSalesCard';
 interface ScorecardProps {
   role: 'admin' | 'owner';
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
+  hideNav?: boolean;
+  isDashboard?: boolean;
 }
 
-const CommercialScorecard = ({ role, activeTab }: ScorecardProps) => {
+const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
   const [isBonusOpen, setIsBonusOpen] = useState(false);
   const basePath = `/${role}/scorecard`;
 
   return (
     <>
-      <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/commercial`}
-        >
-          Ventes
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/behavior`}
-        >
-          Comportement
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/calendar`}
-        >
-          Calendrier
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/ressources`}
-        >
-          Ressources
-        </a>
-      </nav>
+      {!hideNav && (
+        <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/commercial`}
+          >
+            Ventes
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/behavior`}
+          >
+            Comportement
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/calendar`}
+          >
+            Calendrier
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/ressources`}
+          >
+            Ressources
+          </a>
+        </nav>
+      )}
 
-      <div className="p-12 space-y-6 max-w-[1400px] mx-auto relative text-sans">
+      <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto relative text-sans`}>
         <div className="flex items-center gap-6 absolute top-4 right-12 z-20">
           <div className="flex items-center bg-stone-50 border border-stone-100 shadow-sm p-1.5 rounded-xl">
             <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-colors">
@@ -56,13 +60,15 @@ const CommercialScorecard = ({ role, activeTab }: ScorecardProps) => {
             </button>
           </div>
           
-          <button 
-            onClick={() => setIsBonusOpen(true)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-yellow-600/90 backdrop-blur-xl text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-yellow-700 transition-all shadow-xl active:scale-95 group border border-yellow-500/50"
-          >
-            <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
-            Attribuer Bonus
-          </button>
+          {role === 'owner' && (
+            <button 
+              onClick={() => setIsBonusOpen(true)}
+              className="flex items-center gap-2 px-6 py-2.5 bg-yellow-600/90 backdrop-blur-xl text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-yellow-700 transition-all shadow-xl active:scale-95 group border border-yellow-500/50"
+            >
+              <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
+              Attribuer Bonus
+            </button>
+          )}
         </div>
 
         <ProfileHeader role={role} />

@@ -5,41 +5,45 @@ import ScoreBadge from './ScoreBadge';
 interface ScorecardProps {
   role: 'admin' | 'owner';
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
+  hideNav?: boolean;
+  isDashboard?: boolean;
 }
 
-const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
+const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
 
   return (
     <>
-      <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/commercial`}
-        >
-          Ventes
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/behavior`}
-        >
-          Comportement
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/calendar`}
-        >
-          Calendrier
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/ressources`}
-        >
-          Ressources
-        </a>
-      </nav>
+      {!hideNav && (
+        <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/commercial`}
+          >
+            Ventes
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/behavior`}
+          >
+            Comportement
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/calendar`}
+          >
+            Calendrier
+          </a>
+          <a 
+            className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
+            href={`${basePath}/ressources`}
+          >
+            Ressources
+          </a>
+        </nav>
+      )}
 
-      <div className="p-12 space-y-6 max-w-[1400px] mx-auto">
+      <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto`}>
         <ProfileHeader role={role} />
         
 
@@ -139,7 +143,7 @@ const CalendarScorecard = ({ role, activeTab }: ScorecardProps) => {
             </div>
 
             {/* Manual Edit Panels for Admin & Owner */}
-            {(role === 'admin' || role === 'owner') && (
+            {role === 'owner' && (
               <div className="mt-12 grid grid-cols-2 gap-6">
                 {/* 1. Log de Présence */}
                 <div className="bg-white p-7 rounded-3xl border border-stone-100 shadow-sm transition-all hover:shadow-md">

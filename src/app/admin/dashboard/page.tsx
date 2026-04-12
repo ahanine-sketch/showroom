@@ -3,17 +3,19 @@
 import React, { useState } from 'react';
 import UserSlideOver from '@/components/UserSlideOver';
 import ShowroomSlideOver from '@/components/ShowroomSlideOver';
-import ObjectiveSalesCard from '@/components/scorecard/ObjectiveSalesCard';
-import SalesFunnelMetrics from '@/components/dashboard/SalesFunnelMetrics';
-import MetricsTable from '@/components/dashboard/MetricsTable';
-import ReviewSAVSection from '@/components/dashboard/ReviewSAVSection';
-import AttendanceCalendar from '@/components/dashboard/AttendanceCalendar';
+import CommercialScorecard from '@/components/scorecard/CommercialScorecard';
+import BehaviorScorecard from '@/components/scorecard/BehaviorScorecard';
+import CalendarScorecard from '@/components/scorecard/CalendarScorecard';
+import RessourcesScorecard from '@/components/scorecard/RessourcesScorecard';
+
+type TabType = 'commercial' | 'behavior' | 'calendar' | 'ressources';
 
 export default function Page() {
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
   const [isShowroomDrawerOpen, setIsShowroomDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit'>('create');
+  const [activeTab, setActiveTab] = useState<TabType>('commercial');
 
   const showroomData = {
     name: 'Pavillon Haussmann',
@@ -27,6 +29,21 @@ export default function Page() {
     setSelectedUser(null);
     setDrawerMode('create');
     setIsUserDrawerOpen(true);
+  };
+
+  const renderActiveScorecard = () => {
+    switch (activeTab) {
+      case 'commercial':
+        return <CommercialScorecard role="admin" activeTab={activeTab} />;
+      case 'behavior':
+        return <BehaviorScorecard role="admin" activeTab={activeTab} />;
+      case 'calendar':
+        return <CalendarScorecard role="admin" activeTab={activeTab} />;
+      case 'ressources':
+        return <RessourcesScorecard role="admin" activeTab={activeTab} />;
+      default:
+        return <CommercialScorecard role="admin" activeTab="commercial" />;
+    }
   };
 
   return (
@@ -51,7 +68,7 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="pt-20 px-14 pb-8 max-w-[1600px] mx-auto font-sans space-y-8 transition-all duration-700">
+      <main className="pt-24 px-14 pb-8 max-w-[1600px] mx-auto font-sans space-y-8 transition-all duration-700">
         
         {/* Header Section with Precise Alignment */}
         <div className="flex items-end justify-between px-2">
@@ -77,38 +94,43 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Section 1: Strategic Performance & Funnel */}
-        <section className="grid grid-cols-12 gap-4 items-stretch">
-          <ObjectiveSalesCard 
-            className="col-span-12 lg:col-span-8"
-            score={29}
-            maxScore={35}
-            status="TRES BIEN"
-            caGenerated="932,900"
-            baseValue={789447}
-            likelyValue={964879}
-            totalValue={1140312}
-            currentValue={932900}
-          />
-          <div className="col-span-12 lg:col-span-4 h-full">
-            <SalesFunnelMetrics />
+        {/* Custom Tab Navigation to override the one inside components if needed, or simply render the component */}
+        <div className="pt-4 border-t border-stone-100/50">
+          <nav className="flex gap-10 border-b border-stone-100 mb-8">
+            <button 
+              onClick={() => setActiveTab('commercial')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'commercial' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Ventes
+            </button>
+            <button 
+              onClick={() => setActiveTab('behavior')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'behavior' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Comportement
+            </button>
+            <button 
+              onClick={() => setActiveTab('calendar')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'calendar' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Calendrier
+            </button>
+            <button 
+              onClick={() => setActiveTab('ressources')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'ressources' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Ressources
+            </button>
+          </nav>
+
+          {/* Render the Active Component */}
+          <div className="transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+            {activeTab === 'commercial' && <CommercialScorecard role="admin" activeTab="commercial" hideNav={true} isDashboard={true} />}
+            {activeTab === 'behavior' && <BehaviorScorecard role="admin" activeTab="behavior" hideNav={true} isDashboard={true} />}
+            {activeTab === 'calendar' && <CalendarScorecard role="admin" activeTab="calendar" hideNav={true} isDashboard={true} />}
+            {activeTab === 'ressources' && <RessourcesScorecard role="admin" activeTab="ressources" hideNav={true} isDashboard={true} />}
           </div>
-        </section>
-
-        {/* Section 2: KPIs Matrix */}
-        <section>
-           <MetricsTable />
-        </section>
-
-        {/* Section 3: Operational Health */}
-        <section>
-           <ReviewSAVSection />
-        </section>
-
-        {/* Section 4: Human Capital */}
-        <section className="pb-4">
-           <AttendanceCalendar />
-        </section>
+        </div>
 
       </main>
 
@@ -134,12 +156,8 @@ export default function Page() {
            </div>
            <p className="font-mono text-[10px] text-stone-400 uppercase tracking-[0.2em]">© 2024 ShowroomIQ Intelligence — Premium Management Platform</p>
         </div>
-        <div className="flex gap-10">
-          <a className="font-mono text-[10px] text-stone-400 hover:text-yellow-600 transition-colors uppercase tracking-widest font-bold" href="#">Support Technique</a>
-          <a className="font-mono text-[10px] text-stone-400 hover:text-yellow-600 transition-colors uppercase tracking-widest font-bold" href="#">Documentation</a>
-          <a className="font-mono text-[10px] text-stone-400 hover:text-yellow-600 transition-colors uppercase tracking-widest font-bold" href="#">Billing</a>
-        </div>
       </footer>
     </>
   );
 }
+
