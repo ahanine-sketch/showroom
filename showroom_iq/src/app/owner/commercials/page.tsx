@@ -411,7 +411,7 @@ export default function Page() {
 
       <ConfirmDialog
         isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
+        onCancel={() => setIsDeleteOpen(false)}
         onConfirm={confirmDelete}
         title="Supprimer l'utilisateur"
         message={`Êtes-vous sûr de vouloir supprimer ${userToDelete?.name} ? Cette action est irréversible.`}

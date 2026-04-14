@@ -11,9 +11,10 @@ interface ScorecardProps {
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
   hideNav?: boolean;
   isDashboard?: boolean;
+  userData?: any;
 }
 
-const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
+const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: ScorecardProps) => {
   const [isBonusOpen, setIsBonusOpen] = useState(false);
   const basePath = `/${role}/scorecard`;
 
@@ -44,12 +45,21 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard }: Scorecar
           )}
         </div>
 
-        <ProfileHeader role={role} />
+        <ProfileHeader 
+          role={role} 
+          user={userData || {
+            fullName: "...",
+            phone: "...",
+            seniority: "...",
+            showroomName: "...",
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder`
+          }}
+        />
 
         <BonusSlideOver 
           isOpen={isBonusOpen} 
           onClose={() => setIsBonusOpen(false)} 
-          userId="d66de368-0c61-461d-ba73-483ff04334f4" // Hajar El Rhiti (from seed)
+          userId={userData?.id || "d66de368-0c61-461d-ba73-483ff04334f4"} 
         />
 
         <div className="grid grid-cols-12 gap-8">

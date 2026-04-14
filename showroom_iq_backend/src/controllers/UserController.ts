@@ -35,6 +35,42 @@ export class UserController {
   }
 
   /**
+   * Get a specific user by ID with showroom data
+   */
+  static async getById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          role: true,
+          seniority: true,
+          avatarUrl: true,
+          showroom: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found' });
+      }
+
+      return res.json({ success: true, data: user });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
    * Create a new user (and potentially set objectives)
    */
   static async create(req: Request, res: Response) {

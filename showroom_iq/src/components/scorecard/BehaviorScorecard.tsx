@@ -7,9 +7,10 @@ interface ScorecardProps {
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
   hideNav?: boolean;
   isDashboard?: boolean;
+  userData?: any;
 }
 
-const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
+const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
 
   return (
@@ -17,7 +18,16 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardP
 
 
       <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto`}>
-        <ProfileHeader role={role} />
+        <ProfileHeader 
+          role={role} 
+          user={userData || {
+            fullName: "...",
+            phone: "...",
+            seniority: "...",
+            showroomName: "...",
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder`
+          }}
+        />
 
         <div className="grid grid-cols-12 gap-6">
           {/* Left Column */}

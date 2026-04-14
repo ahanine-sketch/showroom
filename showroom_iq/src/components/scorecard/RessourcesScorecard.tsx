@@ -6,9 +6,10 @@ interface ScorecardProps {
   activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
   hideNav?: boolean;
   isDashboard?: boolean;
+  userData?: any;
 }
 
-const RessourcesScorecard = ({ role, activeTab, hideNav, isDashboard }: ScorecardProps) => {
+const RessourcesScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
 
   return (
@@ -16,7 +17,16 @@ const RessourcesScorecard = ({ role, activeTab, hideNav, isDashboard }: Scorecar
 
 
       <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto`}>
-        <ProfileHeader role={role} />
+        <ProfileHeader 
+          role={role} 
+          user={userData || {
+            fullName: "...",
+            phone: "...",
+            seniority: "...",
+            showroomName: "...",
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder`
+          }}
+        />
         <div className="flex justify-end mb-6">
           {(role === 'owner' || role === 'admin') && (
              <button className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-[12px] font-bold uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl active:scale-95 group border border-emerald-500/50">

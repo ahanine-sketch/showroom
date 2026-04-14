@@ -19,6 +19,9 @@ export class ShowroomController {
             }
           },
           users: {
+            where: {
+              role: 'COMMERCIAL'
+            },
             select: {
               id: true,
               fullName: true,
@@ -106,6 +109,9 @@ export class ShowroomController {
             }
           },
           users: {
+            where: {
+              role: 'COMMERCIAL'
+            },
             select: {
               id: true,
               fullName: true,

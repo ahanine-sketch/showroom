@@ -18,6 +18,7 @@ model User {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   avatarUrl        String?
+  seniority        String?
   logs             DailyLog[]
   dailyScores      DailyScore[]
   formations       FormationProgress[]
