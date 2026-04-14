@@ -1,0 +1,155 @@
+'use client';
+
+import React, { useState } from 'react';
+import UserSlideOver from '@/components/UserSlideOver';
+import ShowroomSlideOver from '@/components/ShowroomSlideOver';
+import CommercialScorecard from '@/components/scorecard/CommercialScorecard';
+import BehaviorScorecard from '@/components/scorecard/BehaviorScorecard';
+import CalendarScorecard from '@/components/scorecard/CalendarScorecard';
+import RessourcesScorecard from '@/components/scorecard/RessourcesScorecard';
+
+type TabType = 'commercial' | 'behavior' | 'calendar' | 'ressources';
+
+export default function Page() {
+  const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
+  const [isShowroomDrawerOpen, setIsShowroomDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [drawerMode, setDrawerMode] = useState<'create' | 'edit'>('create');
+  const [activeTab, setActiveTab] = useState<TabType>('commercial');
+
+  const showroomData = {
+    name: 'Pavillon Haussmann',
+    location: '8ème Arrd, Paris',
+    objective: '5 200 000',
+    revenue: '3 640 000',
+    manager: 'Julian Vasseur'
+  };
+
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setDrawerMode('create');
+    setIsUserDrawerOpen(true);
+  };
+
+  const renderActiveScorecard = () => {
+    switch (activeTab) {
+      case 'commercial':
+        return <CommercialScorecard role="admin" activeTab={activeTab} />;
+      case 'behavior':
+        return <BehaviorScorecard role="admin" activeTab={activeTab} />;
+      case 'calendar':
+        return <CalendarScorecard role="admin" activeTab={activeTab} />;
+      case 'ressources':
+        return <RessourcesScorecard role="admin" activeTab={activeTab} />;
+      default:
+        return <CommercialScorecard role="admin" activeTab="commercial" />;
+    }
+  };
+
+  return (
+    <>
+      <header className="fixed top-0 right-0 w-[calc(100%-240px)] h-[70px] z-40 bg-white/80 dark:bg-stone-950/80 backdrop-blur-xl flex items-center justify-between px-10 border-b border-stone-100/50 transition-all duration-500">
+        <div className="flex items-center gap-6">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400">ADMIN / DASHBOARD</span>
+          <div className="h-4 w-[1px] bg-stone-200"></div>
+          <span className="text-stone-900 border-b-2 border-yellow-600 pb-1 font-headline italic text-[14px]">Espace Gestionnaire</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="w-10 h-10 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-yellow-600 hover:border-yellow-200 transition-all cursor-pointer">
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
+          </button>
+          <div className="flex items-center gap-3 pl-4 border-l border-stone-200">
+            <div className="text-right">
+              <p className="text-[12px] font-bold text-stone-900 leading-none">Julian Vasseur</p>
+              <span className="text-[10px] text-stone-400 font-mono uppercase tracking-widest mt-1 inline-block">Directeur Showroom</span>
+            </div>
+            <img alt="Admin Profile" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm ring-1 ring-stone-100" src="https://lh3.googleusercontent.com/yann-le-cun-original-image-url-placeholder"/>
+          </div>
+        </div>
+      </header>
+
+      <main className="pt-24 px-14 pb-8 max-w-[1600px] mx-auto font-sans space-y-8 transition-all duration-700">
+        
+        {/* Header Section with Precise Alignment */}
+        <div className="flex items-end justify-between px-2">
+          <div className="group relative">
+            <nav className="font-mono text-[9px] uppercase tracking-[0.4em] text-yellow-700 mb-1 font-bold opacity-80">Evolution Mensuelle</nav>
+            <h2 className="text-4xl font-headline font-light italic text-stone-900 tracking-tighter leading-none whitespace-nowrap">Vue d'ensemble</h2>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setIsShowroomDrawerOpen(true)}
+              className="px-6 py-2.5 bg-white border border-stone-200 text-stone-700 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-stone-50 active:scale-95 transition-all flex items-center gap-3 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[15px] opacity-60">settings_applications</span>
+              Paramètres
+            </button>
+            <button 
+              onClick={handleAddUser}
+              className="px-8 py-2.5 bg-stone-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl shadow-lg hover:bg-yellow-700 active:scale-95 transition-all flex items-center gap-3"
+            >
+              <span className="material-symbols-outlined text-[15px]">add</span>
+              Nouveau
+            </button>
+          </div>
+        </div>
+
+        {/* Custom Tab Navigation to override the one inside components if needed, or simply render the component */}
+        <div className="pt-4 border-t border-stone-100/50">
+          <nav className="flex gap-10 border-b border-stone-100 mb-8">
+            <button 
+              onClick={() => setActiveTab('commercial')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'commercial' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Ventes
+            </button>
+            <button 
+              onClick={() => setActiveTab('behavior')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'behavior' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Comportement
+            </button>
+            <button 
+              onClick={() => setActiveTab('calendar')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'calendar' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Calendrier
+            </button>
+            <button 
+              onClick={() => setActiveTab('ressources')}
+              className={`pb-4 text-[14px] font-medium transition-all ${activeTab === 'ressources' ? 'text-yellow-700 border-b-2 border-yellow-700' : 'text-stone-400 hover:text-stone-600'}`}
+            >
+              Ressources
+            </button>
+          </nav>
+
+          {/* Render the Active Component */}
+          <div className="mt-10 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+            {activeTab === 'commercial' && <CommercialScorecard role="admin" activeTab="commercial" hideNav={true} isDashboard={true} />}
+            {activeTab === 'behavior' && <BehaviorScorecard role="admin" activeTab="behavior" hideNav={true} isDashboard={true} />}
+            {activeTab === 'calendar' && <CalendarScorecard role="admin" activeTab="calendar" hideNav={true} isDashboard={true} />}
+            {activeTab === 'ressources' && <RessourcesScorecard role="admin" activeTab="ressources" hideNav={true} isDashboard={true} />}
+          </div>
+        </div>
+
+      </main>
+
+      {/* Drawers */}
+      <UserSlideOver 
+        isOpen={isUserDrawerOpen} 
+        onClose={() => setIsUserDrawerOpen(false)} 
+        user={selectedUser}
+        mode={drawerMode}
+        fixedShowroom={showroomData.name}
+      />
+
+      <ShowroomSlideOver 
+        isOpen={isShowroomDrawerOpen}
+        onClose={() => setIsShowroomDrawerOpen(false)}
+        showroom={showroomData}
+      />
+
+    </>
+  );
+}
+
