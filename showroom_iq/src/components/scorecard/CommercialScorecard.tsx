@@ -19,34 +19,7 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard }: Scorecar
 
   return (
     <>
-      {!hideNav && (
-        <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-          <a 
-            className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-            href={`${basePath}/commercial`}
-          >
-            Ventes
-          </a>
-          <a 
-            className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-            href={`${basePath}/behavior`}
-          >
-            Comportement
-          </a>
-          <a 
-            className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-            href={`${basePath}/calendar`}
-          >
-            Calendrier
-          </a>
-          <a 
-            className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-            href={`${basePath}/ressources`}
-          >
-            Ressources
-          </a>
-        </nav>
-      )}
+
 
       <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto relative text-sans`}>
         <div className="flex justify-end items-center gap-6 mb-8">

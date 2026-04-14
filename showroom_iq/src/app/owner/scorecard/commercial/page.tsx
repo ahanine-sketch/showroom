@@ -1,6 +1,14 @@
-import React from 'react';
-import CommercialScorecard from '@/components/scorecard/CommercialScorecard';
+'use client';
+
+import React, { Suspense } from 'react';
+import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
 export default function Page() {
-  return <CommercialScorecard role="owner" activeTab="commercial" />;
+  return (
+    <Suspense fallback={<div className="pt-32 px-14 flex justify-center text-stone-400 font-mono text-[11px] uppercase tracking-widest">Chargement du profil...</div>}>
+      <ScorecardWrapper initialTab="commercial" role="owner" />
+    </Suspense>
+  );
 }
+
+
