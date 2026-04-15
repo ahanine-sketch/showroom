@@ -60,7 +60,7 @@ const ObjectiveSalesCard = ({
     if (currentValue >= baseValue) return "LIKELY";
     return "CONSERVATIVE";
   };
-  const currentPhase = getCurrentPhase();
+  const currentPhase = getCurrentPhase().toLowerCase().replace(/^\w/, c => c.toUpperCase());
 
   // Percentage Reached
   // Use current relative objective for percentage
@@ -127,12 +127,12 @@ const ObjectiveSalesCard = ({
             <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#eab308" strokeWidth="8" strokeDasharray={`${yellowStroke} ${totalArcLength}`} strokeDashoffset={yellowOffset} strokeLinecap="round"></path>
             <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" strokeWidth="8" strokeDasharray={`${greenStroke} ${totalArcLength}`} strokeDashoffset={greenOffset} strokeLinecap="round"></path>
             
-            <text x="8" y="58" fontSize="4" fill="#1c1917" textAnchor="end" className="font-mono font-black">0</text>
+            <text x="8" y="56" fontSize="4" fill="#ef4444" textAnchor="end" className="font-mono font-black">0</text>
             
-            <text x="40" y="4" fontSize="3.5" fill="#1c1917" textAnchor="middle" className="font-mono font-bold">{baseValue.toLocaleString('en-US')}</text>
-            <text x="80" y="12" fontSize="3.5" fill="#1c1917" textAnchor="start" className="font-mono font-bold">{(likelyValue).toLocaleString('en-US')}</text>
+            <text x="40" y="0" fontSize="3.5" fill="#eab308" textAnchor="middle" className="font-mono font-bold">{baseValue.toLocaleString('en-US')}</text>
+            <text x="80" y="8" fontSize="3.5" fill="#22c55e" textAnchor="start" className="font-mono font-bold">{(likelyValue).toLocaleString('en-US')}</text>
 
-            <text x="94" y="58" fontSize="4" fill="#1c1917" textAnchor="start" className="font-mono font-black">{totalValue.toLocaleString('en-US')}</text>
+            <text x="94" y="56" fontSize="4" fill="#15803d" textAnchor="start" className="font-mono font-black">{totalValue.toLocaleString('en-US')}</text>
             
             <g style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: "50px 50px" }} className="transition-transform duration-1000 ease-out delay-150" filter="url(#needleShadow)">
               <path d="M 50 49 L 14 50 L 50 51 Z" fill="#1c1917" />

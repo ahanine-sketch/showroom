@@ -23,9 +23,10 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
     comportementMax: 30,
     presence: 1,
     presenceMax: 5,
-    bonus: 3,
+    bonus: 0,
     bonusMax: 5,
   };
+
 
   const totalScore = scores.ventes + scores.comportement + scores.presence + scores.bonus;
 

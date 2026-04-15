@@ -14,9 +14,12 @@ interface BonusSlideOverProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
+  onBonusAssigned?: (amount: number) => void;
 }
 
-export default function BonusSlideOver({ isOpen, onClose, userId }: BonusSlideOverProps) {
+
+export default function BonusSlideOver({ isOpen, onClose, userId, onBonusAssigned }: BonusSlideOverProps) {
+
   const [bonusAmount, setBonusAmount] = useState(0);
   const [description, setDescription] = useState('');
   const [history, setHistory] = useState<BonusHistory[]>([]);
@@ -80,8 +83,10 @@ export default function BonusSlideOver({ isOpen, onClose, userId }: BonusSlideOv
       if (data.success) {
         toast.success("Bonus attribué avec succès !");
         setDescription('');
+        if (onBonusAssigned) onBonusAssigned(bonusAmount);
         fetchData(); // Refresh history
       } else {
+
         toast.error(data.error || "Une erreur est survenue");
       }
     } catch (err) {

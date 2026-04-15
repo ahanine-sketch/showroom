@@ -8,10 +8,49 @@ interface ScorecardProps {
   hideNav?: boolean;
   isDashboard?: boolean;
   userData?: any;
+  scores?: any;
 }
 
-const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: ScorecardProps) => {
+
+const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
+  
+  const details = scores?.details;
+  const metrics = details?.metrics;
+  const setters = details?.setters;
+
+
+  const allPossibleWarnings = ['Avertissement 1', 'Avertissement 2', 'Avertissement 3'];
+  const existingWarnings = details?.processusList?.map((w: any) => w.title) || [];
+  const availableWarnings = allPossibleWarnings.filter(w => !existingWarnings.includes(w));
+
+  const [malusType, setMalusType] = React.useState('');
+  const [malusComment, setMalusComment] = React.useState('');
+
+  // Sync malusType with first available warning
+  React.useEffect(() => {
+    if (availableWarnings.length > 0 && !availableWarnings.includes(malusType)) {
+      setMalusType(availableWarnings[0]);
+    }
+  }, [availableWarnings, malusType]);
+
+  const handleAddMalus = () => {
+    if (malusComment && setters?.setProcessusList && malusType) {
+      const newMalus = {
+        title: malusType,
+        comment: malusComment,
+        icon: 'report_problem',
+        pts: "-1",
+        date: new Date().toLocaleDateString('fr-FR')
+      };
+      
+      setters.setProcessusList((prev: any[]) => [newMalus, ...prev]);
+      setMalusComment('');
+      // malusType will be updated by useEffect
+    }
+  };
+
+
 
   return (
     <>
@@ -21,7 +60,9 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: 
         <ProfileHeader 
           role={role} 
           user={userData}
+          scores={scores}
         />
+
 
         <div className="grid grid-cols-12 gap-6">
           {/* Left Column */}
@@ -39,19 +80,36 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: 
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-10 pb-6 border-b border-stone-50 px-2">
-                <ScoreBadge score={4} max={10} status="MOYEN" />
+                <ScoreBadge score={details?.avis?.points || 0} max={10} status={details?.avis?.status || "MAUVAIS"} />
               </div>
 
-              <div className="flex gap-6 mb-10 px-2">
-                <div className="flex-1 bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-emerald-50">
+              <div className="grid grid-cols-2 gap-6 mb-10 px-2">
+                <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-emerald-50 group">
                   <span className="text-[11px] font-black text-emerald-700 uppercase tracking-widest leading-none">Avis Positifs</span>
-                  <span className="font-mono text-3xl font-black text-emerald-600 leading-none">0</span>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="number"
+                      min={0}
+                      value={metrics?.avisPositifs || 0}
+                      onChange={(e) => setters?.setAvisPositifs(Number(e.target.value))}
+                      className="bg-transparent font-mono text-3xl font-black text-emerald-600 leading-none w-16 text-right focus:outline-none"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1 bg-rose-50/50 border border-rose-100 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-rose-50">
+                <div className="bg-rose-50/50 border border-rose-100 p-6 rounded-2xl flex items-center justify-between transition-all hover:bg-rose-50">
                   <span className="text-[11px] font-black text-rose-700 uppercase tracking-widest leading-none">Avis Négatifs</span>
-                  <span className="font-mono text-3xl font-black text-rose-600 leading-none">0</span>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="number"
+                      min={0}
+                      value={metrics?.avisNegatifs || 0}
+                      onChange={(e) => setters?.setAvisNegatifs(Number(e.target.value))}
+                      className="bg-transparent font-mono text-3xl font-black text-rose-600 leading-none w-16 text-right focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
+
 
               {/* Phrase before the list */}
               <div className="flex items-center gap-4 mb-8 px-2">
@@ -106,26 +164,39 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: 
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
-                <ScoreBadge score={0} max={10} status="MAUVAIS" />
+                <ScoreBadge score={details?.sav?.points || 0} max={10} status={details?.sav?.status || "MAUVAIS"} />
               </div>
               
               <div className="grid grid-cols-2 gap-4 px-2">
                  <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl flex flex-col items-center transition-all hover:bg-white hover:shadow-sm">
                     <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-2 opacity-60">Tickets</span>
                     <div className="flex items-center gap-2">
-                       <span className="text-[28px] font-mono font-black text-stone-900 leading-none">02</span>
-                       <span className="material-symbols-outlined text-[20px] text-stone-300">hourglass_top</span>
+                       <input 
+                        type="number"
+                        min={0}
+                        value={metrics?.savTickets || 0}
+                        onChange={(e) => setters?.setSavTickets(Number(e.target.value))}
+                        className="bg-transparent font-mono text-[28px] font-black text-stone-900 leading-none w-16 text-center focus:outline-none"
+                       />
+                       <span className="material-symbols-outlined text-[20px] text-stone-300">confirmation_number</span>
                     </div>
                  </div>
 
                  <div className="p-6 bg-red-50/50 border border-red-100 rounded-2xl flex flex-col items-center transition-all hover:bg-red-50 hover:shadow-sm">
                     <span className="text-[11px] text-red-700 font-black uppercase tracking-widest mb-2">Plaintes</span>
                     <div className="flex items-center gap-2">
-                       <span className="text-[28px] font-mono font-black text-red-600 leading-none">01</span>
-                       <span className="material-symbols-outlined text-[20px] text-red-400">report</span>
+                       <input 
+                        type="number"
+                        min={0}
+                        value={metrics?.savPlaintes || 0}
+                        onChange={(e) => setters?.setSavPlaintes(Number(e.target.value))}
+                        className="bg-transparent font-mono text-[28px] font-black text-red-600 leading-none w-16 text-center focus:outline-none"
+                       />
+                       <span className="material-symbols-outlined text-[20px] text-red-400">warning</span>
                     </div>
                  </div>
               </div>
+
 
 
             </div>
@@ -142,60 +213,80 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: 
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
-                <ScoreBadge score={4} max={10} status="MOYEN" />
+                <ScoreBadge score={details?.processus?.points || 0} max={10} status={details?.processus?.status || "MAUVAIS"} />
               </div>
               
               <div className="space-y-8 px-2">
-                 {role === 'owner' && (
+                 {role === 'owner' && availableWarnings.length > 0 && (
                    <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl space-y-6 shadow-inner">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400 flex items-center gap-3">
                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
-                       Donner un avertisment
+                       Émettre un avertissement
                      </p>
                      
-                     <div className="grid grid-cols-1 gap-4">
-                       <select className="w-full appearance-none border border-stone-200 rounded-xl px-5 py-3.5 text-[13px] font-bold text-stone-800 focus:outline-none focus:ring-4 focus:ring-stone-100 bg-white shadow-sm">
-                         <option>Avertissement Process</option>
-                         <option>Manquement Mise en place</option>
-                         <option>Erreur Données Client</option>
-                         <option>Retard Ouverture</option>
-                       </select>
-                       
-                       <input 
-                         type="number" 
-                         placeholder="Malus (ex: -3)" 
-                         className="w-full border border-stone-200 rounded-xl px-5 py-3.5 text-[13px] font-bold text-stone-800 focus:outline-none focus:ring-4 focus:ring-stone-100 shadow-sm"
-                         max="0"
-                         min="-10"
-                       />
-                     </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        <select 
+                         value={malusType}
+                         onChange={(e) => setMalusType(e.target.value)}
+                         className="w-full appearance-none border border-stone-200 rounded-xl px-5 py-3.5 text-[13px] font-bold text-stone-800 focus:outline-none focus:ring-4 focus:ring-stone-100 bg-white shadow-sm"
+                        >
+                          {availableWarnings.map((w) => (
+                            <option key={w}>{w}</option>
+                          ))}
+                        </select>
+                      </div>
                      <textarea 
                        placeholder="Commentaire..."
+                       value={malusComment}
+                       onChange={(e) => setMalusComment(e.target.value)}
                        rows={3}
                        className="w-full border border-stone-200 rounded-xl px-5 py-3.5 text-[13px] font-bold text-stone-800 focus:outline-none focus:ring-4 focus:ring-stone-100 shadow-sm"
                      ></textarea>
-                     <button className="w-full py-4 bg-stone-900 text-white rounded-xl text-[12px] font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-lg active:scale-95">
-                       Valider Notif
+                     <button 
+                      onClick={handleAddMalus}
+                      className="w-full py-4 bg-stone-900 text-white rounded-xl text-[12px] font-black uppercase tracking-[0.2em] hover:bg-orange-600 transition-all shadow-lg active:scale-95"
+                     >
+                       Valider la notification
                      </button>
                    </div>
                  )}
+
+                 {role === 'owner' && availableWarnings.length === 0 && (
+                   <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl text-center">
+                     <span className="material-symbols-outlined text-rose-400 text-3xl mb-2">gavel</span>
+                     <p className="text-[11px] font-black uppercase text-rose-600 tracking-widest">Toutes les sanctions ont été appliquées</p>
+                   </div>
+                 )}
+
  
                  <div className="space-y-4">
-                   {[
-                     { icon: "verified_user", title: "Mise en place", pts: "-3" },
-                     { icon: "person_pin_circle", title: "Données Client", pts: "-3" }
-                   ].map((item, i) => (
-                     <div key={i} className="flex items-center justify-between p-5 border border-stone-100 bg-stone-50/50 rounded-2xl transition-all hover:bg-stone-50 hover:pl-6">
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm">
-                             <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                   {details?.processusList && details.processusList.length > 0 ? (
+                     details.processusList.map((item: any, i: number) => (
+                       <div key={i} className="flex items-center justify-between p-5 border border-stone-100 bg-stone-50/50 rounded-2xl transition-all hover:bg-stone-50 hover:pl-6 animate-in slide-in-from-right duration-500">
+                          <div className="flex items-center gap-4">
+                             <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm">
+                               <span className="material-symbols-outlined text-[20px]">{item.icon || 'verified_user'}</span>
+                             </div>
+                              <div className="flex flex-col">
+                                <h5 className="text-[14px] font-black text-stone-800">{item.title}</h5>
+                                {item.comment && (
+                                  <p className="text-[11px] text-stone-500 italic mt-0.5">{item.comment}</p>
+                                )}
+                              </div>
                            </div>
-                           <h5 className="text-[14px] font-black text-stone-800">{item.title}</h5>
-                        </div>
-                        <span className="text-orange-600 font-mono text-[13px] font-black">{item.pts} pts</span>
+                           <span className="text-orange-600 font-mono text-[13px] font-black">
+                             {item.title === 'Avertissement 1' ? '-2 pts' : '-4 pts'}
+                           </span>
+                       </div>
+                     ))
+                   ) : (
+                     <div className="p-10 border-2 border-dashed border-stone-100 rounded-3xl flex flex-col items-center justify-center text-stone-300">
+                       <span className="material-symbols-outlined text-4xl mb-2 opacity-20">history_edu</span>
+                       <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Aucun avertissement enregistré</p>
                      </div>
-                   ))}
+                   )}
                  </div>
+
               </div>
             </div>
           </div>

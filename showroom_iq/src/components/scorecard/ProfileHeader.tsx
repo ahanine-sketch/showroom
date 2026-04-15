@@ -27,7 +27,6 @@ const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
   const fullName = user?.fullName || "Utilisateur";
   const phone = user?.phone || "Non renseigné";
   const seniority = user?.seniority || "";
-  const avatarUrl = user?.avatarUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2576&auto=format&fit=crop";
   const showroomName = user?.showroomName || user?.showroom?.name || "Magasin Casablanca";
 
   return (
