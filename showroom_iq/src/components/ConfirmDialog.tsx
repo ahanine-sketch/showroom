@@ -40,13 +40,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         
         <div className="flex gap-3 justify-end">
           <button
-            onClick={onCancel}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCancel();
+            }}
             className="px-4 py-2 text-[13px] font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
           >
             {cancelText}
           </button>
           <button
-            onClick={onConfirm}
+            onClick={(e) => {
+              e.stopPropagation();
+              onConfirm();
+            }}
             className={`px-4 py-2 text-[13px] font-semibold text-white rounded-lg transition-colors ${
               isDestructive 
                 ? 'bg-red-500 hover:bg-red-600 shadow-[0_4px_12px_rgba(239,68,68,0.2)]' 

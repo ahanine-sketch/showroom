@@ -180,21 +180,34 @@ export default function Page() {
     if (!search) return data;
     
     return data.map(magasin => {
-      const mManager = magasin.manager?.name.toLowerCase().includes(search.toLowerCase()) ? magasin.manager : null;
+      // Filter out OWNERS from manager and commercials
+      const mManager = (magasin.manager && magasin.manager.role !== 'OWNER' && 
+        magasin.manager.name.toLowerCase().includes(search.toLowerCase())) ? magasin.manager : null;
+      
       const mCommercials = magasin.commercials.filter(c => 
-        c.fullName.toLowerCase().includes(search.toLowerCase()) || 
-        c.role.toLowerCase().includes(search.toLowerCase())
+        c.role !== 'OWNER' && (
+          c.fullName.toLowerCase().includes(search.toLowerCase()) || 
+          c.role.toLowerCase().includes(search.toLowerCase())
+        )
       );
+      
       return {
         ...magasin,
         commercials: mCommercials,
-        manager: mManager || (mCommercials.length > 0 ? magasin.manager : null)
+        manager: mManager || (mCommercials.length > 0 && magasin.manager?.role !== 'OWNER' ? magasin.manager : null)
       };
-    }).filter(magasin => magasin.commercials.length > 0 || (magasin.manager && magasin.manager.name.toLowerCase().includes(search.toLowerCase())));
+    }).filter(magasin => 
+      magasin.commercials.length > 0 || 
+      (magasin.manager && magasin.manager.role !== 'OWNER' && magasin.manager.name.toLowerCase().includes(search.toLowerCase()))
+    );
   }, [search, magasinsData, filterMagasinId]);
 
-  // Aggregate stats
-  const totalEmployees = magasinsData.reduce((acc, mag) => acc + mag.commercials.length + (mag.manager ? 1 : 0), 0);
+  // Aggregate stats (excluding OWNERs)
+  const totalEmployees = magasinsData.reduce((acc, mag) => {
+    const commercialCount = mag.commercials.filter(c => c.role !== 'OWNER').length;
+    const managerCount = (mag.manager && mag.manager.role !== 'OWNER') ? 1 : 0;
+    return acc + commercialCount + managerCount;
+  }, 0);
 
   // Map to select options
   const listMagasins = magasinsData.map(m => ({ id: m.id, name: m.name }));
@@ -254,7 +267,7 @@ export default function Page() {
                 <h2 className="font-headline text-4xl italic text-stone-900 whitespace-nowrap">Equipe {magasin.name}</h2>
                 <div className="h-px bg-stone-200 flex-1"></div>
                 <span className="font-mono text-[11px] font-bold text-stone-400 uppercase tracking-widest bg-white border border-stone-100 px-4 py-1.5 rounded-full shadow-sm">
-                  {magasin.commercials.length + (magasin.manager ? 1 : 0)} Membres
+                  {magasin.commercials.filter(c => c.role !== 'OWNER').length + (magasin.manager && magasin.manager.role !== 'OWNER' ? 1 : 0)} Membres
                 </span>
               </div>
 

@@ -15,6 +15,7 @@ interface ObjectiveSalesCardProps {
   icon?: string;
   iconColor?: string;
   iconBgColor?: string;
+  onValueChange?: (value: number) => void;
 }
 
 const ObjectiveSalesCard = ({
@@ -30,7 +31,8 @@ const ObjectiveSalesCard = ({
   title = "Objectifs",
   icon = "target",
   iconColor = "text-yellow-600",
-  iconBgColor = "bg-yellow-50"
+  iconBgColor = "bg-yellow-50",
+  onValueChange
 }: ObjectiveSalesCardProps) => {
   // Constants for SVG
   const totalArcLength = 125.66; // PI * r where r = 40
@@ -50,10 +52,21 @@ const ObjectiveSalesCard = ({
   const greenOffset = (-(likelyValue / totalValue) * totalArcLength).toFixed(1);
   
   // Needle Rotation
-  const needleRotation = ((currentValue / totalValue) * 180).toFixed(2);
+  const needleRotation = Math.min(((currentValue / totalValue) * 180), 180).toFixed(2);
+
+  // Phase Determination
+  const getCurrentPhase = () => {
+    if (currentValue >= likelyValue) return "EXCEED";
+    if (currentValue >= baseValue) return "LIKELY";
+    return "CONSERVATIVE";
+  };
+  const currentPhase = getCurrentPhase();
 
   // Percentage Reached
-  const percentage = ((currentValue / likelyValue) * 100).toFixed(0);
+  // Use current relative objective for percentage
+  const targetForPercentage = currentPhase === "CONSERVATIVE" ? baseValue : (currentPhase === "LIKELY" ? likelyValue : totalValue);
+  const percentageNum = targetForPercentage > 0 ? (currentValue / targetForPercentage) * 100 : 0;
+  const percentage = percentageNum.toFixed(0);
 
 
   return (
@@ -71,18 +84,31 @@ const ObjectiveSalesCard = ({
       <div className="w-full flex justify-between items-start mb-0 px-2">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-start translate-x-2">
-            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">% atteint ( Likely)</span>
+            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">% atteint ( {currentPhase} )</span>
             <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-stone-50 rounded-xl text-stone-900 border border-stone-100 shadow-sm leading-none">
               {percentage}%
             </span>
           </div>
-          <div className="flex flex-col items-start translate-x-2">
-            <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">CA Généré</span>
-            <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-yellow-50/50 rounded-xl text-yellow-600 border border-yellow-100 shadow-sm leading-none">
-              {caGenerated} <span className="text-[10px] opacity-60 ml-0.5">MAD</span>
-            </span>
-          </div>
-        </div>
+ 
+            <div className="flex flex-col items-start translate-x-2">
+              <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">CA Généré</span>
+              <div className="flex flex-col gap-3">
+                <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-yellow-50/50 rounded-xl text-yellow-600 border border-yellow-100 shadow-sm leading-none flex items-center justify-between min-w-[180px]">
+                  <span>{currentValue.toLocaleString('en-US')}</span>
+                  <span className="text-[10px] opacity-60 ml-0.5">MAD</span>
+                </span>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max={totalValue} 
+                  step="1000"
+                  value={currentValue}
+                  onChange={(e) => onValueChange?.(Number(e.target.value))}
+                  className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-yellow-600 shadow-inner"
+                />
+              </div>
+            </div>
+         </div>
         
         <div className="flex flex-col items-end">
           <ScoreBadge score={score} max={maxScore} status={status} />
@@ -103,8 +129,8 @@ const ObjectiveSalesCard = ({
             
             <text x="8" y="58" fontSize="4" fill="#1c1917" textAnchor="end" className="font-mono font-black">0</text>
             
-            <text x="76" y="8" fontSize="3.5" fill="#1c1917" textAnchor="middle" className="font-mono font-bold">{baseValue.toLocaleString('en-US')}</text>
-            <text x="96" y="28" fontSize="3.5" fill="#1c1917" textAnchor="start" className="font-mono font-bold">{likelyValue.toLocaleString('en-US')}</text>
+            <text x="40" y="4" fontSize="3.5" fill="#1c1917" textAnchor="middle" className="font-mono font-bold">{baseValue.toLocaleString('en-US')}</text>
+            <text x="80" y="12" fontSize="3.5" fill="#1c1917" textAnchor="start" className="font-mono font-bold">{(likelyValue).toLocaleString('en-US')}</text>
 
             <text x="94" y="58" fontSize="4" fill="#1c1917" textAnchor="start" className="font-mono font-black">{totalValue.toLocaleString('en-US')}</text>
             
@@ -117,25 +143,30 @@ const ObjectiveSalesCard = ({
         </svg>
       </div>
 
+
       <div className="w-full max-w-[600px] flex items-center justify-between mt-6 pt-6 border-t border-stone-100/80">
-        <div className="flex flex-col items-center group flex-1">
-          <span className="w-full h-[6px] rounded-full bg-red-400 mb-3 opacity-30 group-hover:opacity-100 transition-all"></span>
+        <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue <= baseValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
+          <span className={`w-full h-[8px] rounded-full bg-red-400 mb-3 ${currentValue <= baseValue ? 'shadow-sm ring-1 ring-red-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className="text-[11px] text-stone-400 font-bold uppercase tracking-widest">Conservative</p>
+            <p className={`text-[12px] uppercase tracking-widest ${currentValue <= baseValue ? 'text-red-500 font-black' : 'text-stone-400 font-bold'}`}>Conservative</p>
           </div>
         </div>
-        <div className="w-12 shrink-0"></div>
-        <div className="flex flex-col items-center group flex-1 scale-110">
-          <span className="w-full h-[8px] rounded-full bg-yellow-500 mb-3 shadow-sm transition-all"></span>
+        
+        <div className="w-8 shrink-0"></div>
+        
+        <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue > baseValue && currentValue <= likelyValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
+          <span className={`w-full h-[8px] rounded-full bg-yellow-500 mb-3 ${currentValue > baseValue && currentValue <= likelyValue ? 'shadow-sm ring-1 ring-yellow-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className="text-[12px] text-yellow-600 font-black uppercase tracking-widest">Likely</p>
+            <p className={`text-[12px] uppercase tracking-widest ${currentValue > baseValue && currentValue <= likelyValue ? 'text-yellow-600 font-black' : 'text-stone-400 font-bold'}`}>Likely</p>
           </div>
         </div>
-        <div className="w-12 shrink-0"></div>
-        <div className="flex flex-col items-center group flex-1">
-          <span className="w-full h-[6px] rounded-full bg-green-500 mb-3 opacity-30 group-hover:opacity-100 transition-all"></span>
+        
+        <div className="w-8 shrink-0"></div>
+        
+        <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue > likelyValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
+          <span className={`w-full h-[8px] rounded-full bg-green-500 mb-3 ${currentValue > likelyValue ? 'shadow-sm ring-1 ring-green-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className="text-[11px] text-stone-400 font-bold uppercase tracking-widest">Exceed</p>
+            <p className={`text-[12px] uppercase tracking-widest ${currentValue > likelyValue ? 'text-green-600 font-black' : 'text-stone-400 font-bold'}`}>Exceed</p>
           </div>
         </div>
       </div>

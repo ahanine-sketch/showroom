@@ -20,13 +20,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData }: 
       <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-6 max-w-[1400px] mx-auto`}>
         <ProfileHeader 
           role={role} 
-          user={userData || {
-            fullName: "...",
-            phone: "...",
-            seniority: "...",
-            showroomName: "...",
-            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder`
-          }}
+          user={userData}
         />
 
         <div className="grid grid-cols-12 gap-6">

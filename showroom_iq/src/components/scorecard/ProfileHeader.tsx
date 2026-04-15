@@ -10,9 +10,19 @@ interface ProfileHeaderProps {
     avatarUrl?: string;
     showroomName?: string;
   };
+  scores?: {
+    ventes: number;
+    ventesMax: number;
+    comportement: number;
+    comportementMax: number;
+    presence: number;
+    presenceMax: number;
+    bonus: number;
+    bonusMax: number;
+  };
 }
 
-const ProfileHeader = ({ role, user }: ProfileHeaderProps) => {
+const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
   // Map external userData structure to local props
   const fullName = user?.fullName || "Utilisateur";
   const phone = user?.phone || "Non renseigné";
@@ -22,40 +32,30 @@ const ProfileHeader = ({ role, user }: ProfileHeaderProps) => {
 
   return (
     <div className="flex items-start justify-between mb-8 bg-white px-12 py-10 rounded-[32px] border border-stone-100 shadow-sm transition-all hover:shadow-md">
-      <div className="flex items-center gap-12">
-        <div className="relative">
-          <img 
-            src={avatarUrl} 
-            className="w-24 h-24 rounded-2xl object-cover border-4 border-stone-50 shadow-sm"
-            alt={fullName}
-          />
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white"></div>
-        </div>
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h3 className="font-headline text-4xl text-on-surface tracking-tight">{fullName}</h3>
-            {seniority && (
-              <span className="px-3 py-1 bg-stone-100 text-stone-500 text-[10px] uppercase font-bold rounded-md tracking-widest">
-                {seniority}
-              </span>
-            )}
-          </div>
-          <p className="text-stone-400 font-mono text-[13px] mb-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">location_on</span>
-            {showroomName}
-          </p>
-          <div className="flex items-center gap-6 text-[12px] text-stone-600 font-mono">
-            
-            <span className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[16px] text-stone-300">call</span>
-              {phone}
+      <div className="flex flex-col">
+        <div className="flex items-center gap-3 mb-1">
+          <h3 className="font-headline text-4xl text-stone-900 tracking-tight">{fullName}</h3>
+          {seniority && (
+            <span className="px-3 py-1 bg-stone-100 text-stone-500 text-[10px] uppercase font-bold rounded-md tracking-widest">
+              {seniority}
             </span>
-          </div>
+          )}
+        </div>
+        <p className="text-stone-400 font-sans text-[13px] mb-3 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[16px]">location_on</span>
+          {showroomName}
+        </p>
+        <div className="flex items-center gap-6 text-[12px] text-stone-600 font-sans">
+          <span className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-stone-300">call</span>
+            {phone}
+          </span>
         </div>
       </div>
-      <ScoreOverview role={role} />
+      <ScoreOverview role={role} scores={scores} />
     </div>
   );
 };
+
 
 export default ProfileHeader;

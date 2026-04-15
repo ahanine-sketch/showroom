@@ -59,9 +59,9 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   const showroomName = userData?.showroom?.name || 'Magasin Casablanca';
 
   return (
-    <main className="pt-[80px] px-14 pb-8 max-w-[1700px] mx-auto font-sans space-y-8 animate-in fade-in duration-700">
+    <main className="pt-[80px] px-14 pb-8 max-w-[1700px] mx-auto font-sans space-y-4 animate-in fade-in duration-700">
       {/* Floating Pill Navigation */}
-      <div className="bg-white/40 backdrop-blur-md rounded-2xl border border-stone-100 p-1 flex items-center justify-between shadow-sm mb-6">
+      <div className="bg-white/40 backdrop-blur-md rounded-2xl border border-stone-100 p-1 flex items-center justify-between shadow-sm mb-4">
         <nav className="flex gap-2">
           {[
             { id: 'commercial', label: 'Ventes' },
@@ -81,7 +81,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       </div>
 
       {/* Header Section */}
-      <div className="flex items-end justify-between px-2">
+      <div className="flex items-end justify-between px-2 mb-0">
         <div className="group relative">
           <h2 className="text-4xl font-headline font-normal text-stone-900 tracking-tighter leading-none whitespace-nowrap">{showroomName}</h2>
         </div>
@@ -90,8 +90,9 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       </div>
 
       {/* Dynamic Content */}
-      <div className="pt-4 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+      <div className="pt-0 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
         {activeTab === 'commercial' && <CommercialScorecard role={role} activeTab="commercial" hideNav={true} isDashboard={true} userData={userData} />}
+
         {activeTab === 'behavior' && <BehaviorScorecard role={role} activeTab="behavior" hideNav={true} isDashboard={true} userData={userData} />}
         {activeTab === 'calendar' && <CalendarScorecard role={role} activeTab="calendar" hideNav={true} isDashboard={true} userData={userData} />}
         {activeTab === 'ressources' && <RessourcesScorecard role={role} activeTab="ressources" hideNav={true} isDashboard={true} userData={userData} />}

@@ -1,8 +1,22 @@
 import React from 'react';
 
-const ScoreOverview = ({ role }: { role: 'admin' | 'owner' }) => {
-  // Hardcoded mockup data
-  const scores = {
+interface ScoreOverviewProps {
+  role: 'admin' | 'owner';
+  scores?: {
+    ventes: number;
+    ventesMax: number;
+    comportement: number;
+    comportementMax: number;
+    presence: number;
+    presenceMax: number;
+    bonus: number;
+    bonusMax: number;
+  };
+}
+
+const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
+  // Use props or default to mockup data if not provided
+  const scores = propScores || {
     ventes: 54,
     ventesMax: 65,
     comportement: 8,
@@ -13,7 +27,7 @@ const ScoreOverview = ({ role }: { role: 'admin' | 'owner' }) => {
     bonusMax: 5,
   };
 
-  const totalScore = 66; // Sum: 54 + 8 + 1 + 3
+  const totalScore = scores.ventes + scores.comportement + scores.presence + scores.bonus;
 
   let performanceStatus = "MAUVAIS";
   let badgeClasses = "bg-red-50 text-red-600 border border-red-100";
