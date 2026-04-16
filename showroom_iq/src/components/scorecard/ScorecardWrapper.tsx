@@ -90,7 +90,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       setDevisVolee(userData.devisLost || 1);
       setDevisOuvert(userData.devisOpened || 4);
       setPanierMoyen(userData.avgBasket || 23323);
-      setBonusScore(userData.bonusScore || 0);
+      // Removed setBonusScore(userData.bonusScore) to allow month-specific bonuses to take priority
     }
   }, [userData]);
 
@@ -120,6 +120,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             motif: l.notes
           })));
           setNotesList(notes);
+        }
+        
+        // Capture total bonus from backend aggregation
+        if (typeof result.bonusTotal === 'number') {
+          setBonusScore(result.bonusTotal);
         }
       }
     } catch (error) {
@@ -472,7 +477,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
           isOpen={isBonusOpen}
           onClose={() => setIsBonusOpen(false)}
           userId={userData.id}
-          onBonusAssigned={setBonusScore}
+          viewMonth={viewMonth}
+          viewYear={viewYear}
+          onBonusAssigned={async () => {
+            await fetchEvaluations();
+          }}
         />
       )}
 

@@ -11,14 +11,14 @@ interface BonusHistory {
 }
 
 interface BonusSlideOverProps {
-  isOpen: boolean;
-  onClose: () => void;
   userId: string;
+  viewMonth?: number;
+  viewYear?: number;
   onBonusAssigned?: (amount: number) => void;
 }
 
 
-export default function BonusSlideOver({ isOpen, onClose, userId, onBonusAssigned }: BonusSlideOverProps) {
+export default function BonusSlideOver({ isOpen, onClose, userId, viewMonth, viewYear, onBonusAssigned }: BonusSlideOverProps) {
 
   const [bonusAmount, setBonusAmount] = useState(0);
   const [description, setDescription] = useState('');
@@ -75,7 +75,10 @@ export default function BonusSlideOver({ isOpen, onClose, userId, onBonusAssigne
           userId,
           amount: bonusAmount,
           description,
-          date: new Date().toISOString()
+          // If viewing a different month/year, use the first day of that period for the bonus date
+          date: viewMonth && viewYear 
+            ? new Date(viewYear, viewMonth - 1, 1).toISOString() 
+            : new Date().toISOString()
         })
       });
 

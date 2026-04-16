@@ -81,17 +81,8 @@ export class PerformanceController {
       const month = bonusDate.getMonth() + 1;
       const year = bonusDate.getFullYear();
 
-      // Check if user already has a bonus this month
-      const existingBonus = await prisma.bonusHistory.findFirst({
-        where: { userId, month, year }
-      });
+      // Simplified: Allow multiple entries in BonusHistory, we sum them in the evaluations view.
 
-      if (existingBonus) {
-        return res.status(400).json({ 
-          success: false, 
-          error: `Un bonus a déjà été attribué à cet utilisateur pour le mois de ${bonusDate.toLocaleString('fr-FR', { month: 'long' })} ${year}` 
-        });
-      }
 
       // 1. Create Bonus History Entry
       const bonus = await prisma.bonusHistory.create({
@@ -340,6 +331,16 @@ export class PerformanceController {
         notes: JSON.stringify({ name: r.name, rating: r.rating, comment: r.comment })
       }));
 
+      const bonusHistory = await prisma.bonusHistory.findMany({
+        where: {
+          userId,
+          month: m,
+          year: y
+        }
+      });
+
+      const bonusTotal = bonusHistory.reduce((sum, b) => sum + b.amount, 0);
+
       const dailyLogs = await prisma.dailyLog.findMany({
         where: {
           userId,
@@ -351,7 +352,8 @@ export class PerformanceController {
       return res.json({ 
         success: true, 
         data: [...evaluations, ...formattedReviews],
-        dailyLogs 
+        dailyLogs,
+        bonusTotal
       });
     } catch (error: any) {
       return res.status(500).json({ success: false, error: error.message });
