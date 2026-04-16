@@ -123,6 +123,7 @@ model DailyLog {
   date     DateTime @default(now())
   activity String
   status   String
+  notes    String?
   user     User     @relation(fields: [userId], references: [id])
 }
 
@@ -146,6 +147,7 @@ enum EvaluationType {
   SAV
   PROCESS
   PRESENCE
+  DAILY_NOTE
 }
 
 model GlobalSettings {

@@ -11,9 +11,26 @@ interface ScorecardProps {
   isDashboard?: boolean;
   userData?: any;
   scores?: any;
+  onRefresh?: () => Promise<void>;
+  viewMonth?: number;
+  viewYear?: number;
+  setViewMonth?: (m: number) => void;
+  setViewYear?: (y: number) => void;
 }
 
-const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores }: ScorecardProps) => {
+const CalendarScorecard = ({ 
+  role = 'owner', 
+  activeTab = 'calendar', 
+  hideNav = false, 
+  isDashboard = false, 
+  userData, 
+  scores, 
+  onRefresh,
+  viewMonth = new Date().getMonth() + 1,
+  viewYear = new Date().getFullYear(),
+  setViewMonth,
+  setViewYear
+}: ScorecardProps) => {
   const details = scores?.details || {};
   const currentLogs = details.presenceLogs || [];
   const currentNotes = details.notesList || [];
@@ -21,37 +38,119 @@ const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
 
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   
+  // Dynamic Month Info
+  const monthNames = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+
+  const handlePrevMonth = () => {
+    if (!setViewMonth || !setViewYear) return;
+    if (viewMonth === 1) {
+      setViewMonth(12);
+      setViewYear(viewYear - 1);
+    } else {
+      setViewMonth(viewMonth - 1);
+    }
+    setSelectedDay(null);
+  };
+
+  const handleNextMonth = () => {
+    if (!setViewMonth || !setViewYear) return;
+    if (viewMonth === 12) {
+      setViewMonth(1);
+      setViewYear(viewYear + 1);
+    } else {
+      setViewMonth(viewMonth + 1);
+    }
+    setSelectedDay(null);
+  };
+
+  // Grid Calculation
+  // In JS Date, month is 0-indexed for constructor: new Date(year, monthIndex, day)
+  const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1);
+  const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+  
+  // getDay() returns 0 for Sunday, 1 for Monday... 6 for Saturday
+  // We want Monday as index 0, so:
+  // Sun(0) -> index 6, Mon(1) -> index 0, Tue(2) -> index 1...
+  const startingDayIndex = (firstDayOfMonth.getDay() + 6) % 7;
+
   // Handlers for manual inputs
   const [presenceStatus, setPresenceStatus] = useState('Retard');
-  const [presenceDate, setPresenceDate] = useState('2026-03-01');
+  const [presenceDate, setPresenceDate] = useState(`${viewYear}-${String(viewMonth).padStart(2, '0')}-01`);
   const [presenceMotif, setPresenceMotif] = useState('');
 
   const [noteType, setNoteType] = useState('positive');
-  const [noteDate, setNoteDate] = useState('2026-03-01');
+  const [noteDate, setNoteDate] = useState(`${viewYear}-${String(viewMonth).padStart(2, '0')}-01`);
   const [noteContent, setNoteContent] = useState('');
 
-  const handleAddPresence = () => {
+  const handleAddPresence = async () => {
     if (setters.setPresenceLogs) {
-      setters.setPresenceLogs((prev: any) => [
-        ...prev,
-        { date: presenceDate, status: presenceStatus, motif: presenceMotif }
-      ]);
-      setPresenceMotif('');
+      try {
+        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            userId: userData.id,
+            type: 'PRESENCE',
+            date: presenceDate,
+            presenceStatus: presenceStatus,
+            motif: presenceMotif
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          if (onRefresh) await onRefresh();
+          setPresenceMotif('');
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error adding presence:', error);
+        alert('Une erreur est survenue lors de l\'enregistrement.');
+      }
     }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (setters.setNotesList) {
-      setters.setNotesList((prev: any) => [
-        { date: noteDate, type: noteType, text: noteContent },
-        ...prev
-      ]);
-      setNoteContent('');
+      try {
+        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          },
+          body: JSON.stringify({
+            userId: userData.id,
+            type: 'DAILY_NOTE',
+            date: noteDate,
+            noteType: noteType,
+            content: noteContent
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          if (onRefresh) await onRefresh();
+          setNoteContent('');
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error adding note:', error);
+        alert('Une erreur est survenue lors de l\'enregistrement.');
+      }
     }
   };
 
   const getDayStatus = (day: number) => {
-    const dateStr = `2026-03-${String(day).padStart(2, '0')}`;
+    const dateStr = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const log = currentLogs.find((l: any) => l.date === dateStr);
     const dayNotes = currentNotes.filter((n: any) => n.date === dateStr);
     return { log, dayNotes };
@@ -80,11 +179,19 @@ const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
               </div>
               
               <div className="flex items-center bg-stone-50 border border-stone-100 shadow-[inset_0_1px_4px_rgba(0,0,0,0.02)] p-1.5 rounded-xl">
-                <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90">
+                <button 
+                  onClick={handlePrevMonth}
+                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+                >
                   <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                 </button>
-                <span className="px-5 py-0.5 text-[11px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap">Mars 2026</span>
-                <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90">
+                <span className="px-5 py-0.5 text-[11px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap">
+                  {monthNames[viewMonth - 1]} {viewYear}
+                </span>
+                <button 
+                  onClick={handleNextMonth}
+                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+                >
                   <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                 </button>
               </div>
@@ -101,8 +208,10 @@ const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             </div>
 
             <div className="grid grid-cols-7 gap-3">
-              <div className="aspect-square opacity-5 bg-stone-50 rounded-2xl"></div>
-              {[...Array(30)].map((_, i) => {
+              {[...Array(startingDayIndex)].map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square opacity-5 bg-stone-50 rounded-2xl"></div>
+              ))}
+              {[...Array(daysInMonth)].map((_, i) => {
                 const day = i + 1;
                 const { log, dayNotes } = getDayStatus(day);
                 const isSelected = selectedDay === day;
@@ -112,7 +221,7 @@ const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
                     key={day} 
                     onClick={() => {
                       setSelectedDay(day);
-                      const d = `2026-03-${String(day).padStart(2, '0')}`;
+                      const d = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                       setPresenceDate(d);
                       setNoteDate(d);
                     }}
@@ -181,7 +290,7 @@ const CalendarScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
                     <div>
                       <h3 className="font-headline text-2xl font-bold text-stone-900 leading-tight">Détails du Jour</h3>
                       <p className="text-[11px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-1">
-                        {new Date(2026, 2, selectedDay).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                        {new Date(viewYear, viewMonth - 1, selectedDay).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' })}
                       </p>
                     </div>
                     <button 

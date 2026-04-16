@@ -25,6 +25,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   const [loading, setLoading] = useState(true);
   const [isBonusOpen, setIsBonusOpen] = useState(false);
 
+  // Calendar Date State
+  const now = new Date();
+  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
+  const [viewYear, setViewYear] = useState(now.getFullYear());
+
 
   // --- CENTRALIZED STATE ---
   const [evaluations, setEvaluations] = useState<any[]>([]);
@@ -90,12 +95,8 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   }, [userData]);
 
   const fetchEvaluations = async () => {
-    if (!userId) return;
     try {
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = now.getFullYear();
-      const response = await fetch(`http://localhost:3001/api/performance/evaluations/${userId}/${month}/${year}`, {
+      const response = await fetch(`http://localhost:3001/api/performance/evaluations/${userId}/${viewMonth}/${viewYear}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -103,6 +104,23 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       const result = await response.json();
       if (result.success) {
         setEvaluations(result.data);
+        
+        // Handle Calendar Logs
+        if (result.dailyLogs) {
+          const logs = result.dailyLogs.filter((l: any) => l.activity === 'PRESENCE');
+          const notes = result.dailyLogs.filter((l: any) => l.activity === 'DAILY_NOTE').map((l: any) => ({
+            date: l.date.split('T')[0],
+            type: l.status,
+            text: l.notes
+          }));
+          
+          setPresenceLogs(logs.map((l: any) => ({
+            date: l.date.split('T')[0],
+            status: l.status,
+            motif: l.notes
+          })));
+          setNotesList(notes);
+        }
       }
     } catch (error) {
       console.error('Error fetching evaluations:', error);
@@ -111,7 +129,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
 
   useEffect(() => {
     fetchEvaluations();
-  }, [userId]);
+  }, [userId, viewMonth, viewYear]);
 
   
   useEffect(() => {
@@ -423,6 +441,18 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             isDashboard={true} 
             userData={userData} 
             scores={currentScores}
+            viewMonth={viewMonth}
+            viewYear={viewYear}
+            setViewMonth={setViewMonth}
+            setViewYear={setViewYear}
+            onRefresh={async () => {
+              await fetchEvaluations();
+              const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+              });
+              const result = await response.json();
+              if (result.success) setUserData(result.data);
+            }}
           />
         )}
         {activeTab === 'ressources' && (

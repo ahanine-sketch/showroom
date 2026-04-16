@@ -151,7 +151,10 @@ export class ScoringService {
       }
     }
 
-    if (minus >= 1) return 0;
+    if (minus === 1) return 8; // -2 pts
+    if (minus === 2) return 6; // -4 pts
+    if (minus >= 3) return 6;  // -4 pts
+    
     if (plus > 3) return 10;
     if (plus > 0) return 8;
     return 4;
@@ -201,9 +204,9 @@ export class ScoringService {
       }
     }
 
-    if (warningLevel >= 3) return 0;
-    if (warningLevel === 2) return 6;
-    if (warningLevel === 1) return 8;
+    if (warningLevel >= 3) return 6; // -4 pts
+    if (warningLevel === 2) return 6; // -4 pts
+    if (warningLevel === 1) return 8; // -2 pts
     return 10;
   }
 

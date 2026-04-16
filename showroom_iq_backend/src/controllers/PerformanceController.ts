@@ -204,6 +204,74 @@ export class PerformanceController {
         return res.status(201).json({ success: true, data: review });
       }
 
+      if (type === 'DAILY_NOTE') {
+        const { noteType, content } = req.body;
+        const log = await prisma.dailyLog.create({
+          data: {
+            userId,
+            date: evalDate,
+            activity: 'DAILY_NOTE',
+            status: noteType || 'positive',
+            notes: content || notes
+          }
+        });
+        await ScoringService.updateDailyScore(userId, evalDate);
+        return res.status(201).json({ success: true, data: log });
+      }
+
+      if (type === 'PRESENCE') {
+        const { presenceStatus, motif } = req.body;
+        
+        // 1. Create the detailed DailyLog
+        const log = await prisma.dailyLog.create({
+          data: {
+            userId,
+            date: evalDate,
+            activity: 'PRESENCE',
+            status: presenceStatus || 'Retard',
+            notes: motif || notes
+          }
+        });
+
+        // 2. Update the ProcessEvaluation counts for scoring
+        // We'll increment the counts for the day if it's a Retard or Absence
+        if (presenceStatus === 'Retard' || presenceStatus === 'Absence') {
+          const existingEval = await prisma.processEvaluation.findFirst({
+            where: { 
+              userId, 
+              type: 'PRESENCE',
+              date: {
+                gte: new Date(evalDate.setHours(0,0,0,0)),
+                lte: new Date(evalDate.setHours(23,59,59,999))
+              }
+            }
+          });
+
+          if (existingEval) {
+            await prisma.processEvaluation.update({
+              where: { id: existingEval.id },
+              data: {
+                retardsCount: presenceStatus === 'Retard' ? (existingEval.retardsCount || 0) + 1 : existingEval.retardsCount,
+                absencesCount: presenceStatus === 'Absence' ? (existingEval.absencesCount || 0) + 1 : existingEval.absencesCount,
+              }
+            });
+          } else {
+            await prisma.processEvaluation.create({
+              data: {
+                userId,
+                type: 'PRESENCE',
+                date: evalDate,
+                retardsCount: presenceStatus === 'Retard' ? 1 : 0,
+                absencesCount: presenceStatus === 'Absence' ? 1 : 0,
+              }
+            });
+          }
+        }
+
+        await ScoringService.updateDailyScore(userId, evalDate);
+        return res.status(201).json({ success: true, data: log });
+      }
+
       const evaluation = await prisma.processEvaluation.create({
         data: {
           userId,
@@ -272,7 +340,19 @@ export class PerformanceController {
         notes: JSON.stringify({ name: r.name, rating: r.rating, comment: r.comment })
       }));
 
-      return res.json({ success: true, data: [...evaluations, ...formattedReviews] });
+      const dailyLogs = await prisma.dailyLog.findMany({
+        where: {
+          userId,
+          date: { gte: startDate, lte: endDate },
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      return res.json({ 
+        success: true, 
+        data: [...evaluations, ...formattedReviews],
+        dailyLogs 
+      });
     } catch (error: any) {
       return res.status(500).json({ success: false, error: error.message });
     }
