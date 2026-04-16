@@ -196,16 +196,18 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   // 2. Devis Score (15 pts)
   const conversionRate = devisCreated > 0 ? Math.round(((devisValidated + devisVolee) / devisCreated) * 100) : 0;
   const getDevisScore = () => {
-    if (conversionRate >= 75) return { points: 15, status: "TRES BIEN" };
-    if (conversionRate >= 50) return { points: 10, status: "BIEN" };
-    if (conversionRate >= 35) return { points: 5, status: "MOYEN" };
+    // Proportional thresholds based on Ventes (TB: ~85%, Bien: ~70%, Moyen: ~54%)
+    if (conversionRate >= 80) return { points: 15, status: "TRES BIEN" };
+    if (conversionRate >= 60) return { points: 10, status: "BIEN" };
+    if (conversionRate >= 40) return { points: 5, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
 
   // 3. Performance Score (15 pts)
   const getPerformanceScore = () => {
-    if (panierMoyen >= 20000) return { points: 15, status: "TRES BIEN" };
-    if (panierMoyen >= 15000) return { points: 12, status: "BIEN" };
+    // Proportional thresholds based on Ventes
+    if (panierMoyen >= 22000) return { points: 15, status: "TRES BIEN" };
+    if (panierMoyen >= 16000) return { points: 10, status: "BIEN" };
     if (panierMoyen >= 10000) return { points: 5, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
@@ -280,10 +282,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
     const retards = presenceLogs.filter(l => l.status === 'Retard').length;
     const totalFaults = absences + retards;
     
+    // Exact user thresholds: TB: 5pts (0 faults), Bien: 3pts (1 fault), Moyen: 1pts (2 faults), Mauvais: 0pts (>=3 faults)
     let points = 5;
-    let status = "EXCELLENT";
+    let status = "TRES BIEN";
     
-    if (totalFaults >= 5) {
+    if (totalFaults >= 3) {
       points = 0;
       status = "MAUVAIS";
     } else if (totalFaults >= 2) {
@@ -311,13 +314,31 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   const totalSalesScore = salesData.points + devisData.points + perfData.points;
   const totalBehaviorScore = avisData.points + savData.points + prosData.points;
 
+  // Category Status Helpers
+  const getVentesStatus = (score: number) => {
+    if (score >= 55) return "TRES BIEN";
+    if (score >= 45) return "BIEN";
+    if (score >= 35) return "MOYEN";
+    return "MAUVAIS";
+  };
+
+  const getBehaviorStatus = (score: number) => {
+    if (score >= 25) return "TRES BIEN";
+    if (score >= 16) return "BIEN";
+    if (score >= 10) return "MOYEN";
+    return "MAUVAIS";
+  };
+
   const currentScores = {
     ventes: totalSalesScore,
     ventesMax: 65,
+    ventesStatus: getVentesStatus(totalSalesScore),
     comportement: totalBehaviorScore,
     comportementMax: 30,
+    behaviorStatus: getBehaviorStatus(totalBehaviorScore),
     presence: presenceData.points,
     presenceMax: 5,
+    presenceStatus: presenceData.status,
     bonus: bonusScore,
     bonusMax: 5,
 

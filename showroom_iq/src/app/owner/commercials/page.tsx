@@ -401,9 +401,9 @@ export default function Page() {
                                 <div className="flex flex-col">
                                    <span className="text-[9px] uppercase font-mono text-stone-400 font-bold mb-1 tracking-widest">Performance</span>
                                    <span className={`text-[18px] font-mono font-bold ${
-                                     (performanceScores[commercial.id] ?? 0) > 80 ? 'text-emerald-600' :
-                                     (performanceScores[commercial.id] ?? 0) >= 60 ? 'text-yellow-600' :
-                                     (performanceScores[commercial.id] ?? 0) >= 40 ? 'text-orange-500' : 'text-red-500'
+                                     (performanceScores[commercial.id] ?? 0) >= 85 ? 'text-emerald-600' :
+                                     (performanceScores[commercial.id] ?? 0) >= 64 ? 'text-yellow-600' :
+                                     (performanceScores[commercial.id] ?? 0) >= 46 ? 'text-orange-500' : 'text-red-500'
                                    }`}>
                                      {performanceScores[commercial.id] !== undefined
                                        ? `${performanceScores[commercial.id]}/100`

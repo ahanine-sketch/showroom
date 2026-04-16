@@ -32,32 +32,46 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
 
   let performanceStatus = "MAUVAIS";
   let badgeClasses = "bg-red-50 text-red-600 border border-red-100";
-  
-  if (totalScore >= 90) {
+
+  if (totalScore >= 85) {
     performanceStatus = "TRES BIEN";
     badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
-  } else if (totalScore >= 60) {
+  } else if (totalScore >= 64) {
     performanceStatus = "BIEN";
     badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
-  } else if (totalScore >= 45) {
+  } else if (totalScore >= 46) {
     performanceStatus = "MOYEN";
     badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
-  } else {
-    performanceStatus = "MAUVAIS";
-    badgeClasses = "bg-red-50 text-red-600 border border-red-100";
   }
 
-  const getSubScoreBarColor = (label: string) => {
-    if (label === "Ventes") return "bg-yellow-400";
-    if (label === "Comportement") return "bg-rose-400";
-    if (label === "Présence") return "bg-orange-400";
-    if (label === "Bonus") return "bg-stone-300";
-    return "bg-stone-100";
+  /** Bar color based on exact point thresholds per metric */
+  const getSubScoreBarColor = (label: string, score: number): string => {
+    if (label === "Ventes") {
+      if (score >= 55) return "bg-emerald-400";   // Très Bien
+      if (score >= 45) return "bg-yellow-400";    // Bien
+      if (score >= 35) return "bg-orange-400";    // Moyen
+      return "bg-rose-500";                        // Mauvais
+    }
+    if (label === "Comportement") {
+      if (score >= 25) return "bg-emerald-400";
+      if (score >= 16) return "bg-yellow-400";
+      if (score >= 10) return "bg-orange-400";
+      return "bg-rose-500";
+    }
+    if (label === "Présence") {
+      if (score >= 5) return "bg-emerald-400";
+      if (score >= 3) return "bg-yellow-400";
+      if (score >= 1) return "bg-orange-400";
+      return "bg-rose-500";
+    }
+    // Bonus — always neutral gray
+    return "bg-stone-300";
   };
 
   const MetricRow = ({ label, score, max }: { label: string, score: number, max: number }) => {
     const percentage = max > 0 ? (score / max) * 100 : 0;
-    
+    const barColor = getSubScoreBarColor(label, score);
+
     return (
       <div className="flex items-center gap-4 group/metric">
          <span className="text-[9px] text-stone-400 uppercase font-bold tracking-[0.15em] w-20 text-right group-hover/metric:text-stone-600 transition-colors">
@@ -68,10 +82,10 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
               {score}
             </span>
             <div className="w-14 h-1 bg-stone-100 rounded-full overflow-hidden shadow-inner flex-shrink-0">
-               <div 
-                 className={`h-full rounded-full transition-all duration-700 ease-out ${getSubScoreBarColor(label)}`} 
+               <div
+                 className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
                  style={{ width: `${percentage}%` }}
-               ></div>
+               />
             </div>
          </div>
       </div>
