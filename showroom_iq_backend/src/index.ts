@@ -35,7 +35,11 @@ app.post('/api/settings/global', authenticate, authorize(['OWNER']), SettingsCon
 app.post('/api/performance/bonus', authenticate, authorize(['OWNER']), PerformanceController.addBonus);
 app.get('/api/performance/bonus-history/:userId', authenticate, PerformanceController.getBonusHistory);
 
-// 5. Showroom Management
+// 5. Evaluation Management
+app.post('/api/performance/evaluation', authenticate, authorize(['OWNER', 'ADMIN']), PerformanceController.addEvaluation);
+app.get('/api/performance/evaluations/:userId/:month/:year', authenticate, PerformanceController.getMonthlyEvaluations);
+
+// 6. Showroom Management
 app.get('/api/showrooms', authenticate, ShowroomController.getAll);
 app.get('/api/showrooms/:id', authenticate, ShowroomController.getById);
 app.post('/api/showrooms', authenticate, authorize(['OWNER']), ShowroomController.create);

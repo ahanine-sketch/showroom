@@ -24,6 +24,7 @@ model User {
   formations       FormationProgress[]
   objectives       Objective[]
   evaluations      ProcessEvaluation[]
+  clientReviews    ClientReview[]
   salesMetrics     SalesMetric[]
   bonusHistory     BonusHistory[]
   managedShowrooms Showroom[]          @relation("Manager")
@@ -164,4 +165,14 @@ model BonusHistory {
   year        Int
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
+}
+model ClientReview {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  rating    Int
+  comment   String?
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

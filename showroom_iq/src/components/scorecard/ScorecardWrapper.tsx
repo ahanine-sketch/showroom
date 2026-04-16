@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CommercialScorecard from './CommercialScorecard';
 import BehaviorScorecard from './BehaviorScorecard';
@@ -17,6 +17,9 @@ interface ScorecardWrapperProps {
 }
 
 const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id');
+
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
 
 
   // --- CENTRALIZED STATE ---
+  const [evaluations, setEvaluations] = useState<any[]>([]);
   
   // Ventes State
   const [caAmount, setCaAmount] = useState(0);
@@ -33,13 +37,37 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   const [devisOuvert, setDevisOuvert] = useState(4);
   const [panierMoyen, setPanierMoyen] = useState(23323);
 
-  // Behavior State
-  const [avisPositifs, setAvisPositifs] = useState(0);
-  const [avisNegatifs, setAvisNegatifs] = useState(0);
-  const [savTickets, setSavTickets] = useState(2);
-  const [savPlaintes, setSavPlaintes] = useState(1);
-  const [processusMalus, setProcessusMalus] = useState(0); // Starts at 0 (full 10/10)
-  const [processusList, setProcessusList] = useState<{title: string, pts: number, icon: string}[]>([]);
+  // Behavior derived from evaluations
+  const behaviorStats = useMemo(() => {
+    if (!evaluations) return { avisPositifs: 0, avisNegatifs: 0, savTickets: 0, savPlaintes: 0, processusList: [] };
+    
+    const avis = evaluations.filter(e => e.type === 'AVIS').reduce((acc, e) => ({
+      plus: acc.plus + (e.plusAvis || 0),
+      minus: acc.minus + (e.minusAvis || 0)
+    }), { plus: 0, minus: 0 });
+
+    const sav = evaluations.filter(e => e.type === 'SAV').reduce((acc, e) => ({
+      tickets: acc.tickets + (e.ticketsCount || 0),
+      complaints: acc.complaints + (e.complaintsCount || 0)
+    }), { tickets: 0, complaints: 0 });
+
+    const processes = evaluations.filter(e => e.type === 'PROCESS').map(e => ({
+      title: e.notes || 'Avertissement',
+      pts: e.warningLevel === 1 ? -2 : e.warningLevel === 2 ? -4 : -10,
+      icon: 'report_problem'
+    }));
+
+    return {
+      avisPositifs: avis.plus,
+      avisNegatifs: avis.minus,
+      savTickets: sav.tickets,
+      savPlaintes: sav.complaints,
+      processusList: processes
+    };
+  }, [evaluations]);
+
+  const { avisPositifs, avisNegatifs, savTickets, savPlaintes, processusList } = behaviorStats;
+  const [processusMalus, setProcessusMalus] = useState(0); 
 
   // Calendar & Presence State
   const [presenceLogs, setPresenceLogs] = useState<any[]>([]);
@@ -57,16 +85,34 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       setDevisVolee(userData.devisLost || 1);
       setDevisOuvert(userData.devisOpened || 4);
       setPanierMoyen(userData.avgBasket || 23323);
-      setSavTickets(2);
-      setSavPlaintes(1);
       setBonusScore(userData.bonusScore || 0);
     }
-
-
   }, [userData]);
 
-  const searchParams = useSearchParams();
-  const userId = searchParams.get('id');
+  const fetchEvaluations = async () => {
+    if (!userId) return;
+    try {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const response = await fetch(`http://localhost:3001/api/performance/evaluations/${userId}/${month}/${year}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      });
+      const result = await response.json();
+      if (result.success) {
+        setEvaluations(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching evaluations:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvaluations();
+  }, [userId]);
+
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -277,12 +323,12 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
         setDevisVolee: (val: number) => setDevisVolee(Math.max(0, val)),
         setDevisOuvert: (val: number) => setDevisOuvert(Math.max(0, val)),
         setPanierMoyen: (val: number) => setPanierMoyen(Math.max(0, val)),
-        setAvisPositifs: (val: number) => setAvisPositifs(Math.max(0, val)),
-        setAvisNegatifs: (val: number) => setAvisNegatifs(Math.max(0, val)),
-        setSavTickets: (val: number) => setSavTickets(Math.max(0, val)),
-        setSavPlaintes: (val: number) => setSavPlaintes(Math.max(0, val)),
+        setAvisPositifs: () => {}, // Disabled as derived from history
+        setAvisNegatifs: () => {}, 
+        setSavTickets: () => {}, 
+        setSavPlaintes: () => {}, 
         setProcessusMalus, 
-        setProcessusList,
+        setProcessusList: () => {},
         setPresenceLogs,
         setNotesList,
         setBonusScore
@@ -357,6 +403,16 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             isDashboard={true} 
             userData={userData} 
             scores={currentScores}
+            evaluations={evaluations}
+            onRefresh={async () => {
+              await fetchEvaluations();
+              // Also refresh user data for scores
+              const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+              });
+              const result = await response.json();
+              if (result.success) setUserData(result.data);
+            }}
           />
         )}
         {activeTab === 'calendar' && (

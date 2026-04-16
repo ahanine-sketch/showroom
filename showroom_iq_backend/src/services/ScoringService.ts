@@ -202,7 +202,7 @@ export class ScoringService {
     }
 
     if (warningLevel >= 3) return 0;
-    if (warningLevel === 2) return 4;
+    if (warningLevel === 2) return 6;
     if (warningLevel === 1) return 8;
     return 10;
   }
@@ -305,6 +305,10 @@ export class ScoringService {
       where: { userId, date: { gte: startOfDay, lte: endOfDay } },
     });
 
+    const clientReviews = await prisma.clientReview.findMany({
+      where: { userId, date: { gte: startOfDay, lte: endOfDay } },
+    });
+
     // 1. Calculate Ventes (65 pts)
     const { points: caPoints, label: caLabel } = sales 
       ? await this.calculateCAScore(userId, sales.ca, date, metricConfigs['objectif-ca'])
@@ -318,13 +322,31 @@ export class ScoringService {
     const finalSalesScore = caPoints + convPoints + basketPoints;
 
     // 2. Calculate Comportement (30 pts)
-    const avisEval = evaluations.find(e => e.type === EvaluationType.AVIS);
-    const savEval = evaluations.find(e => e.type === EvaluationType.SAV);
-    const procEval = evaluations.find(e => e.type === EvaluationType.PROCESS);
+    const avisStats = {
+      plus: (clientReviews || []).filter(r => r && r.rating >= 4).length,
+      minus: (clientReviews || []).filter(r => r && r.rating <= 2).length
+    };
+
+    const savStats = (evaluations || [])
+      .filter(e => e && e.type === EvaluationType.SAV)
+      .reduce((acc, e) => ({ 
+        tickets: acc.tickets + (e.ticketsCount || 0), 
+        complaints: acc.complaints + (e.complaintsCount || 0) 
+      }), { tickets: 0, complaints: 0 });
+
+    // Process scoring - Cumulative deductions
+    const processEvals = (evaluations || []).filter(e => e && e.type === EvaluationType.PROCESS);
+    let processDeduction = 0;
+    processEvals.forEach(e => {
+      if (e.warningLevel === 1) processDeduction += 2;
+      else if (e.warningLevel === 2) processDeduction += 4;
+      else if (e.warningLevel === 3) processDeduction += 4;
+    });
     
-    const avisPoints = this.calculateAvisScore(avisEval?.plusAvis || 0, avisEval?.minusAvis || 0, metricConfigs['avis-reputation']);
-    const savPoints = this.calculateSAVScore(savEval?.ticketsCount || 0, savEval?.complaintsCount || 0, metricConfigs['sav-service']);
-    const procPoints = this.calculateProcessScore(procEval?.warningLevel || 0, metricConfigs['discipline-process']);
+    const procPoints = Math.max(0, 10 - processDeduction);
+    const avisPoints = this.calculateAvisScore(avisStats.plus, avisStats.minus, metricConfigs['avis-reputation']);
+    const savPoints = this.calculateSAVScore(savStats.tickets, savStats.complaints, metricConfigs['sav-service']);
+    
     const finalBehaviorScore = avisPoints + savPoints + procPoints;
 
     // 3. Calculate Presence (5 pts)

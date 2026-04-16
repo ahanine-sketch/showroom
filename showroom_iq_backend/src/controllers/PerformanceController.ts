@@ -164,5 +164,118 @@ export class PerformanceController {
       return res.status(500).json({ success: false, error: error.message });
     }
   }
+
+  /**
+   * Add a process evaluation (Avis, SAV, Process, Presence)
+   */
+  static async addEvaluation(req: Request, res: Response) {
+    try {
+      const { userId, type, plusAvis, minusAvis, ticketsCount, complaintsCount, warningLevel, notes, date } = req.body;
+
+      if (!userId || !type) {
+        return res.status(400).json({ success: false, error: "UserID and Type are required" });
+      }
+
+      const evalDate = date ? new Date(date) : new Date();
+      evalDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone shifts
+
+      if (type === 'AVIS') {
+        // Parse the notes if it was sent as JSON string from frontend
+        let parsed = { name: '', rating: 5, comment: '' };
+        try {
+          if (notes && typeof notes === 'string' && notes.startsWith('{')) {
+            parsed = JSON.parse(notes);
+          } else if (notes && typeof notes === 'string') {
+            parsed.comment = notes;
+          }
+        } catch (e) {}
+
+        const review = await prisma.clientReview.create({
+          data: {
+            userId,
+            name: parsed.name,
+            rating: parsed.rating,
+            comment: parsed.comment,
+            date: evalDate
+          }
+        });
+
+        await ScoringService.updateDailyScore(userId, evalDate);
+        return res.status(201).json({ success: true, data: review });
+      }
+
+      const evaluation = await prisma.processEvaluation.create({
+        data: {
+          userId,
+          type,
+          plusAvis: plusAvis !== undefined ? parseInt(plusAvis) : null,
+          minusAvis: minusAvis !== undefined ? parseInt(minusAvis) : null,
+          ticketsCount: ticketsCount !== undefined ? parseInt(ticketsCount) : null,
+          complaintsCount: complaintsCount !== undefined ? parseInt(complaintsCount) : null,
+          warningLevel: warningLevel !== undefined ? parseInt(warningLevel) : null,
+          notes,
+          date: evalDate,
+        },
+      });
+
+      // TRIGGER AUTOMATED SCORING
+      await ScoringService.updateDailyScore(userId, evalDate);
+
+      return res.status(201).json({
+        success: true,
+        data: evaluation,
+        message: 'Evaluation added and daily score updated.',
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
+   * Get evaluations for a user in a specific month
+   */
+  static async getMonthlyEvaluations(req: Request, res: Response) {
+    try {
+      const { userId, month, year } = req.params;
+      const m = parseInt(month);
+      const y = parseInt(year);
+
+      if (isNaN(m) || isNaN(y)) {
+        return res.status(400).json({ success: false, error: "Invalid month or year parameters" });
+      }
+
+      const startDate = new Date(y, m - 1, 1);
+      const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+
+      const evaluations = await prisma.processEvaluation.findMany({
+        where: {
+          userId,
+          date: { gte: startDate, lte: endDate },
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      const clientReviews = await prisma.clientReview.findMany({
+        where: {
+          userId,
+          date: { gte: startDate, lte: endDate },
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      // Format clientReviews to look like evaluations for frontend compatibility
+      const formattedReviews = clientReviews.map(r => ({
+        ...r,
+        type: 'AVIS',
+        plusAvis: r.rating >= 4 ? 1 : 0,
+        minusAvis: r.rating <= 2 ? 1 : 0,
+        notes: JSON.stringify({ name: r.name, rating: r.rating, comment: r.comment })
+      }));
+
+      return res.json({ success: true, data: [...evaluations, ...formattedReviews] });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
 }
 
