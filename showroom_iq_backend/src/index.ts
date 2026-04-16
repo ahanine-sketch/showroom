@@ -32,7 +32,7 @@ app.post('/api/settings/metric', authenticate, authorize(['OWNER']), SettingsCon
 app.post('/api/settings/global', authenticate, authorize(['OWNER']), SettingsController.updateGlobalConfig);
 
 // 4. Bonus Management
-app.post('/api/performance/bonus', authenticate, authorize(['OWNER']), PerformanceController.addBonus);
+app.post('/api/performance/bonus', authenticate, authorize(['OWNER', 'ADMIN']), PerformanceController.addBonus);
 app.get('/api/performance/bonus-history/:userId', authenticate, PerformanceController.getBonusHistory);
 
 // 5. Evaluation Management
@@ -54,9 +54,9 @@ app.get('/api/users/my-team', authenticate, authorize(['ADMIN']), UserController
 app.get('/api/users/search', authenticate, UserController.search);
 app.get('/api/users/:id', authenticate, UserController.getById);
 
-app.post('/api/users', authenticate, authorize(['OWNER']), UserController.create);
-app.put('/api/users/:id', authenticate, authorize(['OWNER']), UserController.update);
-app.delete('/api/users/:id', authenticate, authorize(['OWNER']), UserController.delete);
+app.post('/api/users', authenticate, authorize(['OWNER', 'ADMIN']), UserController.create);
+app.put('/api/users/:id', authenticate, authorize(['OWNER', 'ADMIN']), UserController.update);
+app.delete('/api/users/:id', authenticate, authorize(['OWNER', 'ADMIN']), UserController.delete);
 
 
 // Health check

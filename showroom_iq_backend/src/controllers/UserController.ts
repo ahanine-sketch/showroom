@@ -110,7 +110,12 @@ export class UserController {
             comportement: comportementScore,
             presence: presenceScore,
             bonus: bonusScore,
-          }
+          },
+          objectives: objective ? {
+            conservative: (objective as any).conservativeCA,
+            likely: (objective as any).likelyCA,
+            exceed: (objective as any).exceedCA
+          } : null
         };
       }));
 

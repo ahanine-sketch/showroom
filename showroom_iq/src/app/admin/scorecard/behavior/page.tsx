@@ -1,6 +1,12 @@
-import React from 'react';
-import BehaviorScorecard from '@/components/scorecard/BehaviorScorecard';
+'use client';
+
+import React, { Suspense } from 'react';
+import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
 export default function Page() {
-  return <BehaviorScorecard role="admin" activeTab="behavior" />;
+  return (
+    <Suspense fallback={<div className="pt-32 px-14 flex justify-center text-stone-400 font-mono text-[11px] uppercase tracking-widest">Chargement du profil...</div>}>
+      <ScorecardWrapper initialTab="behavior" role="admin" />
+    </Suspense>
+  );
 }

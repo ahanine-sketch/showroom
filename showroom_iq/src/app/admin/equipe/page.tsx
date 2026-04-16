@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UserSlideOver from '@/components/UserSlideOver';
+import { toast } from 'react-hot-toast';
 
 interface CommercialScores {
   global: number;
@@ -22,6 +23,11 @@ interface Commercial {
   avatarUrl?: string;
   showroom?: { id: string; name: string } | null;
   scores: CommercialScores;
+  objectives?: {
+    conservative: number;
+    likely: number;
+    exceed: number;
+  } | null;
 }
 
 /** Returns Tailwind color class for each metric bar based on exact point thresholds */
@@ -96,7 +102,12 @@ export default function TeamPage() {
       email: member.email || '',
       phone: member.phone || '',
       role: member.role,
-      magasinId: member.showroom?.id
+      magasinId: member.showroom?.id,
+      targets: member.objectives ? {
+        conservative: member.objectives.conservative.toString(),
+        likely: member.objectives.likely.toString(),
+        exceed: member.objectives.exceed.toString()
+      } : null
     });
     setDrawerMode('edit');
     setIsUserDrawerOpen(true);
@@ -123,12 +134,13 @@ export default function TeamPage() {
       const result = await res.json();
       if (result.success) {
         setIsUserDrawerOpen(false);
+        toast.success(drawerMode === 'edit' ? 'Profil mis à jour avec succès !' : 'Nouveau membre ajouté !');
         fetchTeam();
       } else {
-        alert(result.error || 'Erreur lors de la sauvegarde');
+        toast.error(result.error || 'Erreur lors de la sauvegarde');
       }
     } catch {
-      alert('Erreur réseau');
+      toast.error('Une erreur réseau est survenue');
     }
   };
 
@@ -315,6 +327,7 @@ export default function TeamPage() {
         magasins={showroom ? [{ id: showroom.id, name: showroom.name }] : []}
         fixedMagasinId={showroom?.id}
         onSubmit={handleSaveUser}
+        lockRole={true}
       />
     </>
   );

@@ -18,9 +18,10 @@ interface UserSlideOverProps {
   fixedMagasinId?: string;
   magasins?: { id: string; name: string }[];
   onSubmit?: (data: any) => void;
+  lockRole?: boolean;
 }
 
-export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasinId, magasins = [], onSubmit }: UserSlideOverProps) {
+export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasinId, magasins = [], onSubmit, lockRole }: UserSlideOverProps) {
   // Prevent body scroll when open
   useEffect(() => {
     if (isOpen) {
@@ -43,10 +44,10 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
     
     const data = {
       fullName: formData.get('fullName'),
-      role: formData.get('role'),
+      role: lockRole ? 'COMMERCIAL' : (formData.get('role') || user?.role || 'COMMERCIAL'),
       email: formData.get('email'),
       phone: formData.get('phone'),
-      showroomId: formData.get('magasinId'),
+      showroomId: fixedMagasinId || formData.get('magasinId') || user?.magasinId,
       targets: {
         conservative: formData.get('conservative'),
         likely: formData.get('likely'),
@@ -116,10 +117,11 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
                       <select 
                         name="role"
                         defaultValue={user?.role || 'COMMERCIAL'}
-                        className="w-full appearance-none border border-stone-100 bg-stone-50/50 rounded-xl px-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner disabled:opacity-60"
+                        disabled={lockRole}
+                        className="w-full appearance-none border border-stone-100 bg-stone-50/50 rounded-xl px-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <option value="COMMERCIAL">Commercial</option>
-                        <option value="ADMIN">Admin</option>
+                        {!lockRole && <option value="ADMIN">Admin</option>}
                       </select>
                       <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none text-[18px]">expand_more</span>
                     </div>
@@ -131,7 +133,8 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
                       <select 
                         name="magasinId"
                         defaultValue={fixedMagasinId || user?.magasinId || ''}
-                        className="w-full appearance-none border border-stone-100 bg-stone-50/50 rounded-xl px-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner disabled:opacity-60"
+                        disabled={!!fixedMagasinId}
+                        className="w-full appearance-none border border-stone-100 bg-stone-50/50 rounded-xl px-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <option value="" disabled>Sélectionner un magasin</option>
                         {magasins.map(m => (

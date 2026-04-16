@@ -375,7 +375,7 @@ const CalendarScorecard = ({
           </div>
 
           {/* Interaction Cards (Owner only) */}
-          {role === 'owner' && (
+          {(role === 'owner' || role === 'admin') && (
             <div className="grid grid-cols-2 gap-8">
               {/* Log Presence Form */}
               <div className="bg-white p-8 rounded-3xl border border-stone-200/60 shadow-sm transition-all hover:shadow-md">

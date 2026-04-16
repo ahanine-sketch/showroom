@@ -1,6 +1,12 @@
-import React from 'react';
-import RessourcesScorecard from '@/components/scorecard/RessourcesScorecard';
+'use client';
+
+import React, { Suspense } from 'react';
+import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
 export default function Page() {
-  return <RessourcesScorecard role="admin" activeTab="ressources" />;
+  return (
+    <Suspense fallback={<div className="pt-32 px-14 flex justify-center text-stone-400 font-mono text-[11px] uppercase tracking-widest">Chargement du profil...</div>}>
+      <ScorecardWrapper initialTab="ressources" role="admin" />
+    </Suspense>
+  );
 }

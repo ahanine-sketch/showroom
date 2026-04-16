@@ -37,7 +37,9 @@ const AdminSidebar = () => {
             </div>
             <nav className="flex-1 px-4 space-y-1">
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isEquipe = item.href === '/admin/equipe';
+                    const isActive = pathname === item.href || (isEquipe && pathname.startsWith('/admin/scorecard'));
+                    
                     return (
                         <Link key={item.name} href={item.href}>
                             <span className={`flex items-center gap-3 pl-4 py-2 text-[14px] transition-colors duration-300 cursor-pointer ${
