@@ -50,6 +50,7 @@ export default function Page() {
   // Data State
   const [magasinsData, setMagasinsData] = useState<MagasinData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [performanceScores, setPerformanceScores] = useState<Record<string, number>>({});
 
   // Delete Dialog state
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -60,19 +61,49 @@ export default function Page() {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
       const response = await fetch('http://localhost:3001/api/showrooms', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
       if (result.success) {
         setMagasinsData(result.data);
+        // Fetch scores for all commercials in parallel
+        await fetchAllScores(result.data, token);
       }
     } catch (error) {
       console.error('Error fetching magasins:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchAllScores = async (magasins: MagasinData[], token: string | null) => {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+
+    // Collect all unique commercial IDs
+    const allCommercials = magasins.flatMap(m => m.commercials);
+    if (allCommercials.length === 0) return;
+
+    // Fetch scores in parallel
+    const results = await Promise.allSettled(
+      allCommercials.map(async (c) => {
+        const res = await fetch(
+          `http://localhost:3001/api/performance/global-score/${c.id}/${month}/${year}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        return { id: c.id, score: data.success ? data.data.globalScore : 0 };
+      })
+    );
+
+    const scores: Record<string, number> = {};
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        scores[result.value.id] = result.value.score;
+      }
+    });
+    setPerformanceScores(scores);
   };
 
   useEffect(() => {
@@ -369,8 +400,14 @@ export default function Page() {
                               <div className="w-full flex items-center justify-between pt-6 border-t border-stone-50">
                                 <div className="flex flex-col">
                                    <span className="text-[9px] uppercase font-mono text-stone-400 font-bold mb-1 tracking-widest">Performance</span>
-                                   <span className={`text-[18px] font-mono font-bold ${commercial.performance > 90 ? 'text-emerald-600' : 'text-yellow-700'}`}>
-                                     0/100
+                                   <span className={`text-[18px] font-mono font-bold ${
+                                     (performanceScores[commercial.id] ?? 0) > 80 ? 'text-emerald-600' :
+                                     (performanceScores[commercial.id] ?? 0) >= 60 ? 'text-yellow-600' :
+                                     (performanceScores[commercial.id] ?? 0) >= 40 ? 'text-orange-500' : 'text-red-500'
+                                   }`}>
+                                     {performanceScores[commercial.id] !== undefined
+                                       ? `${performanceScores[commercial.id]}/100`
+                                       : '—/100'}
                                    </span>
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-yellow-100 transition-colors">

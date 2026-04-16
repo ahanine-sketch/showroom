@@ -291,6 +291,147 @@ export class PerformanceController {
   }
 
   /**
+   * Get the computed global score for a user for a specific month/year.
+   * Uses the same scoring logic as the frontend ScorecardWrapper.
+   */
+  static async getGlobalScore(req: Request, res: Response) {
+    try {
+      const { userId, month, year } = req.params;
+      const m = parseInt(month);
+      const y = parseInt(year);
+
+      if (isNaN(m) || isNaN(y)) {
+        return res.status(400).json({ success: false, error: 'Invalid month or year' });
+      }
+
+      const startDate = new Date(y, m - 1, 1);
+      const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+
+      // Fetch all evaluations for the month
+      const evaluations = await prisma.processEvaluation.findMany({
+        where: { userId, date: { gte: startDate, lte: endDate } },
+      });
+
+      const clientReviews = await prisma.clientReview.findMany({
+        where: { userId, date: { gte: startDate, lte: endDate } },
+      });
+
+      const bonusHistory = await prisma.bonusHistory.findMany({
+        where: { userId, month: m, year: y },
+      });
+
+      const presenceLogs = await prisma.dailyLog.findMany({
+        where: { userId, activity: 'PRESENCE', date: { gte: startDate, lte: endDate } },
+      });
+
+      // --- Ventes Score (65 pts) ---
+      // Mirror exact frontend ScorecardWrapper logic: fetch sales metrics, use same fallbacks
+      const salesMetrics = await prisma.salesMetric.findMany({
+        where: { userId, date: { gte: startDate, lte: endDate } },
+        orderBy: { date: 'desc' },
+      });
+
+      // Aggregate for the month (or fall back to frontend defaults)
+      const totalCA = salesMetrics.reduce((sum: number, s: any) => sum + (s.ca || 0), 0);
+      const totalDevisCreated  = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisCreated  || 0), 0) || 11;
+      const totalDevisValidated = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisValidated || 0), 0) || 6;
+      const totalDevisLost     = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisLost     || 0), 0) || 1;
+      const avgBasket = salesMetrics.length > 0
+        ? salesMetrics.reduce((sum: number, s: any) => sum + (s.avgBasket || 0), 0) / salesMetrics.length
+        : 23323;
+
+      // User objectives for CA scoring
+      const objective = await prisma.objective.findFirst({
+        where: { userId, month: m, year: y, type: 'GLOBAL' },
+      });
+      const conservativeCA = objective?.conservativeCA ?? 30000;
+      const likelyCA       = objective?.likelyCA       ?? 50000;
+      const exceedCA       = objective?.exceedCA        ?? 70000;
+
+      // 1. CA Score (35 pts) — same logic as frontend getSalesScore()
+      let caPoints = 0;
+      if (totalCA >= exceedCA)              caPoints = 35;
+      else if (totalCA >= likelyCA)         caPoints = 32;
+      else if (totalCA >= conservativeCA) {
+        const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
+        caPoints = 21 + Math.floor(progress * 10);
+      } else if (totalCA >= conservativeCA * 0.5) caPoints = 10;
+
+      // 2. Devis Score (15 pts) — same logic as frontend getDevisScore()
+      const convRate = totalDevisCreated > 0
+        ? ((totalDevisValidated + totalDevisLost) / totalDevisCreated) * 100 : 0;
+      let devisPoints = 0;
+      if (convRate >= 75)      devisPoints = 15;
+      else if (convRate >= 50) devisPoints = 10;
+      else if (convRate >= 35) devisPoints =  5;
+
+      // 3. Panier Moyen Score (15 pts) — same logic as frontend getPerformanceScore()
+      let panierPoints = 0;
+      if (avgBasket >= 20000)      panierPoints = 15;
+      else if (avgBasket >= 15000) panierPoints = 12;
+      else if (avgBasket >= 10000) panierPoints =  5;
+
+      const cappedSalesScore = Math.min(caPoints + devisPoints + panierPoints, 65);
+
+      // --- Comportement Score (30 pts) ---
+      // Avis
+      const avisPositifs = clientReviews.filter((r: any) => r.rating >= 4).length;
+      const avisNegatifs = clientReviews.filter((r: any) => r.rating <= 2).length;
+      let avisPoints = 4;
+      if (avisNegatifs > 0) avisPoints = 0;
+      else if (avisPositifs > 3) avisPoints = 10;
+      else if (avisPositifs > 0) avisPoints = 8;
+
+      // SAV
+      const savTickets = evaluations.filter((e: any) => e.type === 'SAV').reduce((sum: number, e: any) => sum + (e.ticketsCount || 0), 0);
+      const savPlaintes = evaluations.filter((e: any) => e.type === 'SAV').reduce((sum: number, e: any) => sum + (e.complaintsCount || 0), 0);
+      let savPoints = 10;
+      if (savPlaintes > 0) savPoints = 0;
+      else if (savTickets > 4) savPoints = 4;
+      else if (savTickets > 0) savPoints = 8;
+
+      // Processus
+      const warnings = evaluations.filter((e: any) => e.type === 'PROCESS').length;
+      let processPoints = 10;
+      if (warnings === 1) processPoints = 8;
+      else if (warnings === 2) processPoints = 4;
+      else if (warnings >= 3) processPoints = 0;
+
+      const behaviorScore = avisPoints + savPoints + processPoints;
+
+      // --- Presence Score (5 pts) ---
+      const absences = presenceLogs.filter((l: any) => l.status === 'Absence').length;
+      const retards = presenceLogs.filter((l: any) => l.status === 'Retard').length;
+      const totalFaults = absences + retards;
+      let presenceScore = 5;
+      if (totalFaults >= 5) presenceScore = 0;
+      else if (totalFaults >= 2) presenceScore = 1;
+      else if (totalFaults >= 1) presenceScore = 3;
+
+      // --- Bonus ---
+      const bonusTotal = bonusHistory.reduce((sum: number, b: any) => sum + b.amount, 0);
+      const cappedBonus = Math.min(bonusTotal, 5);
+
+      const globalScore = Math.min(100, cappedSalesScore + behaviorScore + presenceScore + cappedBonus);
+
+      return res.json({
+        success: true,
+        data: {
+          globalScore,
+          breakdown: {
+            sales: cappedSalesScore,
+            behavior: behaviorScore,
+            presence: presenceScore,
+            bonus: cappedBonus,
+          },
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
    * Get evaluations for a user in a specific month
    */
   static async getMonthlyEvaluations(req: Request, res: Response) {

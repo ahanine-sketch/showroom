@@ -18,6 +18,14 @@ const OwnerSidebar = () => {
         { name: 'Rapports', href: '#', icon: 'analytics' },
     ];
 
+    const handleLogout = (e: React.MouseEvent) => {
+        e.preventDefault();
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        window.location.href = '/';
+    };
+
     return (
         <aside className="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col bg-white dark:bg-stone-950 border-r border-stone-100 dark:border-stone-800 shadow-[20px_0_40px_rgba(27,28,25,0.03)] overflow-y-auto">
             <div className="p-8">
@@ -103,12 +111,13 @@ const OwnerSidebar = () => {
                         <span className="text-[14px]">Paramètres</span>
                     </span>
                 </Link>
-                <Link href="/">
-                    <span className="flex items-center gap-3 text-red-600 dark:text-red-400 pl-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-300 cursor-pointer mt-2 rounded-lg">
-                        <span className="material-symbols-outlined text-[20px]">logout</span>
-                        <span className="text-[14px] font-medium">Déconnexion</span>
-                    </span>
-                </Link>
+                <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 text-red-600 dark:text-red-400 pl-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-300 cursor-pointer mt-2 rounded-lg border-none bg-transparent"
+                >
+                    <span className="material-symbols-outlined text-[20px]">logout</span>
+                    <span className="text-[14px] font-medium">Déconnexion</span>
+                </button>
             </div>
         </aside>
     );

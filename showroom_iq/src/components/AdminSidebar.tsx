@@ -14,6 +14,19 @@ const AdminSidebar = () => {
         { name: 'Paramètres', href: '/admin/settings', icon: 'settings' },
     ];
 
+    const handleLogout = (e: React.MouseEvent) => {
+        e.preventDefault();
+        // Clear storage
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        
+        // Clear cookie
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        
+        // Redirect
+        window.location.href = '/';
+    };
+
     return (
         <aside className="fixed left-0 top-0 h-screen w-[240px] z-50 flex flex-col border-r border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-950 shadow-[20px_0_40px_rgba(27,28,25,0.03)]">
             <div className="p-8 pb-10">
@@ -40,12 +53,13 @@ const AdminSidebar = () => {
                 })}
             </nav>
             <div className="p-4 border-t border-stone-50 dark:border-stone-900 mt-auto">
-                <Link href="/">
-                    <span className="flex items-center gap-3 text-red-600 dark:text-red-400 pl-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-300 cursor-pointer rounded-lg">
-                        <span className="material-symbols-outlined text-[20px]">logout</span>
-                        <span className="text-[14px] font-medium">Déconnexion</span>
-                    </span>
-                </Link>
+                <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 text-red-600 dark:text-red-400 pl-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-300 cursor-pointer rounded-lg border-none bg-transparent"
+                >
+                    <span className="material-symbols-outlined text-[20px]">logout</span>
+                    <span className="text-[14px] font-medium">Déconnexion</span>
+                </button>
             </div>
         </aside>
     );

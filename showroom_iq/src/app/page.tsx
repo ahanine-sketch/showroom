@@ -33,6 +33,10 @@ export default function LoginPage() {
       localStorage.setItem('auth_token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
+      // Set cookie for Next.js Middleware protection
+      document.cookie = `auth_token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
+
+
       // Redirect based on role
       const role = data.user.role;
       if (role === 'OWNER') {
