@@ -33,13 +33,13 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
   let performanceStatus = "MAUVAIS";
   let badgeClasses = "bg-red-50 text-red-600 border border-red-100";
 
-  if (totalScore >= 85) {
+  if (totalScore >= 80) {
     performanceStatus = "TRES BIEN";
     badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
-  } else if (totalScore >= 64) {
+  } else if (totalScore >= 60) {
     performanceStatus = "BIEN";
     badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
-  } else if (totalScore >= 46) {
+  } else if (totalScore >= 40) {
     performanceStatus = "MOYEN";
     badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
   }
@@ -96,11 +96,7 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
     <div className="flex flex-col items-end justify-between py-2">
       {/* Top part: Global score */}
       <div className="flex items-start gap-12 mb-8">
-        {role === 'admin' && (
-          <button className="w-9 h-9 mt-2 rounded-full border border-stone-200 text-stone-400 hover:text-stone-900 hover:border-stone-300 transition-colors flex items-center justify-center bg-stone-50 shadow-sm" title="Modifier les données">
-            <span className="material-symbols-outlined text-[16px]">edit</span>
-          </button>
-        )}
+
         <div className="flex flex-col items-end justify-center pt-4">
           <span className="text-[9px] text-stone-400 uppercase font-black tracking-[0.3em] mb-2.5 opacity-60">Score Global</span>
           <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${badgeClasses}`}>

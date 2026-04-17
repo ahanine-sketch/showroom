@@ -56,9 +56,9 @@ function getBarColor(metric: 'ventes' | 'comportement' | 'presence' | 'bonus', v
 
 /** Returns text + dot color for the global score card */
 function getGlobalColor(score: number): { text: string; dot: string; badge: string } {
-  if (score >= 85) return { text: 'text-emerald-600', dot: 'bg-emerald-400', badge: 'text-emerald-600' };
-  if (score >= 64) return { text: 'text-yellow-600',  dot: 'bg-yellow-400',  badge: 'text-yellow-600' };
-  if (score >= 46) return { text: 'text-orange-500',  dot: 'bg-orange-400',  badge: 'text-orange-500' };
+  if (score >= 80) return { text: 'text-emerald-600', dot: 'bg-emerald-400', badge: 'text-emerald-600' };
+  if (score >= 60) return { text: 'text-yellow-600',  dot: 'bg-yellow-400',  badge: 'text-yellow-600' };
+  if (score >= 40) return { text: 'text-orange-500',  dot: 'bg-orange-400',  badge: 'text-orange-500' };
   return             { text: 'text-red-500',    dot: 'bg-rose-500',    badge: 'text-red-500' };
 }
 

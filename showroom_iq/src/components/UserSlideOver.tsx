@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
 export interface UserData {
   id?: string;
@@ -56,6 +57,22 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
     };
 
     onSubmit(data);
+    toast.success('Modifications enregistrées avec succès', {
+      style: {
+        borderRadius: '16px',
+        background: '#1c1917',
+        color: '#fff',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        padding: '16px 24px',
+      },
+      iconTheme: {
+        primary: '#b8960c',
+        secondary: '#fff',
+      },
+    });
   };
 
   return (
