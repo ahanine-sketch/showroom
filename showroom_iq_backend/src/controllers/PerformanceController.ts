@@ -161,10 +161,13 @@ export class PerformanceController {
    */
   static async addEvaluation(req: Request, res: Response) {
     try {
-      const { userId, type, plusAvis, minusAvis, ticketsCount, complaintsCount, warningLevel, notes, date } = req.body;
+      const { userId, showroomId, type, plusAvis, minusAvis, ticketsCount, complaintsCount, warningLevel, notes, date } = req.body;
 
-      if (!userId || !type) {
-        return res.status(400).json({ success: false, error: "UserID and Type are required" });
+      if (!userId && !showroomId) {
+        return res.status(400).json({ success: false, error: "UserID or ShowroomId is required" });
+      }
+      if (!type) {
+        return res.status(400).json({ success: false, error: "Type is required" });
       }
 
       const evalDate = date ? new Date(date) : new Date();
@@ -183,7 +186,8 @@ export class PerformanceController {
 
         const review = await prisma.clientReview.create({
           data: {
-            userId,
+            userId: userId || null,
+            showroomId: showroomId || null,
             name: parsed.name,
             rating: parsed.rating,
             comment: parsed.comment,
@@ -191,7 +195,7 @@ export class PerformanceController {
           }
         });
 
-        await ScoringService.updateDailyScore(userId, evalDate);
+        if (userId) await ScoringService.updateDailyScore(userId, evalDate);
         return res.status(201).json({ success: true, data: review });
       }
 
@@ -199,14 +203,15 @@ export class PerformanceController {
         const { noteType, content } = req.body;
         const log = await prisma.dailyLog.create({
           data: {
-            userId,
+            userId: userId || null,
+            showroomId: showroomId || null,
             date: evalDate,
             activity: 'DAILY_NOTE',
             status: noteType || 'positive',
             notes: content || notes
           }
         });
-        await ScoringService.updateDailyScore(userId, evalDate);
+        if (userId) await ScoringService.updateDailyScore(userId, evalDate);
         return res.status(201).json({ success: true, data: log });
       }
 
@@ -265,7 +270,8 @@ export class PerformanceController {
 
       const evaluation = await prisma.processEvaluation.create({
         data: {
-          userId,
+          userId: userId || null,
+          showroomId: showroomId || null,
           type,
           plusAvis: plusAvis !== undefined ? parseInt(plusAvis) : null,
           minusAvis: minusAvis !== undefined ? parseInt(minusAvis) : null,
@@ -277,8 +283,8 @@ export class PerformanceController {
         },
       });
 
-      // TRIGGER AUTOMATED SCORING
-      await ScoringService.updateDailyScore(userId, evalDate);
+      // TRIGGER AUTOMATED SCORING (only for user-linked evaluations)
+      if (userId) await ScoringService.updateDailyScore(userId, evalDate);
 
       return res.status(201).json({
         success: true,
@@ -488,6 +494,98 @@ export class PerformanceController {
           date: { gte: startDate, lte: endDate },
         },
         orderBy: { date: 'desc' },
+      });
+
+      return res.json({ 
+        success: true, 
+        data: [...evaluations, ...formattedReviews],
+        dailyLogs,
+        bonusTotal
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
+   * Get aggregated evaluations for ALL commercials in a showroom for a specific month.
+   * This powers the Magasin Comportement and Calendrier tabs.
+   */
+  static async getShowroomEvaluations(req: Request, res: Response) {
+    try {
+      const { showroomId, month, year } = req.params;
+      const m = parseInt(month);
+      const y = parseInt(year);
+
+      if (isNaN(m) || isNaN(y)) {
+        return res.status(400).json({ success: false, error: "Invalid month or year parameters" });
+      }
+
+      const startDate = new Date(y, m - 1, 1);
+      const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+
+      // 1. Get all users in this showroom
+      const users = await prisma.user.findMany({
+        where: { showroomId },
+        select: { id: true }
+      });
+      const userIds = users.map(u => u.id);
+
+      if (userIds.length === 0) {
+        return res.json({ success: true, data: [], dailyLogs: [], bonusTotal: 0 });
+      }
+
+      // 2. Fetch evaluations (Selective: PROCESS = Magasin only, SAV = Team aggregation)
+      const evaluations = await prisma.processEvaluation.findMany({
+        where: {
+          OR: [
+            { type: 'PROCESS', showroomId: showroomId },
+            { type: 'SAV', userId: { in: userIds } }
+          ],
+          date: { gte: startDate, lte: endDate },
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      // 3. Fetch client reviews (Strictly Magasin only per user request)
+      const clientReviews = await prisma.clientReview.findMany({
+        where: {
+          showroomId: showroomId,
+          date: { gte: startDate, lte: endDate },
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      // Format clientReviews to look like evaluations for frontend compatibility
+      const formattedReviews = clientReviews.map(r => ({
+        ...r,
+        type: 'AVIS',
+        plusAvis: r.rating >= 4 ? 1 : 0,
+        minusAvis: r.rating <= 2 ? 1 : 0,
+        notes: JSON.stringify({ name: r.name, rating: r.rating, comment: r.comment })
+      }));
+
+      // 4. Fetch bonus history for all users (keep aggregation for bonus)
+      const bonusHistory = await prisma.bonusHistory.findMany({
+        where: {
+          userId: { in: userIds },
+          month: m,
+          year: y
+        }
+      });
+      const bonusTotal = bonusHistory.reduce((sum, b) => sum + b.amount, 0);
+
+      // 5. Fetch daily logs (Presence/Notes aggregated from team only)
+      const dailyLogs = await prisma.dailyLog.findMany({
+        where: {
+          userId: { in: userIds },
+          date: { gte: startDate, lte: endDate },
+        },
+        include: {
+          user: {
+            select: { fullName: true }
+          }
+        }
       });
 
       return res.json({ 

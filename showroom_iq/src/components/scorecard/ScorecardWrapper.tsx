@@ -14,11 +14,14 @@ type TabType = 'commercial' | 'behavior' | 'calendar' | 'ressources';
 interface ScorecardWrapperProps {
   initialTab: TabType;
   role: 'admin' | 'owner';
+  type?: 'commercial' | 'magasin';
+  id?: string | null;
 }
 
-const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
+const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }: ScorecardWrapperProps) => {
+  const isMagasin = type === 'magasin';
   const searchParams = useSearchParams();
-  const userId = searchParams.get('id');
+  const userId = propId || searchParams.get('id');
 
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [userData, setUserData] = useState<any>(null);
@@ -36,11 +39,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
   
   // Ventes State
   const [caAmount, setCaAmount] = useState(0);
-  const [devisCreated, setDevisCreated] = useState(11);
-  const [devisValidated, setDevisValidated] = useState(6);
-  const [devisVolee, setDevisVolee] = useState(1);
-  const [devisOuvert, setDevisOuvert] = useState(4);
-  const [panierMoyen, setPanierMoyen] = useState(23323);
+  const [devisCreated, setDevisCreated] = useState(0);
+  const [devisValidated, setDevisValidated] = useState(0);
+  const [devisVolee, setDevisVolee] = useState(0);
+  const [devisOuvert, setDevisOuvert] = useState(0);
+  const [panierMoyen, setPanierMoyen] = useState(0);
 
   // Behavior derived from evaluations
   const behaviorStats = useMemo(() => {
@@ -81,22 +84,25 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
 
 
 
-  // Sync initial state when userData loads
+  // Sync state when userData loads (reads real metrics from backend for magasin)
   useEffect(() => {
     if (userData) {
-      setCaAmount(0); // Default to 0 as requested
-      setDevisCreated(userData.devisCreated || 11);
-      setDevisValidated(userData.devisValidated || 6);
-      setDevisVolee(userData.devisLost || 1);
-      setDevisOuvert(userData.devisOpened || 4);
-      setPanierMoyen(userData.avgBasket || 23323);
-      // Removed setBonusScore(userData.bonusScore) to allow month-specific bonuses to take priority
+      setCaAmount(userData.caAmount || 0);
+      setDevisCreated(userData.devisCreated || 0);
+      setDevisValidated(userData.devisValidated || 0);
+      setDevisVolee(userData.devisLost || 0);
+      setDevisOuvert(userData.devisOpened || 0);
+      setPanierMoyen(userData.avgBasket || 0);
     }
   }, [userData]);
 
   const fetchEvaluations = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/performance/evaluations/${userId}/${viewMonth}/${viewYear}`, {
+      const endpoint = isMagasin 
+        ? `http://localhost:3001/api/performance/evaluations/showroom/${userId}/${viewMonth}/${viewYear}`
+        : `http://localhost:3001/api/performance/evaluations/${userId}/${viewMonth}/${viewYear}`;
+
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         }
@@ -117,9 +123,13 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
           setPresenceLogs(logs.map((l: any) => ({
             date: l.date.split('T')[0],
             status: l.status,
-            motif: l.notes
+            motif: l.notes,
+            userId: l.userId
           })));
-          setNotesList(notes);
+          setNotesList(notes.map((n: any, idx: number) => ({
+            ...n,
+            userId: logs.filter((l: any) => l.activity === 'DAILY_NOTE')[idx]?.userId
+          })));
         }
         
         // Capture total bonus from backend aggregation
@@ -145,7 +155,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       }
       
       try {
-        const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+        const endpoint = isMagasin 
+          ? `http://localhost:3001/api/showrooms/${userId}`
+          : `http://localhost:3001/api/users/${userId}`;
+
+        const response = await fetch(endpoint, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           }
@@ -162,7 +176,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
     };
 
     fetchUserData();
-  }, [userId]);
+  }, [userId, isMagasin, viewMonth, viewYear]);
 
   if (loading) {
     return (
@@ -176,36 +190,55 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
 
   // --- SCORING LOGIC ---
   const monthObjective = userData?.objectives?.[0];
-  const conservativeCA = monthObjective?.conservativeCA || 30000;
-  const likelyCA = monthObjective?.likelyCA || 50000;
-  const exceedCA = monthObjective?.exceedCA || 70000;
+  const conservativeCA = isMagasin ? (userData?.targets?.conservative || 30000) : (monthObjective?.conservativeCA || 30000);
+  const likelyCA = isMagasin ? (userData?.targets?.likely || 50000) : (monthObjective?.likelyCA || 50000);
+  const exceedCA = isMagasin ? (userData?.targets?.exceed || 70000) : (monthObjective?.exceedCA || 70000);
 
-  // 1. Sales Score (35 pts)
+  // 1. Sales Score (35 pts for Commercial, 50 pts for Magasin)
   const getSalesScore = () => {
-    if (caAmount >= exceedCA) return { points: 35, status: "TRES BIEN" };
-    if (caAmount >= likelyCA) return { points: 32, status: "TRES BIEN" };
+    const maxPoints = isMagasin ? 50 : 35;
+    
+    if (caAmount >= exceedCA) return { points: maxPoints, status: "TRES BIEN" };
+    if (caAmount >= likelyCA) return { points: Math.floor(maxPoints * 0.9), status: "TRES BIEN" };
     if (caAmount >= conservativeCA) {
         const progress = (caAmount - conservativeCA) / (likelyCA - conservativeCA);
-        const points = 21 + Math.floor(progress * 10);
+        // Map [conservative, likely] to points
+        // For Magasin: 10 -> 45
+        // For Commercial: 21 -> 31
+        const startPoints = isMagasin ? 10 : 21;
+        const pointRange = isMagasin ? 35 : 10;
+        const points = startPoints + Math.floor(progress * pointRange);
         return { points, status: "BIEN" };
     }
     if (caAmount >= conservativeCA * 0.5) return { points: 10, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
 
-  // 2. Devis Score (15 pts)
+  // 2. Devis Score (15 pts for Commercial, 10 pts for Magasin)
   const conversionRate = devisCreated > 0 ? Math.round(((devisValidated + devisVolee) / devisCreated) * 100) : 0;
   const getDevisScore = () => {
-    // Proportional thresholds based on Ventes (TB: ~85%, Bien: ~70%, Moyen: ~54%)
+    if (isMagasin) {
+      if (conversionRate >= 75) return { points: 10, status: "TRES BIEN" };
+      if (conversionRate >= 50) return { points: 8, status: "BIEN" };
+      if (conversionRate >= 35) return { points: 4, status: "MOYEN" };
+      return { points: 0, status: "MAUVAIS" };
+    }
+
     if (conversionRate >= 80) return { points: 15, status: "TRES BIEN" };
     if (conversionRate >= 60) return { points: 10, status: "BIEN" };
     if (conversionRate >= 40) return { points: 5, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
 
-  // 3. Performance Score (15 pts)
+  // 3. Performance Score (15 pts for Commercial, 10 pts for Magasin)
   const getPerformanceScore = () => {
-    // Proportional thresholds based on Ventes
+    if (isMagasin) {
+      if (panierMoyen >= 20000) return { points: 10, status: "TRES BIEN" };
+      if (panierMoyen >= 15000) return { points: 8, status: "BIEN" };
+      if (panierMoyen >= 10000) return { points: 4, status: "MOYEN" };
+      return { points: 0, status: "MAUVAIS" };
+    }
+
     if (panierMoyen >= 22000) return { points: 15, status: "TRES BIEN" };
     if (panierMoyen >= 16000) return { points: 10, status: "BIEN" };
     if (panierMoyen >= 10000) return { points: 5, status: "MOYEN" };
@@ -316,31 +349,38 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
 
   // Category Status Helpers
   const getVentesStatus = (score: number) => {
-    if (score >= 55) return "TRES BIEN";
-    if (score >= 45) return "BIEN";
-    if (score >= 35) return "MOYEN";
+    if (isMagasin) {
+      if (score >= 56) return "TRES BIEN";  // 80% of 70
+      if (score >= 42) return "BIEN";       // 60% of 70
+      if (score >= 28) return "MOYEN";      // 40% of 70
+      return "MAUVAIS";
+    }
+    if (score >= 52) return "TRES BIEN";   // 80% of 65
+    if (score >= 39) return "BIEN";        // 60% of 65
+    if (score >= 26) return "MOYEN";       // 40% of 65
     return "MAUVAIS";
   };
 
   const getBehaviorStatus = (score: number) => {
-    if (score >= 25) return "TRES BIEN";
-    if (score >= 16) return "BIEN";
-    if (score >= 10) return "MOYEN";
+    if (score >= 24) return "TRES BIEN";  // 80% of 30
+    if (score >= 18) return "BIEN";       // 60% of 30
+    if (score >= 12) return "MOYEN";      // 40% of 30
     return "MAUVAIS";
   };
 
   const currentScores = {
+    isMagasin,
     ventes: totalSalesScore,
-    ventesMax: 65,
+    ventesMax: isMagasin ? 70 : 65,
     ventesStatus: getVentesStatus(totalSalesScore),
     comportement: totalBehaviorScore,
     comportementMax: 30,
     behaviorStatus: getBehaviorStatus(totalBehaviorScore),
-    presence: presenceData.points,
-    presenceMax: 5,
-    presenceStatus: presenceData.status,
-    bonus: bonusScore,
-    bonusMax: 5,
+    presence: isMagasin ? 0 : presenceData.points,
+    presenceMax: isMagasin ? 0 : 5,
+    presenceStatus: isMagasin ? "N/A" : presenceData.status,
+    bonus: isMagasin ? 0 : bonusScore,
+    bonusMax: isMagasin ? 0 : 5,
 
     details: {
       sales: salesData,
@@ -393,7 +433,13 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             { id: 'behavior', label: 'Comportement' },
             { id: 'calendar', label: 'Calendrier' },
             { id: 'ressources', label: 'Ressources' }
-          ].map((tab) => (
+          ].filter(tab => {
+            if (isMagasin) {
+                // Show Ventes, Behavior, and Calendar for Magasin
+                return tab.id !== 'ressources';
+            }
+            return true;
+          }).map((tab) => (
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
@@ -404,7 +450,7 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
           ))}
         </nav>
         
-        {(role === 'owner' || role === 'admin') && (
+        {(role === 'owner' || role === 'admin') && !isMagasin && (
           <button 
             onClick={() => setIsBonusOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md active:scale-95 mr-1 group transition-all"
@@ -420,7 +466,9 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
       {/* Header Section */}
       <div className="flex items-end justify-between px-2 mb-0">
         <div className="group relative">
-          <h2 className="text-4xl font-headline font-normal text-stone-900 tracking-tighter leading-none whitespace-nowrap">{showroomName}</h2>
+          <h2 className="text-4xl font-headline font-normal text-stone-900 tracking-tighter leading-none whitespace-nowrap">
+            {isMagasin ? userData?.name || 'Magasin' : showroomName}
+          </h2>
         </div>
         <div className="flex gap-3">
         </div>
@@ -450,8 +498,11 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             evaluations={evaluations}
             onRefresh={async () => {
               await fetchEvaluations();
-              // Also refresh user data for scores
-              const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+              // Refresh data from correct endpoint based on type
+              const endpoint = isMagasin
+                ? `http://localhost:3001/api/showrooms/${userId}`
+                : `http://localhost:3001/api/users/${userId}`;
+              const response = await fetch(endpoint, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
               });
               const result = await response.json();
@@ -473,7 +524,10 @@ const ScorecardWrapper = ({ initialTab, role }: ScorecardWrapperProps) => {
             setViewYear={setViewYear}
             onRefresh={async () => {
               await fetchEvaluations();
-              const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+              const endpoint = isMagasin
+                ? `http://localhost:3001/api/showrooms/${userId}`
+                : `http://localhost:3001/api/users/${userId}`;
+              const response = await fetch(endpoint, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
               });
               const result = await response.json();

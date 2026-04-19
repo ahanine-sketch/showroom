@@ -13,9 +13,11 @@ interface ScorecardProps {
   isDashboard?: boolean;
   userData?: any;
   scores?: any;
+  isMagasin?: boolean;
 }
 
-const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores }: ScorecardProps) => {
+const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores, isMagasin: propIsMagasin }: ScorecardProps) => {
+  const isMagasin = propIsMagasin || scores?.isMagasin;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [drawerStatus, setDrawerStatus] = useState('');
@@ -85,7 +87,7 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
             <ObjectiveSalesCard 
               className="col-span-8"
               score={details?.sales?.points || 0}
-              maxScore={35}
+              maxScore={isMagasin ? 50 : 35}
               status={details?.sales?.status || "MAUVAIS"}
               caGenerated={(metrics?.caAmount || 0).toLocaleString('en-US')}
               baseValue={metrics?.conservativeCA || 30000}
@@ -119,7 +121,7 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <ScoreBadge score={details?.devis?.points || 0} max={15} status={details?.devis?.status || "MAUVAIS"} />
+                    <ScoreBadge score={details?.devis?.points || 0} max={isMagasin ? 10 : 15} status={details?.devis?.status || "MAUVAIS"} />
                   </div>
                 </div>
 
@@ -205,7 +207,7 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
            </div>
 
            <div className="px-10 py-6 border-b border-stone-100 flex justify-end items-center bg-stone-50/10">
-             <ScoreBadge score={details?.perf?.points || 0} max={15} status={details?.perf?.status || "MAUVAIS"} />
+             <ScoreBadge score={details?.perf?.points || 0} max={isMagasin ? 10 : 15} status={details?.perf?.status || "MAUVAIS"} />
            </div>
           
           <div className="grid grid-cols-6 bg-stone-50 border-b border-stone-100 font-mono text-[8px] font-bold uppercase text-stone-400 tracking-widest">
@@ -238,11 +240,11 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
               <span className="text-[8px] text-stone-400 uppercase font-bold">MAD</span>
             </div>
             <div className="p-2 flex flex-col justify-center items-center bg-emerald-50/30 border-r border-stone-100 text-stone-800">
-              <span className="text-[20px] font-bold tracking-tighter">40</span>
+              <span className="text-[20px] font-bold tracking-tighter">{metrics?.devisValidated || 0}</span>
               <span className="text-[8px] text-stone-400 uppercase font-bold">Conclues</span>
             </div>
             <div className="p-2 flex flex-col justify-center items-center bg-stone-50/20 border-r border-stone-100 text-stone-800">
-              <span className="text-[20px] font-bold tracking-tighter">33</span>
+              <span className="text-[20px] font-bold tracking-tighter">0</span>
               <span className="text-[8px] text-stone-400 uppercase font-bold">Distincts</span>
             </div>
             <div className="bg-stone-50/5 border-r border-stone-100 flex items-center justify-center text-stone-100 text-xl">-</div>

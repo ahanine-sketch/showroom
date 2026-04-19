@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProfileHeader from './ProfileHeader';
 import ScoreBadge from './ScoreBadge';
 
@@ -31,14 +31,15 @@ const CalendarScorecard = ({
   setViewMonth,
   setViewYear
 }: ScorecardProps) => {
+  const isMagasin = scores?.isMagasin;
   const details = scores?.details || {};
   const currentLogs = details.presenceLogs || [];
   const currentNotes = details.notesList || [];
   const setters = details.setters || {};
 
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  
-  // Dynamic Month Info
+
+  // --- Dynamic Month Info ---
   const monthNames = [
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
@@ -67,20 +68,14 @@ const CalendarScorecard = ({
   };
 
   // Grid Calculation
-  // In JS Date, month is 0-indexed for constructor: new Date(year, monthIndex, day)
   const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1);
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
-  
-  // getDay() returns 0 for Sunday, 1 for Monday... 6 for Saturday
-  // We want Monday as index 0, so:
-  // Sun(0) -> index 6, Mon(1) -> index 0, Tue(2) -> index 1...
   const startingDayIndex = (firstDayOfMonth.getDay() + 6) % 7;
 
-  // Handlers for manual inputs
+  // Handlers for manual inputs (commercial only)
   const [presenceStatus, setPresenceStatus] = useState('Retard');
   const [presenceDate, setPresenceDate] = useState(`${viewYear}-${String(viewMonth).padStart(2, '0')}-01`);
   const [presenceMotif, setPresenceMotif] = useState('');
-
   const [noteType, setNoteType] = useState('positive');
   const [noteDate, setNoteDate] = useState(`${viewYear}-${String(viewMonth).padStart(2, '0')}-01`);
   const [noteContent, setNoteContent] = useState('');
@@ -149,12 +144,22 @@ const CalendarScorecard = ({
     }
   };
 
+  // For magasin: the backend already returns team-aggregated logs/notes in currentLogs/currentNotes
+  const effectiveLogs = currentLogs;
+  const effectiveNotes = currentNotes;
+
   const getDayStatus = (day: number) => {
     const dateStr = `${viewYear}-${String(viewMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const log = currentLogs.find((l: any) => l.date === dateStr);
-    const dayNotes = currentNotes.filter((n: any) => n.date === dateStr);
-    return { log, dayNotes };
+    const log = effectiveLogs.find((l: any) => l.date === dateStr);
+    const dayNotes = effectiveNotes.filter((n: any) => n.date === dateStr);
+    // For magasin: get all logs for this day (multiple commercials)
+    const allDayLogs = effectiveLogs.filter((l: any) => l.date === dateStr);
+    return { log, dayNotes, allDayLogs };
   };
+
+  // Aggregate overview stats for magasin (all commercials)
+  const overviewLogs = isMagasin ? effectiveLogs : currentLogs;
+  const overviewNotes = isMagasin ? effectiveNotes : currentNotes;
 
   return (
     <div className={`${isDashboard ? 'py-6 px-2' : 'p-12'} space-y-8 max-w-[1400px] mx-auto`}>
@@ -213,7 +218,7 @@ const CalendarScorecard = ({
               ))}
               {[...Array(daysInMonth)].map((_, i) => {
                 const day = i + 1;
-                const { log, dayNotes } = getDayStatus(day);
+                const { log, dayNotes, allDayLogs } = getDayStatus(day);
                 const isSelected = selectedDay === day;
 
                 return (
@@ -235,7 +240,7 @@ const CalendarScorecard = ({
                       </span>
                       
                       <div className="flex flex-col gap-0.5">
-                        {dayNotes.map((n: any, idx) => (
+                        {dayNotes.map((n: any, idx: number) => (
                           <span key={idx} className={`text-[12px] font-black leading-none ${n.type === 'positive' ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {n.type === 'positive' ? '+' : '-'}
                           </span>
@@ -244,9 +249,13 @@ const CalendarScorecard = ({
                     </div>
 
                     <div className="flex gap-1 justify-end">
-                      {log?.status === 'Retard' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>}
-                      {log?.status === 'Absence' && <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>}
-                      {log?.status === 'Congé' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                      {(isMagasin ? allDayLogs : [log]).filter(Boolean).map((l: any, idx: number) => (
+                        <React.Fragment key={idx}>
+                          {l?.status === 'Retard' && <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>}
+                          {l?.status === 'Absence' && <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>}
+                          {l?.status === 'Congé' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>}
+                        </React.Fragment>
+                      ))}
                     </div>
                   </div>
                 );
@@ -305,7 +314,30 @@ const CalendarScorecard = ({
                     {/* Presence Section */}
                     <div>
                       <h4 className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] mb-3">Logs de Présence</h4>
-                      {getDayStatus(selectedDay).log ? (
+                      {getDayStatus(selectedDay).allDayLogs.length > 0 ? (
+                        <div className="space-y-2">
+                          {getDayStatus(selectedDay).allDayLogs.map((l: any, idx: number) => (
+                            <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                  l?.status === 'Retard' ? 'bg-amber-100 text-amber-600' :
+                                  l?.status === 'Absence' ? 'bg-red-100 text-red-600' :
+                                  'bg-blue-100 text-blue-600'
+                                }`}>
+                                  <span className="material-symbols-outlined text-[18px]">
+                                    {l?.status === 'Retard' ? 'schedule' : 
+                                     l?.status === 'Absence' ? 'event_busy' : 'beach_access'}
+                                  </span>
+                                </div>
+                                <span className="text-[14px] font-bold text-stone-800">{l?.status}</span>
+                              </div>
+                              {l?.motif && (
+                                <span className="text-[11px] font-medium text-stone-400 italic">"{l?.motif}"</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : getDayStatus(selectedDay).log ? (
                         <div className="p-4 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -374,8 +406,8 @@ const CalendarScorecard = ({
             )}
           </div>
 
-          {/* Interaction Cards (Owner only) */}
-          {(role === 'owner' || role === 'admin') && (
+          {/* Interaction Cards — ONLY for commercial (not magasin) */}
+          {!isMagasin && (role === 'owner' || role === 'admin') && (
             <div className="grid grid-cols-2 gap-8">
               {/* Log Presence Form */}
               <div className="bg-white p-8 rounded-3xl border border-stone-200/60 shadow-sm transition-all hover:shadow-md">
@@ -433,7 +465,7 @@ const CalendarScorecard = ({
               <div className="bg-white p-8 rounded-3xl border border-stone-200/60 shadow-sm transition-all hover:shadow-md">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-inner">
-                    <span className="material-symbols-outlined text-[22px]">history_edu</span>
+                    <span className="material-symbols-outlined text-[22px]">edit_note</span>
                   </div>
                   <h5 className="font-headline text-xl font-bold text-stone-900">Note Journalière</h5>
                 </div>
@@ -485,7 +517,7 @@ const CalendarScorecard = ({
 
         {/* Overview & History Column */}
         <div className="col-span-4 space-y-10">
-          {/* Unified Overview Card */}
+          {/* Unified Overview Card — No score badge for magasin */}
           <div className="bg-white border border-stone-200/60 rounded-3xl p-8 shadow-sm relative transition-all hover:shadow-md flex flex-col">
             <div className="flex items-start justify-between mb-12">
               <div className="flex items-center gap-4">
@@ -494,24 +526,29 @@ const CalendarScorecard = ({
                 </div>
                 <div>
                   <h4 className="font-headline text-[22px] font-bold tracking-tight text-stone-900 leading-none">Overview</h4>
+                  {isMagasin && (
+                    <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mt-1 opacity-60">Tous les commerciaux</p>
+                  )}
                 </div>
               </div>
-              <ScoreBadge 
-                score={scores?.details?.presenceData?.points ?? 5} 
-                max={5} 
-                status={scores?.details?.presenceData?.status || "TRES BIEN"} 
-              />
+              {/* Score badge only for commercial, not magasin */}
+              {!isMagasin && (
+                <ScoreBadge 
+                  score={scores?.details?.presenceData?.points ?? 5} 
+                  max={5} 
+                  status={scores?.details?.presenceData?.status || "TRES BIEN"} 
+                />
+              )}
             </div>
 
             <div className="flex-1 space-y-6">
-
                {/* Statistics List */}
                <div className="grid grid-cols-1 gap-3 mt-4">
                  {[
-                   { label: 'Retards', value: currentLogs.filter((l: any) => l.status === 'Retard').length, icon: 'schedule', color: 'amber' },
-                   { label: 'Absences', value: currentLogs.filter((l: any) => l.status === 'Absence').length, icon: 'event_busy', color: 'red' },
-                   { label: 'Notes Positives', value: currentNotes.filter((n: any) => n.type === 'positive').length, icon: 'add_task', color: 'emerald' },
-                   { label: 'Notes Négatives', value: currentNotes.filter((n: any) => n.type === 'negative').length, icon: 'thumb_down', color: 'rose' }
+                   { label: 'Retards', value: overviewLogs.filter((l: any) => l.status === 'Retard').length, icon: 'schedule', color: 'amber' },
+                   { label: 'Absences', value: overviewLogs.filter((l: any) => l.status === 'Absence').length, icon: 'event_busy', color: 'red' },
+                   { label: 'Notes Positives', value: overviewNotes.filter((n: any) => n.type === 'positive').length, icon: 'add_task', color: 'emerald' },
+                   { label: 'Notes Négatives', value: overviewNotes.filter((n: any) => n.type === 'negative').length, icon: 'thumb_down', color: 'rose' }
                  ].map((stat, i) => (
                    <div key={i} className={`flex items-center justify-between p-4 bg-white border border-stone-50 rounded-2xl shadow-sm hover:border-${stat.color}-200 transition-all group`}>
                      <div className="flex items-center gap-3">
@@ -526,6 +563,41 @@ const CalendarScorecard = ({
                    </div>
                  ))}
                </div>
+
+               {/* Magasin: Per-commercial breakdown */}
+               {isMagasin && userData?.commercials?.length > 0 && (
+                 <div className="mt-6 pt-6 border-t border-stone-100">
+                   <h5 className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-4">Par Commercial</h5>
+                   <div className="space-y-3">
+                     {userData.commercials.map((c: any, i: number) => {
+                       const retards = (c.presenceLogs || []).filter((l: any) => l.status === 'Retard').length;
+                       const absences = (c.presenceLogs || []).filter((l: any) => l.status === 'Absence').length;
+                       const totalFaults = retards + absences;
+                       return (
+                         <div key={i} className="flex items-center justify-between p-3 bg-stone-50/50 border border-stone-100 rounded-xl">
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-black text-stone-600">
+                               {c.fullName?.[0] || '?'}
+                             </div>
+                             <span className="text-[12px] font-bold text-stone-800 tracking-tight">{c.fullName}</span>
+                           </div>
+                           <div className="flex items-center gap-2">
+                             {retards > 0 && (
+                               <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">{retards}R</span>
+                             )}
+                             {absences > 0 && (
+                               <span className="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">{absences}A</span>
+                             )}
+                             {totalFaults === 0 && (
+                               <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">OK</span>
+                             )}
+                           </div>
+                         </div>
+                       );
+                     })}
+                   </div>
+                 </div>
+               )}
             </div>
           </div>
 
@@ -533,16 +605,18 @@ const CalendarScorecard = ({
           <div className="bg-white border border-stone-200/60 rounded-3xl p-10 shadow-sm relative transition-all hover:shadow-md">
              <div className="flex items-center gap-4 mb-10">
                 <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner">
-                  <span className="material-symbols-outlined text-[24px]">history_edu</span>
+                  <span className="material-symbols-outlined text-[24px]">history</span>
                 </div>
                 <div>
                   <h4 className="font-headline text-[22px] font-bold tracking-tight text-stone-900 leading-none mb-1">Historique Notes</h4>
-                  <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold opacity-60">Derniers feedbacks</p>
+                  <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold opacity-60">
+                    {isMagasin ? 'Tous les commerciaux' : 'Derniers feedbacks'}
+                  </p>
                 </div>
              </div>
 
              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {currentNotes.map((note: any, idx: number) => (
+                {overviewNotes.map((note: any, idx: number) => (
                   <div key={idx} className="flex gap-4 p-4 border border-stone-50 rounded-2xl bg-stone-50/30 hover:bg-white hover:border-stone-100 hover:shadow-sm transition-all group">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
                       note.type === 'positive' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
@@ -557,7 +631,7 @@ const CalendarScorecard = ({
                     </div>
                   </div>
                 ))}
-                {currentNotes.length === 0 && (
+                {overviewNotes.length === 0 && (
                   <p className="text-[12px] text-stone-400 italic text-center py-8">Aucun historique de notes.</p>
                 )}
              </div>

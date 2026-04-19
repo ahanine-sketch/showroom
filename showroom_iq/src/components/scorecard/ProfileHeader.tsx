@@ -23,11 +23,27 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
-  // Map external userData structure to local props
-  const fullName = user?.fullName || "Utilisateur";
-  const phone = user?.phone || "Non renseigné";
-  const seniority = user?.seniority || "";
-  const showroomName = user?.showroomName || user?.showroom?.name || "Magasin Casablanca";
+  const isMagasin = (scores as any)?.isMagasin;
+
+  // Map data depending on context (Magasin vs Individual Commercial)
+  const fullName = isMagasin 
+    ? (user as any)?.manager?.fullName || (user as any)?.manager?.name || "Manager non assigné"
+    : user?.fullName || "Utilisateur";
+
+  const seniority = isMagasin 
+    ? (user as any)?.manager?.seniority || ""
+    : user?.seniority || "";
+
+  const displaySubtitle = isMagasin 
+    ? (user as any)?.name || "Magasin"
+    : (user?.showroomName || user?.showroom?.name || "Magasin Casablanca");
+
+  const phone = isMagasin 
+    ? (user as any)?.manager?.phone || "Non renseigné" 
+    : user?.phone || "Non renseigné";
+
+  // In Image 2, the subtitle icon is location_on for the showroom name.
+  const subtitleIcon = "location_on";
 
   return (
     <div className="flex items-start justify-between mb-8 bg-white px-12 py-10 rounded-[32px] border border-stone-100 shadow-sm transition-all hover:shadow-md">
@@ -35,14 +51,14 @@ const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
         <div className="flex items-center gap-3 mb-1">
           <h3 className="font-headline text-4xl text-stone-900 tracking-tight">{fullName}</h3>
           {seniority && (
-            <span className="px-3 py-1 bg-stone-100 text-stone-500 text-[10px] uppercase font-bold rounded-md tracking-widest">
+            <span className="px-2.5 py-1 bg-yellow-50 text-yellow-700 text-[9px] uppercase font-black rounded-lg border border-yellow-100 tracking-widest">
               {seniority}
             </span>
           )}
         </div>
         <p className="text-stone-400 font-sans text-[13px] mb-3 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]">location_on</span>
-          {showroomName}
+          <span className="material-symbols-outlined text-[16px]">{subtitleIcon}</span>
+          {displaySubtitle}
         </p>
         <div className="flex items-center gap-6 text-[12px] text-stone-600 font-sans">
           <span className="flex items-center gap-2">

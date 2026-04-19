@@ -42,6 +42,9 @@ model Showroom {
   objectives Objective[]
   manager    User?       @relation("Manager", fields: [managerId], references: [id])
   users      User[]
+  evaluations ProcessEvaluation[]
+  logs        DailyLog[]
+  clientReviews ClientReview[]
 }
 
 model Objective {
@@ -102,7 +105,8 @@ model ScoringConfig {
 
 model ProcessEvaluation {
   id              String         @id @default(uuid())
-  userId          String
+  userId          String?
+  showroomId      String?
   date            DateTime       @default(now())
   notes           String?
   createdAt       DateTime       @default(now())
@@ -114,17 +118,20 @@ model ProcessEvaluation {
   ticketsCount    Int?
   type            EvaluationType
   warningLevel    Int?
-  user            User           @relation(fields: [userId], references: [id])
+  user            User?           @relation(fields: [userId], references: [id])
+  showroom        Showroom?       @relation(fields: [showroomId], references: [id])
 }
 
 model DailyLog {
-  id       String   @id @default(uuid())
-  userId   String
-  date     DateTime @default(now())
-  activity String
-  status   String
-  notes    String?
-  user     User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String?
+  showroomId String?
+  date       DateTime @default(now())
+  activity   String
+  status     String
+  notes      String?
+  user       User?     @relation(fields: [userId], references: [id])
+  showroom   Showroom? @relation(fields: [showroomId], references: [id])
 }
 
 model FormationProgress {
@@ -148,6 +155,7 @@ enum EvaluationType {
   PROCESS
   PRESENCE
   DAILY_NOTE
+  SHOWROOM
 }
 
 model GlobalSettings {
@@ -169,12 +177,14 @@ model BonusHistory {
   user        User     @relation(fields: [userId], references: [id])
 }
 model ClientReview {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String
-  rating    Int
-  comment   String?
-  date      DateTime @default(now())
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(uuid())
+  userId      String?
+  showroomId  String?
+  name        String
+  rating      Int
+  comment     String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  user        User?     @relation(fields: [userId], references: [id])
+  showroom    Showroom? @relation(fields: [showroomId], references: [id])
 }

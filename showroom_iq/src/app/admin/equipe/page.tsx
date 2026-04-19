@@ -55,11 +55,11 @@ function getBarColor(metric: 'ventes' | 'comportement' | 'presence' | 'bonus', v
 }
 
 /** Returns text + dot color for the global score card */
-function getGlobalColor(score: number): { text: string; dot: string; badge: string } {
-  if (score >= 80) return { text: 'text-emerald-600', dot: 'bg-emerald-400', badge: 'text-emerald-600' };
-  if (score >= 60) return { text: 'text-yellow-600',  dot: 'bg-yellow-400',  badge: 'text-yellow-600' };
-  if (score >= 40) return { text: 'text-orange-500',  dot: 'bg-orange-400',  badge: 'text-orange-500' };
-  return             { text: 'text-red-500',    dot: 'bg-rose-500',    badge: 'text-red-500' };
+function getGlobalColor(score: number): { text: string; dot: string; badge: string; label: string } {
+  if (score >= 80) return { text: 'text-emerald-600', dot: 'bg-emerald-400', badge: 'bg-emerald-50 text-emerald-600', label: 'Très Bien' };
+  if (score >= 60) return { text: 'text-yellow-600',  dot: 'bg-yellow-400',  badge: 'bg-yellow-50 text-yellow-600', label: 'Bien' };
+  if (score >= 40) return { text: 'text-orange-500',  dot: 'bg-orange-400',  badge: 'bg-orange-50 text-orange-600', label: 'Moyen' };
+  return             { text: 'text-red-500',    dot: 'bg-rose-500',    badge: 'bg-red-50 text-red-600', label: 'Mauvais' };
 }
 
 
@@ -225,15 +225,20 @@ export default function TeamPage() {
                     {/* Scores */}
                     <div className="space-y-6">
                       {/* Global Performance */}
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         <div className="flex items-center justify-between text-[11px] font-bold text-stone-400 uppercase tracking-widest font-mono">
                           <span className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${globalColors.dot}`} />
-                            Performance Globale
+                             <span className={`w-2 h-2 rounded-full ${globalColors.dot}`} />
+                             Performance Globale
                           </span>
-                          <span className={`font-mono font-bold text-[14px] ${globalColors.text}`}>
-                            {member.scores.global}/100
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`font-mono font-bold text-[18px] leading-none ${globalColors.text}`}>
+                              {member.scores.global}/100
+                            </span>
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${globalColors.badge}`}>
+                              {globalColors.label}
+                            </span>
+                          </div>
                         </div>
                         <div className="h-1.5 w-full bg-stone-50 rounded-full overflow-hidden">
                           <div className={`h-full ${globalColors.dot} rounded-full transition-all duration-700`} style={{ width: `${member.scores.global}%` }} />

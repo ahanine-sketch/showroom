@@ -16,6 +16,10 @@ interface ScorecardProps {
 
 const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores, evaluations, onRefresh }: ScorecardProps) => {
   const basePath = `/${role}/scorecard`;
+  const isMagasin = scores?.isMagasin;
+  
+  // For magasin: evaluations are linked to the showroom itself
+  const targetId = userData?.id;
   
   const details = scores?.details;
   const metrics = details?.metrics;
@@ -64,7 +68,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   }, [availableWarnings, malusType]);
 
   const handleAddMalus = async () => {
-    if (malusComment && malusType && userData?.id) {
+    if (malusComment && malusType && targetId) {
       try {
         const response = await fetch('http://localhost:3001/api/performance/evaluation', {
           method: 'POST',
@@ -73,7 +77,8 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
-            userId: userData.id,
+            userId: isMagasin ? null : targetId,
+            showroomId: isMagasin ? targetId : null,
             type: 'PROCESS',
             warningLevel: malusType === 'Avertissement 1' ? 1 : malusType === 'Avertissement 2' ? 2 : 3,
             notes: JSON.stringify({ title: malusType, comment: malusComment }),
@@ -92,7 +97,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   };
 
   const handleAddAvis = async () => {
-    if (newAvisName && newAvisComment && userData?.id) {
+    if (newAvisName && newAvisComment && targetId) {
       try {
         const response = await fetch('http://localhost:3001/api/performance/evaluation', {
           method: 'POST',
@@ -101,7 +106,8 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
-            userId: userData.id,
+            userId: isMagasin ? null : targetId,
+            showroomId: isMagasin ? targetId : null,
             type: 'AVIS',
             plusAvis: newAvisRating >= 4 ? 1 : 0,
             minusAvis: newAvisRating <= 2 ? 1 : 0,
@@ -123,7 +129,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   };
 
   const handleAddSav = async () => {
-    if (savComment && userData?.id) {
+    if (savComment && targetId) {
       try {
         const response = await fetch('http://localhost:3001/api/performance/evaluation', {
           method: 'POST',
@@ -132,7 +138,8 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
           },
           body: JSON.stringify({
-            userId: userData.id,
+            userId: isMagasin ? null : targetId,
+            showroomId: isMagasin ? targetId : null,
             type: 'SAV',
             ticketsCount: savType === 'TICKET' ? 1 : 0,
             complaintsCount: savType === 'COMPLAINTE' ? 1 : 0,
@@ -311,8 +318,8 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             {/* Section: SAV */}
             <div className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm transition-all hover:shadow-md relative">
               <div className="absolute top-8 left-10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shadow-sm">
-                  <span className="material-symbols-outlined text-[24px]">support_agent</span>
+                <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shadow-sm">
+                  <span className="material-symbols-outlined text-[24px]">headset_mic</span>
                 </div>
                 <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">SAV</h4>
               </div>
@@ -392,9 +399,9 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
             <div className="bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm transition-all hover:shadow-md relative">
               <div className="absolute top-8 left-10 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm">
-                  <span className="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+                  <span className="material-symbols-outlined text-[24px]">storefront</span>
                 </div>
-                <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">Processus</h4>
+                <h4 className="font-headline text-[32px] font-bold tracking-tight text-stone-900">{isMagasin ? 'Magasin' : 'Processus'}</h4>
               </div>
               
               <div className="w-full h-16"></div> {/* Spacer for header */}
@@ -408,7 +415,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
                    <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl space-y-6 shadow-inner">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400 flex items-center gap-3">
                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
-                       Émettre un avertissement
+                       {isMagasin ? "Note d'inspection / Contrôle" : "Émettre un avertissement"}
                      </p>
                      
                       <div className="grid grid-cols-1 gap-4">
@@ -462,7 +469,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
                                   <span className="material-symbols-outlined text-[20px]">report_problem</span>
                                 </div>
                                  <div className="flex flex-col">
-                                   <h5 className="text-[14px] font-black text-stone-800">{parsed.title}</h5>
+                                   <h5 className="text-[14px] font-black text-stone-800">{isMagasin && parsed.title.includes('Avertissement') ? parsed.title.replace('Avertissement', 'Observation') : parsed.title}</h5>
                                    {parsed.comment && <p className="text-[12px] text-stone-600 italic mt-1 font-medium">"{parsed.comment}"</p>}
                                    <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-2">
                                      Le {new Date(item.date).toLocaleDateString('fr-FR')}

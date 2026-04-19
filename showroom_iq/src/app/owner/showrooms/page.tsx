@@ -21,6 +21,7 @@ interface Showroom {
     id?: string;
     name: string;
     avatar: string;
+    seniority?: string;
   } | null;
   commercials: {
     id: string;
@@ -275,6 +276,7 @@ export default function Page() {
           </div>
         </div>
 
+
         {isLoading ? (
           <div className="py-20 text-center">
             <div className="animate-spin w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -282,28 +284,27 @@ export default function Page() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-            {filteredShowrooms.map((showroom) => {
-              const isCasa = showroom.name.toLowerCase().includes('casa');
-              const displayPerformance = isCasa ? 0 : showroom.performance;
-              const displayScore = isCasa ? 0 : showroom.score;
-              
-              return (
-                <ShowroomCard 
-                  key={showroom.id}
-                  id={showroom.id}
-                  name={showroom.name}
-                  address={showroom.location || 'Adresse non spécifiée'}
-                  city={showroom.city || 'SANS VILLE'}
-                  manager={showroom.manager || { name: 'Non assigné', avatar: '' }}
-                  performance={displayPerformance}
-                  score={displayScore}
-                  commercialCount={showroom.commercials?.length || 0}
-                  onDelete={(id) => {
-                    setShowroomToDelete(id);
-                    setIsDeleteOpen(true);
-                  }}
-                  onUpdate={(id) => {
-                    const magasin = showrooms.find(s => s.id === id);
+            {filteredShowrooms.map((showroom) => (
+              <ShowroomCard 
+                key={showroom.id}
+                id={showroom.id}
+                name={showroom.name}
+                address={showroom.location || 'Adresse non spécifiée'}
+                city={showroom.city || 'SANS VILLE'}
+                manager={{
+                  name: showroom.manager?.name || 'Non assigné',
+                  avatar: showroom.manager?.avatar || '',
+                  seniority: showroom.manager?.seniority || ''
+                }}
+                performance={showroom.performance}
+                score={showroom.score}
+                commercialCount={showroom.commercials?.length || 0}
+                onDelete={(id) => {
+                  setShowroomToDelete(id);
+                  setIsDeleteOpen(true);
+                }}
+                onUpdate={(id) => {
+                  const magasin = showrooms.find(s => s.id === id);
                   if (magasin) {
                     setFormData({
                       name: magasin.name,
@@ -333,10 +334,9 @@ export default function Page() {
                   }
                 }}
               />
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
         {!isLoading && filteredShowrooms.length === 0 && (
           <div className="py-20 text-center flex flex-col items-center">
@@ -346,6 +346,7 @@ export default function Page() {
           </div>
         )}
       </div>
+
 
       {/* --- Overlay & Drawer --- */}
       {drawerMode !== null && (

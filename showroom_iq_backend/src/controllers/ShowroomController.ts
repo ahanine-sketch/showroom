@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { ShowroomScoringService } from '../services/ShowroomScoringService';
 
 export class ShowroomController {
   /**
@@ -7,6 +8,9 @@ export class ShowroomController {
    */
   static async getAll(req: Request, res: Response) {
     try {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
       const showrooms = await prisma.showroom.findMany({
         include: {
           manager: {
@@ -15,7 +19,8 @@ export class ShowroomController {
               fullName: true,
               email: true,
               phone: true,
-              avatarUrl: true
+              avatarUrl: true,
+              seniority: true
             }
           },
           users: {
@@ -31,8 +36,8 @@ export class ShowroomController {
               role: true,
               objectives: {
                 where: {
-                  month: new Date().getMonth() + 1,
-                  year: new Date().getFullYear()
+                  month: currentMonth,
+                  year: currentYear
                 },
                 take: 1
               }
@@ -40,48 +45,53 @@ export class ShowroomController {
           },
           objectives: {
             where: {
-              month: new Date().getMonth() + 1,
-              year: new Date().getFullYear()
+              month: currentMonth,
+              year: currentYear
             },
             take: 1
           }
         }
       });
 
-      // Calculate performance placeholder or basic stats
-      const formatted = showrooms.map(s => ({
-        id: s.id,
-        name: s.name,
-        location: s.location,
-        city: s.city,
-        manager: s.manager ? {
-          id: s.manager.id,
-          name: s.manager.fullName,
-          email: s.manager.email,
-          phone: s.manager.phone,
-          avatar: s.manager.avatarUrl
-        } : null,
-        commercials: s.users.map(u => ({
-          id: u.id,
-          fullName: u.fullName,
-          email: u.email,
-          phone: u.phone,
-          avatarUrl: u.avatarUrl,
-          role: u.role,
-          targets: u.objectives && u.objectives.length > 0 ? {
-            conservative: u.objectives[0].conservativeCA,
-            likely: u.objectives[0].likelyCA,
-            exceed: u.objectives[0].exceedCA
+      // Calculate performance for each showroom
+      const formatted = await Promise.all(showrooms.map(async (s) => {
+        const performance = await ShowroomScoringService.calculatePerformance(s.id, currentMonth, currentYear);
+        
+        return {
+          id: s.id,
+          name: s.name,
+          location: s.location,
+          city: s.city,
+          manager: s.manager ? {
+            id: s.manager.id,
+            name: s.manager.fullName,
+            email: s.manager.email,
+            phone: s.manager.phone,
+            avatar: s.manager.avatarUrl,
+            seniority: (s.manager as any).seniority || ''
+          } : null,
+          commercials: s.users.map(u => ({
+            id: u.id,
+            fullName: u.fullName,
+            email: u.email,
+            phone: u.phone,
+            avatarUrl: u.avatarUrl,
+            role: u.role,
+            targets: u.objectives && u.objectives.length > 0 ? {
+              conservative: u.objectives[0].conservativeCA,
+              likely: u.objectives[0].likelyCA,
+              exceed: u.objectives[0].exceedCA
+            } : null
+          })),
+          performance: performance,
+          score: Math.round(performance),
+          status: 'Ouvert',
+          targets: s.objectives.length > 0 ? {
+            conservative: s.objectives[0].conservativeCA,
+            likely: s.objectives[0].likelyCA,
+            exceed: s.objectives[0].exceedCA
           } : null
-        })),
-        performance: 0, // Placeholder for now (0/100 cus no data yet)
-        score: 0,      // Placeholder for now
-        status: 'Ouvert',
-        targets: s.objectives.length > 0 ? {
-          conservative: s.objectives[0].conservativeCA,
-          likely: s.objectives[0].likelyCA,
-          exceed: s.objectives[0].exceedCA
-        } : null
+        };
       }));
 
       return res.json({ success: true, data: formatted });
@@ -96,6 +106,12 @@ export class ShowroomController {
   static async getById(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
       const s = await prisma.showroom.findUnique({
         where: { id },
         include: {
@@ -105,13 +121,12 @@ export class ShowroomController {
               fullName: true,
               email: true,
               phone: true,
-              avatarUrl: true
+              avatarUrl: true,
+              seniority: true
             }
           },
           users: {
-            where: {
-              role: 'COMMERCIAL'
-            },
+            where: { role: 'COMMERCIAL' },
             select: {
               id: true,
               fullName: true,
@@ -120,19 +135,13 @@ export class ShowroomController {
               avatarUrl: true,
               role: true,
               objectives: {
-                where: {
-                  month: new Date().getMonth() + 1,
-                  year: new Date().getFullYear()
-                },
+                where: { month, year },
                 take: 1
               }
             }
           },
           objectives: {
-            where: {
-              month: new Date().getMonth() + 1,
-              year: new Date().getFullYear()
-            },
+            where: { month, year },
             take: 1
           }
         }
@@ -142,6 +151,32 @@ export class ShowroomController {
         return res.status(404).json({ success: false, message: 'Magasin introuvable' });
       }
 
+      // Compute period-specific score using the SAME engine as getAll
+      const score = await ShowroomScoringService.calculatePerformance(id, month, year);
+
+      // Fetch real sales metrics for this period so the frontend dashboard is accurate
+      const userIds = s.users.map(u => u.id);
+      let caAmount = 0, devisCreated = 0, devisValidated = 0;
+      let devisLost = 0, devisOpened = 0, avgBasket = 0;
+
+      if (userIds.length > 0) {
+        const salesMetrics = await prisma.salesMetric.findMany({
+          where: {
+            userId: { in: userIds },
+            date: { gte: startOfMonth, lte: endOfMonth }
+          }
+        });
+
+        caAmount = salesMetrics.reduce((sum, m) => sum + m.ca, 0);
+        devisCreated = salesMetrics.reduce((sum, m) => sum + m.devisCreated, 0);
+        devisValidated = salesMetrics.reduce((sum, m) => sum + m.devisValidated, 0);
+        devisLost = salesMetrics.reduce((sum, m) => sum + m.devisLost, 0);
+        devisOpened = salesMetrics.reduce((sum, m) => sum + ((m as any).devisOpened || 0), 0);
+        avgBasket = salesMetrics.length > 0
+          ? salesMetrics.reduce((sum, m) => sum + m.avgBasket, 0) / salesMetrics.length
+          : 0;
+      }
+
       const formatted = {
         id: s.id,
         name: s.name,
@@ -149,10 +184,11 @@ export class ShowroomController {
         city: s.city,
         manager: s.manager ? {
           id: s.manager.id,
-          name: s.manager.fullName,
+          name: (s.manager as any).fullName,
           email: s.manager.email,
           phone: s.manager.phone,
-          avatar: s.manager.avatarUrl
+          avatar: s.manager.avatarUrl,
+          seniority: (s.manager as any).seniority || ''
         } : null,
         commercials: s.users.map(u => ({
           id: u.id,
@@ -167,7 +203,16 @@ export class ShowroomController {
             exceed: u.objectives[0].exceedCA
           } : null
         })),
-        performance: 0,
+        // Period-specific metrics (used by ScorecardWrapper dashboard)
+        caAmount,
+        devisCreated,
+        devisValidated,
+        devisLost,
+        devisOpened,
+        avgBasket,
+        // Backend-computed score — identical to list page
+        performance: score,
+        score: Math.round(score),
         targets: s.objectives && s.objectives.length > 0 ? {
           conservative: s.objectives[0].conservativeCA,
           likely: s.objectives[0].likelyCA,
@@ -180,6 +225,7 @@ export class ShowroomController {
       return res.status(500).json({ success: false, error: error.message });
     }
   }
+
 
   /**
    * Create a new showroom

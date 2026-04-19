@@ -11,6 +11,7 @@ interface ShowroomCardProps {
   manager: {
     name: string;
     avatar: string;
+    seniority?: string;
   };
   performance: number;
   score: number;
@@ -64,23 +65,18 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
           </div>
           <div className="flex flex-col">
             <span className="text-[8px] font-mono text-stone-400 uppercase tracking-widest font-bold">Responsable</span>
-            <span className="text-[13px] font-semibold text-stone-800">{manager.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold text-stone-800">{manager.name}</span>
+              {manager.seniority && (
+                <span className="px-2 py-0.5 bg-yellow-50 text-yellow-700 text-[8px] uppercase font-black rounded border border-yellow-100 tracking-widest">
+                  {manager.seniority}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Performance CA Section */}
-        <div className="space-y-2 mb-6">
-          <div className="flex justify-between items-end">
-             <span className="text-[9px] font-mono font-bold text-stone-400 uppercase tracking-widest">Performance CA</span>
-             <span className="text-[12px] font-bold text-stone-900">{performance}%</span>
-          </div>
-          <div className="h-1.5 w-full bg-stone-50 rounded-full overflow-hidden shadow-inner">
-             <div 
-               className="h-full bg-yellow-500 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.3)] transition-all duration-1000" 
-               style={{ width: `${performance}%` }}
-             ></div>
-          </div>
-        </div>
+
 
         {/* Team Section */}
         <div className="pt-4 pb-1 border-t border-stone-50 flex items-center justify-between mb-4">
@@ -110,10 +106,15 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
 
         {/* Footer Score section */}
         <div className="mt-auto flex items-end justify-between">
-           <div className="flex items-baseline gap-1.5">
-             <span className="text-3xl font-mono font-bold text-stone-900">{score}</span>
-             <span className="text-stone-300 text-[12px] font-mono font-medium">/ 100</span>
-           </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-baseline gap-1.5 leading-none">
+                <span className={`text-3xl font-mono font-bold ${getStatusColor(score).text}`}>{score}</span>
+                <span className="text-stone-300 text-[12px] font-mono font-medium">/ 100</span>
+              </div>
+              <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded inline-block w-fit ${getStatusColor(score).badge}`}>
+                {getStatusColor(score).label}
+              </span>
+            </div>
            <div className="flex items-center gap-2 group/btn">
               <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-stone-400 group-hover/btn:text-yellow-600 transition-colors">Voir détails</span>
               <div className="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-stone-400 group-hover/btn:bg-yellow-500 group-hover/btn:text-white transition-all shadow-sm">
@@ -125,5 +126,12 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
     </Link>
   );
 };
+
+function getStatusColor(score: number) {
+  if (score >= 90) return { text: 'text-emerald-600', badge: 'bg-emerald-50 text-emerald-600', label: 'Très Bien' };
+  if (score >= 60) return { text: 'text-yellow-600', badge: 'bg-yellow-50 text-yellow-600', label: 'Bien' };
+  if (score >= 50) return { text: 'text-orange-500', badge: 'bg-orange-50 text-orange-600', label: 'Moyen' };
+  return { text: 'text-red-500', badge: 'bg-red-50 text-red-600', label: 'Mauvais' };
+}
 
 export default ShowroomCard;

@@ -398,18 +398,31 @@ export default function Page() {
                               <p className="text-[11px] text-stone-400 font-mono italic mb-6 text-center">{commercial.role === 'ADMIN' ? 'Administrateur' : 'Commercial'}</p>
 
                               <div className="w-full flex items-center justify-between pt-6 border-t border-stone-50">
-                                <div className="flex flex-col">
+                                 <div className="flex flex-col items-end">
                                    <span className="text-[9px] uppercase font-mono text-stone-400 font-bold mb-1 tracking-widest">Performance</span>
-                                   <span className={`text-[18px] font-mono font-bold ${
-                                     (performanceScores[commercial.id] ?? 0) >= 80 ? 'text-emerald-600' :
-                                     (performanceScores[commercial.id] ?? 0) >= 60 ? 'text-yellow-600' :
-                                     (performanceScores[commercial.id] ?? 0) >= 40 ? 'text-orange-500' : 'text-red-500'
-                                   }`}>
-                                     {performanceScores[commercial.id] !== undefined
-                                       ? `${performanceScores[commercial.id]}/100`
-                                       : '—/100'}
-                                   </span>
-                                </div>
+                                   <div className="flex flex-col items-end gap-1">
+                                     <span className={`text-[18px] font-mono font-bold leading-none ${
+                                       (performanceScores[commercial.id] ?? 0) >= 80 ? 'text-emerald-600' :
+                                       (performanceScores[commercial.id] ?? 0) >= 60 ? 'text-yellow-600' :
+                                       (performanceScores[commercial.id] ?? 0) >= 40 ? 'text-orange-500' : 'text-red-500'
+                                     }`}>
+                                       {performanceScores[commercial.id] !== undefined
+                                         ? `${performanceScores[commercial.id]}/100`
+                                         : '—/100'}
+                                     </span>
+                                     {performanceScores[commercial.id] !== undefined && (
+                                       <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                                         performanceScores[commercial.id] >= 80 ? 'bg-emerald-50 text-emerald-600' :
+                                         performanceScores[commercial.id] >= 60 ? 'bg-yellow-50 text-yellow-600' :
+                                         performanceScores[commercial.id] >= 40 ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
+                                       }`}>
+                                         {performanceScores[commercial.id] >= 80 ? 'Très Bien' :
+                                          performanceScores[commercial.id] >= 60 ? 'Bien' :
+                                          performanceScores[commercial.id] >= 40 ? 'Moyen' : 'Mauvais'}
+                                       </span>
+                                     )}
+                                   </div>
+                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-yellow-100 transition-colors">
                                   <span className="material-symbols-outlined text-[18px] text-stone-400 group-hover:text-yellow-700 transition-colors">chevron_right</span>
                                 </div>

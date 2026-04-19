@@ -33,26 +33,53 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
   let performanceStatus = "MAUVAIS";
   let badgeClasses = "bg-red-50 text-red-600 border border-red-100";
 
-  if (totalScore >= 80) {
-    performanceStatus = "TRES BIEN";
-    badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
-  } else if (totalScore >= 60) {
-    performanceStatus = "BIEN";
-    badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
-  } else if (totalScore >= 40) {
-    performanceStatus = "MOYEN";
-    badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
+  const isMagasin = scores.isMagasin;
+
+  if (isMagasin) {
+    if (totalScore >= 90) {
+      performanceStatus = "TRES BIEN";
+      badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
+    } else if (totalScore >= 60) {
+      performanceStatus = "BIEN";
+      badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
+    } else if (totalScore >= 50) {
+      performanceStatus = "MOYEN";
+      badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
+    }
+  } else {
+    if (totalScore >= 80) {
+      performanceStatus = "TRES BIEN";
+      badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
+    } else if (totalScore >= 60) {
+      performanceStatus = "BIEN";
+      badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
+    } else if (totalScore >= 40) {
+      performanceStatus = "MOYEN";
+      badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
+    }
   }
 
   /** Bar color based on exact point thresholds per metric */
   const getSubScoreBarColor = (label: string, score: number): string => {
     if (label === "Ventes") {
+      if (isMagasin) {
+        if (score >= 63) return "bg-emerald-400";
+        if (score >= 42) return "bg-yellow-400";
+        if (score >= 35) return "bg-orange-400";
+        return "bg-rose-500";
+      }
       if (score >= 55) return "bg-emerald-400";   // Très Bien
       if (score >= 45) return "bg-yellow-400";    // Bien
       if (score >= 35) return "bg-orange-400";    // Moyen
       return "bg-rose-500";                        // Mauvais
     }
     if (label === "Comportement") {
+      if (isMagasin) {
+        if (score >= 27) return "bg-emerald-400";
+        if (score >= 18) return "bg-yellow-400";
+        if (score >= 15) return "bg-orange-400";
+        return "bg-rose-500";
+      }
       if (score >= 25) return "bg-emerald-400";
       if (score >= 16) return "bg-yellow-400";
       if (score >= 10) return "bg-orange-400";
@@ -115,10 +142,12 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
            <MetricRow label="Ventes" score={scores.ventes} max={scores.ventesMax} />
            <MetricRow label="Comportement" score={scores.comportement} max={scores.comportementMax} />
         </div>
-        <div className="flex flex-col gap-3">
-           <MetricRow label="Présence" score={scores.presence} max={scores.presenceMax} />
-           <MetricRow label="Bonus" score={scores.bonus} max={scores.bonusMax} />
-        </div>
+        {!isMagasin && (
+          <div className="flex flex-col gap-3">
+             <MetricRow label="Présence" score={scores.presence} max={scores.presenceMax} />
+             <MetricRow label="Bonus" score={scores.bonus} max={scores.bonusMax} />
+          </div>
+        )}
       </div>
     </div>
   );
