@@ -11,21 +11,36 @@ export class UserController {
     try {
       const { id: adminId } = (req as any).user;
 
-      // Find the showroom this admin belongs to
+      // Find the showroom this admin belongs to OR manages
       const admin = await prisma.user.findUnique({
         where: { id: adminId },
-        select: { showroomId: true, showroom: { select: { id: true, name: true } } }
+        select: { 
+          showroomId: true, 
+          showroom: { select: { id: true, name: true } },
+          managedShowrooms: { select: { id: true, name: true } }
+        }
       });
 
-      if (!admin?.showroomId) {
-        return res.json({ success: true, data: [] });
+      if (!admin) {
+        return res.status(404).json({ success: false, message: 'Admin not found' });
       }
 
-      const showroomId = admin.showroomId;
+      // Collect all showroom IDs (the one they belong to + the ones they manage)
+      const showroomIds = [
+        admin.showroomId,
+        ...admin.managedShowrooms.map(s => s.id)
+      ].filter(Boolean) as string[];
 
-      // Get all COMMERCIAL users in the same showroom
+      if (showroomIds.length === 0) {
+        return res.json({ success: true, data: [], showroom: null });
+      }
+
+      // Get all COMMERCIAL users in those showrooms
       const commercials = await prisma.user.findMany({
-        where: { showroomId, role: 'COMMERCIAL' },
+        where: { 
+          showroomId: { in: showroomIds }, 
+          role: 'COMMERCIAL' 
+        },
         select: { id: true, fullName: true, email: true, phone: true, role: true, seniority: true, avatarUrl: true }
       });
 
@@ -49,26 +64,35 @@ export class UserController {
 
         // --- Ventes (65 pts) ---
         const totalCA = salesMetrics.reduce((s: number, m: any) => s + (m.ca || 0), 0);
-        const devisCreated  = salesMetrics.reduce((s: number, m: any) => s + (m.devisCreated  || 0), 0) || 11;
-        const devisValidated = salesMetrics.reduce((s: number, m: any) => s + (m.devisValidated || 0), 0) || 6;
-        const devisLost     = salesMetrics.reduce((s: number, m: any) => s + (m.devisLost     || 0), 0) || 1;
+        const devisCreated  = salesMetrics.reduce((s: number, m: any) => s + (m.devisCreated  || 0), 0);
+        const devisValidated = salesMetrics.reduce((s: number, m: any) => s + (m.devisValidated || 0), 0);
+        const devisLost     = salesMetrics.reduce((s: number, m: any) => s + (m.devisLost     || 0), 0);
         const avgBasket = salesMetrics.length > 0
-          ? salesMetrics.reduce((s: number, m: any) => s + (m.avgBasket || 0), 0) / salesMetrics.length : 23323;
+          ? salesMetrics.reduce((s: number, m: any) => s + (m.avgBasket || 0), 0) / salesMetrics.length : 0;
 
         const conservativeCA = (objective as any)?.conservativeCA ?? 30000;
         const likelyCA       = (objective as any)?.likelyCA       ?? 50000;
         const exceedCA       = (objective as any)?.exceedCA        ?? 70000;
 
         let caPoints = 0;
-        if (totalCA >= exceedCA)              caPoints = 35;
-        else if (totalCA >= likelyCA)         caPoints = 32;
-        else if (totalCA >= conservativeCA) { caPoints = 21 + Math.floor(((totalCA - conservativeCA) / (likelyCA - conservativeCA)) * 10); }
-        else if (totalCA >= conservativeCA * 0.5) caPoints = 10;
+        if (totalCA >= exceedCA) {
+          caPoints = 35;
+        } else if (totalCA >= likelyCA) {
+          caPoints = 32;
+        } else if (totalCA >= conservativeCA) {
+          // Linear interpolation between 21 and 31
+          const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
+          caPoints = 21 + Math.floor(progress * 10);
+        } else if (totalCA >= conservativeCA * 0.5) {
+          caPoints = 10;
+        }
 
         const convRate = devisCreated > 0 ? ((devisValidated + devisLost) / devisCreated) * 100 : 0;
-        const devisPoints = convRate >= 75 ? 15 : convRate >= 50 ? 10 : convRate >= 35 ? 5 : 0;
+        // Aligned with ScoringService: 75% -> 15, 50% -> 10, 35% -> 5
+        const devisPoints = convRate > 75 ? 15 : convRate >= 50 ? 10 : convRate >= 35 ? 5 : 0;
 
-        const panierPoints = avgBasket >= 20000 ? 15 : avgBasket >= 15000 ? 12 : avgBasket >= 10000 ? 5 : 0;
+        // Aligned with ScoringService: 20k -> 15, 15k -> 10, 10k -> 5
+        const panierPoints = avgBasket >= 20000 ? 15 : avgBasket >= 15000 ? 10 : avgBasket >= 10000 ? 5 : 0;
         const ventesScore = Math.min(caPoints + devisPoints + panierPoints, 65);
 
         // --- Comportement (30 pts) ---

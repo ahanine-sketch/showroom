@@ -337,14 +337,14 @@ export class PerformanceController {
         orderBy: { date: 'desc' },
       });
 
-      // Aggregate for the month (or fall back to frontend defaults)
+      // Aggregate for the month
       const totalCA = salesMetrics.reduce((sum: number, s: any) => sum + (s.ca || 0), 0);
-      const totalDevisCreated  = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisCreated  || 0), 0) || 11;
-      const totalDevisValidated = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisValidated || 0), 0) || 6;
-      const totalDevisLost     = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisLost     || 0), 0) || 1;
+      const totalDevisCreated  = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisCreated  || 0), 0);
+      const totalDevisValidated = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisValidated || 0), 0);
+      const totalDevisLost     = salesMetrics.reduce((sum: number, s: any) => sum + (s.devisLost     || 0), 0);
       const avgBasket = salesMetrics.length > 0
         ? salesMetrics.reduce((sum: number, s: any) => sum + (s.avgBasket || 0), 0) / salesMetrics.length
-        : 23323;
+        : 0;
 
       // User objectives for CA scoring
       const objective = await prisma.objective.findFirst({
@@ -354,27 +354,31 @@ export class PerformanceController {
       const likelyCA       = objective?.likelyCA       ?? 50000;
       const exceedCA       = objective?.exceedCA        ?? 70000;
 
-      // 1. CA Score (35 pts) — same logic as frontend getSalesScore()
+      // 1. CA Score (35 pts)
       let caPoints = 0;
-      if (totalCA >= exceedCA)              caPoints = 35;
-      else if (totalCA >= likelyCA)         caPoints = 32;
-      else if (totalCA >= conservativeCA) {
+      if (totalCA >= exceedCA) {
+        caPoints = 35;
+      } else if (totalCA >= likelyCA) {
+        caPoints = 32;
+      } else if (totalCA >= conservativeCA) {
         const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
         caPoints = 21 + Math.floor(progress * 10);
-      } else if (totalCA >= conservativeCA * 0.5) caPoints = 10;
+      } else if (totalCA >= conservativeCA * 0.5) {
+        caPoints = 10;
+      }
 
-      // 2. Devis Score (15 pts) — same logic as frontend getDevisScore()
+      // 2. Devis Score (15 pts) - aligned with ScoringService (rate > 75)
       const convRate = totalDevisCreated > 0
         ? ((totalDevisValidated + totalDevisLost) / totalDevisCreated) * 100 : 0;
       let devisPoints = 0;
-      if (convRate >= 75)      devisPoints = 15;
+      if (convRate > 75)       devisPoints = 15;
       else if (convRate >= 50) devisPoints = 10;
       else if (convRate >= 35) devisPoints =  5;
 
-      // 3. Panier Moyen Score (15 pts) — same logic as frontend getPerformanceScore()
+      // 3. Panier Moyen Score (15 pts) - aligned with ScoringService (20k / 15k / 10k)
       let panierPoints = 0;
       if (avgBasket >= 20000)      panierPoints = 15;
-      else if (avgBasket >= 15000) panierPoints = 12;
+      else if (avgBasket >= 15000) panierPoints = 10;
       else if (avgBasket >= 10000) panierPoints =  5;
 
       const cappedSalesScore = Math.min(caPoints + devisPoints + panierPoints, 65);
@@ -492,6 +496,11 @@ export class PerformanceController {
         where: {
           userId,
           date: { gte: startDate, lte: endDate },
+        },
+        include: {
+          user: {
+            select: { fullName: true }
+          }
         },
         orderBy: { date: 'desc' },
       });

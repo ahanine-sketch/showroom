@@ -14,9 +14,25 @@ interface ScorecardProps {
   userData?: any;
   scores?: any;
   isMagasin?: boolean;
+  viewMonth?: number;
+  viewYear?: number;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
 }
 
-const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, scores, isMagasin: propIsMagasin }: ScorecardProps) => {
+const CommercialScorecard = ({ 
+    role, 
+    activeTab, 
+    hideNav, 
+    isDashboard, 
+    userData, 
+    scores, 
+    isMagasin: propIsMagasin,
+    viewMonth,
+    viewYear,
+    onPrevMonth,
+    onNextMonth
+  }: ScorecardProps) => {
   const isMagasin = propIsMagasin || scores?.isMagasin;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -37,7 +53,10 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
       id: Math.random().toString(36).substr(2, 9).toUpperCase(),
       client: "Client Placeholder",
       amount: "45,000",
-      date: "14 Mars 2026"
+      date: `${(metrics?.devisDate?.day || 14)} ${viewMonth ? [
+        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+      ][viewMonth - 1] : "Mars"} ${viewYear || 2026}`
     }));
     setIsDrawerOpen(true);
   };
@@ -51,15 +70,7 @@ const CommercialScorecard = ({ role, activeTab, hideNav, isDashboard, userData, 
       <div className={`${isDashboard ? 'pt-0 px-2' : 'p-12'} space-y-12 max-w-[1400px] mx-auto relative text-sans`}>
         <div className="flex justify-end items-center gap-6 mb-2">
 
-          <div className="flex items-center bg-stone-50 border border-stone-100 shadow-sm p-1.5 rounded-xl">
-            <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-colors">
-              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-            </button>
-            <span className="px-4 py-1 text-[12px] font-black text-stone-900 font-mono tracking-tighter uppercase">Mars 2026</span>
-            <button className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-colors">
-              <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-            </button>
-          </div>
+
         </div>
 
         <ProfileHeader 

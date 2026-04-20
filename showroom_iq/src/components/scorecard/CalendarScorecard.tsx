@@ -39,34 +39,6 @@ const CalendarScorecard = ({
 
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  // --- Dynamic Month Info ---
-  const monthNames = [
-    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
-  ];
-
-  const handlePrevMonth = () => {
-    if (!setViewMonth || !setViewYear) return;
-    if (viewMonth === 1) {
-      setViewMonth(12);
-      setViewYear(viewYear - 1);
-    } else {
-      setViewMonth(viewMonth - 1);
-    }
-    setSelectedDay(null);
-  };
-
-  const handleNextMonth = () => {
-    if (!setViewMonth || !setViewYear) return;
-    if (viewMonth === 12) {
-      setViewMonth(1);
-      setViewYear(viewYear + 1);
-    } else {
-      setViewMonth(viewMonth + 1);
-    }
-    setSelectedDay(null);
-  };
-
   // Grid Calculation
   const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1);
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
@@ -183,23 +155,7 @@ const CalendarScorecard = ({
                 </div>
               </div>
               
-              <div className="flex items-center bg-stone-50 border border-stone-100 shadow-[inset_0_1px_4px_rgba(0,0,0,0.02)] p-1.5 rounded-xl">
-                <button 
-                  onClick={handlePrevMonth}
-                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
-                >
-                  <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                </button>
-                <span className="px-5 py-0.5 text-[11px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap">
-                  {monthNames[viewMonth - 1]} {viewYear}
-                </span>
-                <button 
-                  onClick={handleNextMonth}
-                  className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
-                >
-                  <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                </button>
-              </div>
+
             </div>
 
             <div className="w-full h-32"></div>
@@ -240,11 +196,16 @@ const CalendarScorecard = ({
                       </span>
                       
                       <div className="flex flex-col gap-0.5">
-                        {dayNotes.map((n: any, idx: number) => (
-                          <span key={idx} className={`text-[12px] font-black leading-none ${n.type === 'positive' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {n.type === 'positive' ? '+' : '-'}
+                        {dayNotes.some((n: any) => n.type === 'positive') && (
+                          <span className="text-[12px] font-black leading-none text-emerald-500">
+                            +
                           </span>
-                        ))}
+                        )}
+                        {dayNotes.some((n: any) => n.type === 'negative') && (
+                          <span className="text-[12px] font-black leading-none text-rose-500">
+                            -
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -329,7 +290,12 @@ const CalendarScorecard = ({
                                      l?.status === 'Absence' ? 'event_busy' : 'beach_access'}
                                   </span>
                                 </div>
-                                <span className="text-[14px] font-bold text-stone-800">{l?.status}</span>
+                                <div className="flex flex-col gap-0.5">
+                                  {l?.userName && (
+                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{l.userName}</span>
+                                  )}
+                                  <span className="text-[14px] font-bold text-stone-800 leading-tight">{l?.status}</span>
+                                </div>
                               </div>
                               {l?.motif && (
                                 <span className="text-[11px] font-medium text-stone-400 italic">"{l?.motif}"</span>
@@ -350,7 +316,12 @@ const CalendarScorecard = ({
                                  getDayStatus(selectedDay).log?.status === 'Absence' ? 'event_busy' : 'beach_access'}
                               </span>
                             </div>
-                            <span className="text-[14px] font-bold text-stone-800">{getDayStatus(selectedDay).log?.status}</span>
+                           <div className="flex flex-col gap-0.5">
+                             {getDayStatus(selectedDay).log?.userName && (
+                               <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{getDayStatus(selectedDay).log.userName}</span>
+                             )}
+                             <span className="text-[14px] font-bold text-stone-800 leading-tight">{getDayStatus(selectedDay).log?.status}</span>
+                           </div>
                           </div>
                           {getDayStatus(selectedDay).log?.motif && (
                             <span className="text-[11px] font-medium text-stone-400 italic">"{getDayStatus(selectedDay).log?.motif}"</span>
@@ -379,7 +350,12 @@ const CalendarScorecard = ({
                                 }`}>
                                   <span className="font-bold text-[16px]">{n.type === 'positive' ? '+' : '-'}</span>
                                 </div>
-                                <p className="text-[13px] font-medium text-stone-700 leading-relaxed pt-1">{n.text}</p>
+                                <div className="flex flex-col gap-1 pr-4">
+                                  {n.userName && (
+                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{n.userName}</span>
+                                  )}
+                                  <p className="text-[13px] font-medium text-stone-700 leading-relaxed">{n.text}</p>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -564,40 +540,7 @@ const CalendarScorecard = ({
                  ))}
                </div>
 
-               {/* Magasin: Per-commercial breakdown */}
-               {isMagasin && userData?.commercials?.length > 0 && (
-                 <div className="mt-6 pt-6 border-t border-stone-100">
-                   <h5 className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-4">Par Commercial</h5>
-                   <div className="space-y-3">
-                     {userData.commercials.map((c: any, i: number) => {
-                       const retards = (c.presenceLogs || []).filter((l: any) => l.status === 'Retard').length;
-                       const absences = (c.presenceLogs || []).filter((l: any) => l.status === 'Absence').length;
-                       const totalFaults = retards + absences;
-                       return (
-                         <div key={i} className="flex items-center justify-between p-3 bg-stone-50/50 border border-stone-100 rounded-xl">
-                           <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-black text-stone-600">
-                               {c.fullName?.[0] || '?'}
-                             </div>
-                             <span className="text-[12px] font-bold text-stone-800 tracking-tight">{c.fullName}</span>
-                           </div>
-                           <div className="flex items-center gap-2">
-                             {retards > 0 && (
-                               <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg">{retards}R</span>
-                             )}
-                             {absences > 0 && (
-                               <span className="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-lg">{absences}A</span>
-                             )}
-                             {totalFaults === 0 && (
-                               <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">OK</span>
-                             )}
-                           </div>
-                         </div>
-                       );
-                     })}
-                   </div>
-                 </div>
-               )}
+
             </div>
           </div>
 
@@ -624,8 +567,8 @@ const CalendarScorecard = ({
                       <span className="font-bold text-[18px]">{note.type === 'positive' ? '+' : '-'}</span>
                     </div>
                     <div className="min-w-0">
-                       <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
-                         {new Date(note.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
+                       <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                         <span>{new Date(note.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}</span>
                        </p>
                        <p className="text-[13px] font-medium text-stone-700 truncate group-hover:text-stone-900 transition-colors uppercase leading-tight font-headline">{note.text}</p>
                     </div>

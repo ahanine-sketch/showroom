@@ -33,6 +33,29 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [viewYear, setViewYear] = useState(now.getFullYear());
 
+  const monthNames = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 1) {
+      setViewMonth(12);
+      setViewYear(prev => prev - 1);
+    } else {
+      setViewMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 12) {
+      setViewMonth(1);
+      setViewYear(prev => prev + 1);
+    } else {
+      setViewMonth(prev => prev + 1);
+    }
+  };
+
 
   // --- CENTRALIZED STATE ---
   const [evaluations, setEvaluations] = useState<any[]>([]);
@@ -113,22 +136,23 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
         
         // Handle Calendar Logs
         if (result.dailyLogs) {
-          const logs = result.dailyLogs.filter((l: any) => l.activity === 'PRESENCE');
-          const notes = result.dailyLogs.filter((l: any) => l.activity === 'DAILY_NOTE').map((l: any) => ({
-            date: l.date.split('T')[0],
-            type: l.status,
-            text: l.notes
-          }));
+          const rawLogs = result.dailyLogs.filter((l: any) => l.activity === 'PRESENCE');
+          const rawNotes = result.dailyLogs.filter((l: any) => l.activity === 'DAILY_NOTE');
           
-          setPresenceLogs(logs.map((l: any) => ({
+          setPresenceLogs(rawLogs.map((l: any) => ({
             date: l.date.split('T')[0],
             status: l.status,
             motif: l.notes,
-            userId: l.userId
+            userId: l.userId,
+            userName: l.user?.fullName || (userData?.fullName && l.userId === userData.id ? userData.fullName : '')
           })));
-          setNotesList(notes.map((n: any, idx: number) => ({
-            ...n,
-            userId: logs.filter((l: any) => l.activity === 'DAILY_NOTE')[idx]?.userId
+
+          setNotesList(rawNotes.map((n: any) => ({
+            date: n.date.split('T')[0],
+            type: n.status,
+            text: n.notes,
+            userId: n.userId,
+            userName: n.user?.fullName || (userData?.fullName && n.userId === userData.id ? userData.fullName : '')
           })));
         }
         
@@ -224,9 +248,9 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
       return { points: 0, status: "MAUVAIS" };
     }
 
-    if (conversionRate >= 80) return { points: 15, status: "TRES BIEN" };
-    if (conversionRate >= 60) return { points: 10, status: "BIEN" };
-    if (conversionRate >= 40) return { points: 5, status: "MOYEN" };
+    if (conversionRate > 75) return { points: 15, status: "TRES BIEN" };
+    if (conversionRate >= 50) return { points: 10, status: "BIEN" };
+    if (conversionRate >= 35) return { points: 5, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
 
@@ -239,8 +263,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
       return { points: 0, status: "MAUVAIS" };
     }
 
-    if (panierMoyen >= 22000) return { points: 15, status: "TRES BIEN" };
-    if (panierMoyen >= 16000) return { points: 10, status: "BIEN" };
+    if (panierMoyen >= 20000) return { points: 15, status: "TRES BIEN" };
+    if (panierMoyen >= 15000) return { points: 10, status: "BIEN" };
     if (panierMoyen >= 10000) return { points: 5, status: "MOYEN" };
     return { points: 0, status: "MAUVAIS" };
   };
@@ -471,6 +495,23 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
           </h2>
         </div>
         <div className="flex gap-3">
+          <div className="flex items-center bg-white/60 backdrop-blur-md border border-stone-100 shadow-sm p-1 rounded-xl">
+            <button 
+              onClick={handlePrevMonth}
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            <span className="px-4 py-1 text-[12px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap min-w-[120px] text-center">
+              {monthNames[viewMonth - 1]} {viewYear}
+            </span>
+            <button 
+              onClick={handleNextMonth}
+              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -484,6 +525,10 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
             isDashboard={true} 
             userData={userData} 
             scores={currentScores}
+            viewMonth={viewMonth}
+            viewYear={viewYear}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
           />
         )}
 
@@ -496,6 +541,10 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
             userData={userData} 
             scores={currentScores}
             evaluations={evaluations}
+            viewMonth={viewMonth}
+            viewYear={viewYear}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
             onRefresh={async () => {
               await fetchEvaluations();
               // Refresh data from correct endpoint based on type
@@ -520,6 +569,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
             scores={currentScores}
             viewMonth={viewMonth}
             viewYear={viewYear}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
             setViewMonth={setViewMonth}
             setViewYear={setViewYear}
             onRefresh={async () => {
