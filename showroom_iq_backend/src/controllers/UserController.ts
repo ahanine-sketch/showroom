@@ -10,6 +10,8 @@ export class UserController {
   static async getMyTeam(req: Request, res: Response) {
     try {
       const { id: adminId } = (req as any).user;
+      const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
 
       // Find the showroom this admin belongs to OR manages
       const admin = await prisma.user.findUnique({
@@ -41,12 +43,18 @@ export class UserController {
           showroomId: { in: showroomIds }, 
           role: 'COMMERCIAL' 
         },
-        select: { id: true, fullName: true, email: true, phone: true, role: true, seniority: true, avatarUrl: true }
+        select: { 
+          id: true, 
+          fullName: true, 
+          email: true, 
+          phone: true, 
+          role: true, 
+          seniority: true, 
+          avatarUrl: true,
+          showroom: { select: { id: true, name: true } }
+        }
       });
 
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = now.getFullYear();
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
@@ -70,29 +78,38 @@ export class UserController {
         const avgBasket = salesMetrics.length > 0
           ? salesMetrics.reduce((s: number, m: any) => s + (m.avgBasket || 0), 0) / salesMetrics.length : 0;
 
-        const conservativeCA = (objective as any)?.conservativeCA ?? 30000;
-        const likelyCA       = (objective as any)?.likelyCA       ?? 50000;
-        const exceedCA       = (objective as any)?.exceedCA        ?? 70000;
+        // Use objective targets or meaningful defaults. If all are 0, use fallback defaults.
+        const rawConservativeCA = (objective as any)?.conservativeCA ?? 0;
+        const rawLikelyCA       = (objective as any)?.likelyCA       ?? 0;
+        const rawExceedCA       = (objective as any)?.exceedCA        ?? 0;
+        const conservativeCA = rawConservativeCA > 0 ? rawConservativeCA : 30000;
+        const likelyCA       = rawLikelyCA       > 0 ? rawLikelyCA       : 50000;
+        const exceedCA       = rawExceedCA        > 0 ? rawExceedCA        : 70000;
 
+        // CRITICAL: Only award CA points if the commercial has real sales data (totalCA > 0)
         let caPoints = 0;
-        if (totalCA >= exceedCA) {
-          caPoints = 35;
-        } else if (totalCA >= likelyCA) {
-          caPoints = 32;
-        } else if (totalCA >= conservativeCA) {
-          // Linear interpolation between 21 and 31
-          const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
-          caPoints = 21 + Math.floor(progress * 10);
-        } else if (totalCA >= conservativeCA * 0.5) {
-          caPoints = 10;
+        if (totalCA > 0) {
+          if (totalCA >= exceedCA) {
+            caPoints = 35;
+          } else if (totalCA >= likelyCA) {
+            caPoints = 32;
+          } else if (totalCA >= conservativeCA) {
+            const progress = likelyCA > conservativeCA
+              ? (totalCA - conservativeCA) / (likelyCA - conservativeCA) : 0;
+            caPoints = 21 + Math.floor(progress * 10);
+          } else if (totalCA >= conservativeCA * 0.5) {
+            caPoints = 10;
+          }
         }
 
         const convRate = devisCreated > 0 ? ((devisValidated + devisLost) / devisCreated) * 100 : 0;
-        // Aligned with ScoringService: 75% -> 15, 50% -> 10, 35% -> 5
-        const devisPoints = convRate > 75 ? 15 : convRate >= 50 ? 10 : convRate >= 35 ? 5 : 0;
+        // Only award devis points if there is actual devis activity
+        const devisPoints = devisCreated > 0 ? (convRate > 75 ? 15 : convRate >= 50 ? 10 : convRate >= 35 ? 5 : 0) : 0;
 
-        // Aligned with ScoringService: 20k -> 15, 15k -> 10, 10k -> 5
-        const panierPoints = avgBasket >= 20000 ? 15 : avgBasket >= 15000 ? 10 : avgBasket >= 10000 ? 5 : 0;
+        // Only award panier points if real basket data exists
+        const panierPoints = (salesMetrics.length > 0 && avgBasket > 0) 
+          ? (avgBasket >= 20000 ? 15 : avgBasket >= 15000 ? 10 : avgBasket >= 10000 ? 5 : 0) : 0;
+
         const ventesScore = Math.min(caPoints + devisPoints + panierPoints, 65);
 
         // --- Comportement (30 pts) ---
@@ -127,7 +144,7 @@ export class UserController {
           role: c.role,
           seniority: c.seniority,
           avatarUrl: c.avatarUrl,
-          showroom: admin.showroom,
+          showroom: c.showroom,
           scores: {
             global: globalScore,
             ventes: ventesScore,
@@ -143,7 +160,12 @@ export class UserController {
         };
       }));
 
-      return res.json({ success: true, data: teamWithScores, showroom: admin.showroom });
+      return res.json({ 
+        success: true, 
+        data: teamWithScores, 
+        showroom: admin.showroom,
+        managedShowrooms: admin.managedShowrooms 
+      });
     } catch (error: any) {
       return res.status(500).json({ success: false, error: error.message });
     }
@@ -232,7 +254,7 @@ export class UserController {
       const { fullName, email, phone, role, showroomId, targets } = req.body;
       
       // Default password since it is created by admin
-      const passwordHash = await bcrypt.hash("password123", 10);
+      const passwordHash = await bcrypt.hash("P123456@@", 10);
       
       const newUser = await prisma.user.create({
         data: {

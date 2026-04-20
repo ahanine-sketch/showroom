@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [loginType, setLoginType] = useState<'email' | 'mobile'>('mobile');
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,10 +19,14 @@ export default function LoginPage() {
     setError('');
     
     try {
+      const body = loginType === 'email' 
+        ? { email, password } 
+        : { mobile, password };
+
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -35,7 +41,6 @@ export default function LoginPage() {
 
       // Set cookie for Next.js Middleware protection
       document.cookie = `auth_token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
-
 
       // Redirect based on role
       const role = data.user.role;
@@ -58,15 +63,12 @@ export default function LoginPage() {
       <main className="flex min-h-screen">
         <section className="hidden lg:flex w-1/2 bg-[#F7F3EC] items-center justify-center relative overflow-hidden">
           <div className="absolute inset-6 inset-frame pointer-events-none"></div>
-          <div className="absolute inset-0 opacity-20" data-alt="soft warm cream background with subtle golden light leak effect for luxury editorial feel" style={{backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(184, 150, 12, 0.1) 0%, transparent 50%)'}}></div>
+          <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(184, 150, 12, 0.1) 0%, transparent 50%)'}}></div>
           <div className="relative z-10 flex flex-col items-center text-center px-12">
             <h1 className="font-serif text-[120px] leading-none text-primary-container tracking-tighter">SIQ</h1>
             <p className="font-sans text-[14px] uppercase tracking-[0.3em] text-on-surface-variant mt-2 font-medium">ShowroomIQ</p>
             <div className="w-[60px] h-[1px] bg-primary-container/40 my-8"></div>
             <blockquote className="font-serif italic text-[18px] text-on-surface-variant tracking-wide">"Performance. Précision. Excellence."</blockquote>
-          </div>
-          <div className="absolute bottom-12 left-12">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-outline">Established MMXXIV</span>
           </div>
         </section>
 
@@ -88,23 +90,51 @@ export default function LoginPage() {
             )}
 
             <div className="flex p-1 bg-surface-container-low rounded-full mb-8 max-w-fit">
-              <button className="px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider bg-surface-container-lowest text-on-surface shadow-sm rounded-full transition-all">Email</button>
-              <button className="px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider text-outline hover:text-on-surface transition-all">Mobile</button>
+              <button 
+                type="button"
+                onClick={() => setLoginType('mobile')}
+                className={`px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider rounded-full transition-all ${loginType === 'mobile' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-outline hover:text-on-surface'}`}
+              >
+                Mobile
+              </button>
+              <button 
+                type="button"
+                onClick={() => setLoginType('email')}
+                className={`px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider rounded-full transition-all ${loginType === 'email' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-outline hover:text-on-surface'}`}
+              >
+                Email
+              </button>
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-1.5">
-                <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="email">Adresse e-mail</label>
-                <input 
-                  className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/60" 
-                  id="email" 
-                  placeholder="nom@showroom.com" 
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              {loginType === 'email' ? (
+                <div className="space-y-1.5">
+                  <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="email">Adresse e-mail</label>
+                  <input 
+                    className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/60" 
+                    id="email" 
+                    placeholder="nom@showroom.com" 
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="mobile">Numéro Mobile</label>
+                  <input 
+                    className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/60" 
+                    id="mobile" 
+                    placeholder="0612345678 or +212..." 
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <div className="flex justify-between items-end ml-1">
                   <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold" htmlFor="password">Mot de passe</label>
@@ -132,6 +162,7 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
+
               <button 
                 className={`w-full h-14 luxury-gradient text-white font-sans font-bold text-[14px] uppercase tracking-[0.15em] rounded-lg shadow-lg shadow-primary/10 hover:shadow-primary/20 active:scale-[0.98] transition-all mt-6 flex items-center justify-center ${loading ? 'opacity-80 cursor-wait' : ''}`} 
                 type="submit"
@@ -140,13 +171,6 @@ export default function LoginPage() {
                 {loading ? <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span> : 'Se connecter'}
               </button>
             </form>
-
-            <div className="mt-12 pt-8 border-t border-surface-container text-center">
-              <p className="font-sans text-[14px] text-on-surface-variant">
-                Accès restreint aux partenaires SIQ. 
-                <a className="text-primary font-semibold hover:underline decoration-primary-container underline-offset-4" href="#"> Demander l'accès</a>
-              </p>
-            </div>
           </div>
         </section>
       </main>

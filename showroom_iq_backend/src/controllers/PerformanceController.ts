@@ -350,9 +350,12 @@ export class PerformanceController {
       const objective = await prisma.objective.findFirst({
         where: { userId, month: m, year: y, type: 'GLOBAL' },
       });
-      const conservativeCA = objective?.conservativeCA ?? 30000;
-      const likelyCA       = objective?.likelyCA       ?? 50000;
-      const exceedCA       = objective?.exceedCA        ?? 70000;
+      const rawConservativeCA = objective?.conservativeCA ?? 0;
+      const rawLikelyCA       = objective?.likelyCA       ?? 0;
+      const rawExceedCA       = objective?.exceedCA        ?? 0;
+      const conservativeCA = rawConservativeCA > 0 ? rawConservativeCA : 30000;
+      const likelyCA       = rawLikelyCA       > 0 ? rawLikelyCA       : 50000;
+      const exceedCA       = rawExceedCA        > 0 ? rawExceedCA        : 70000;
 
       // 1. CA Score (35 pts)
       let caPoints = 0;

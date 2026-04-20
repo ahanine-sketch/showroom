@@ -50,7 +50,7 @@ export default function Page() {
 <circle className="text-stone-100" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="3"></circle>
 <circle className="text-primary-container" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeDasharray="175.9" strokeDashoffset="45.7" strokeWidth="3"></circle>
 </svg>
-<span className="absolute text-sm font-label font-bold text-on-surface">74</span>
+<span className="absolute text-sm font-label font-bold text-on-surface">--</span>
 </div>
 <div>
 <p className="text-[11px] font-label text-stone-400 uppercase tracking-widest mb-1">Score moyen</p>

@@ -245,7 +245,7 @@ export default function Page() {
                  <input 
                    type="text"
                    placeholder="Rechercher par ville, responsable..."
-                   className="w-full bg-white border border-stone-100 rounded-2xl pl-12 pr-4 py-3.5 text-[13px] shadow-sm focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 outline-none transition-all placeholder:text-stone-300 font-serif italic"
+                   className="w-full bg-white border border-stone-100 rounded-2xl pl-12 pr-4 py-3.5 text-[13px] shadow-sm focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 outline-none transition-all placeholder:text-stone-300 font-sans text-stone-950"
                    value={search}
                    onChange={(e) => setSearch(e.target.value)}
                  />
@@ -264,12 +264,6 @@ export default function Page() {
                 <span className="text-[10px] text-stone-400 uppercase font-mono font-bold">Total Magasins</span>
                 <span className="text-2xl font-mono font-bold text-stone-900">
                   {showrooms.length.toString().padStart(2, '0')}
-                </span>
-              </div>
-              <div className="bg-stone-50 border border-stone-100 rounded-xl px-6 py-3 flex flex-col items-end shadow-sm">
-                <span className="text-[10px] text-stone-400 uppercase font-mono font-bold">Performance Réseau</span>
-                <span className="text-2xl font-mono font-bold text-emerald-600">
-                  {showrooms.length > 0 ? (showrooms.reduce((acc, curr) => acc + curr.performance, 0) / showrooms.length).toFixed(1) : '0'}%
                 </span>
               </div>
             </div>

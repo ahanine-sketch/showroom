@@ -5,36 +5,38 @@ import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
 export default function AdminDashboard() {
   const [showroomId, setShowroomId] = useState<string | null>(null);
+  const [magasins, setMagasins] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchShowrooms = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('http://localhost:3001/api/users/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const month = new Date().getMonth() + 1;
+        const year = new Date().getFullYear();
+
+        const response = await fetch(`http://localhost:3001/api/users/my-team?month=${month}&year=${year}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();
-        console.log('Admin Profile Result:', result);
-        
-        if (result.success && result.data.showroomId) {
-          setShowroomId(result.data.showroomId);
-        } else {
-          console.warn('Admin profile has no showroomId. Using fallback.');
-          setShowroomId('310ac9fe-1066-462a-8ec7-48fdf7fc7653');
+
+        if (result.success) {
+          if (result.managedShowrooms && result.managedShowrooms.length > 0) {
+            setMagasins(result.managedShowrooms);
+            setShowroomId(result.managedShowrooms[0].id);
+          } else if (result.showroom) {
+            setMagasins([result.showroom]);
+            setShowroomId(result.showroom.id);
+          }
         }
       } catch (error) {
-        console.error('Error fetching admin profile:', error);
-        // Even on error, try to use the fallback ID
-        setShowroomId('310ac9fe-1066-462a-8ec7-48fdf7fc7653');
+        console.error('Error fetching admin showrooms:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchShowrooms();
   }, []);
 
   if (loading) {
@@ -59,13 +61,34 @@ export default function AdminDashboard() {
     );
   }
 
+  // Pure showroom buttons UI to be injected into the scorecard header
+  const showroomButtons = magasins.length > 1 ? (
+    <div className="flex items-center gap-3 p-1.5 bg-stone-100/50 backdrop-blur-sm rounded-2xl w-fit border border-stone-200/50">
+      {magasins.map((mag) => (
+        <button
+          key={mag.id}
+          onClick={() => setShowroomId(mag.id)}
+          className={`px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
+            showroomId === mag.id
+              ? 'bg-white text-stone-900 shadow-sm ring-1 ring-stone-900/5'
+              : 'text-stone-400 hover:text-stone-600'
+          }`}
+        >
+          {mag.name}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   return (
-    <ScorecardWrapper 
-      initialTab="commercial" 
-      role="admin" 
-      type="magasin" 
-      id={showroomId} 
-    />
+    <div key={showroomId}>
+      <ScorecardWrapper
+        initialTab="commercial"
+        role="admin"
+        type="magasin"
+        id={showroomId}
+        headerContent={showroomButtons}
+      />
+    </div>
   );
 }
-

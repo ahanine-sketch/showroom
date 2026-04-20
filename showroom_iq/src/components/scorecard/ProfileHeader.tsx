@@ -27,16 +27,16 @@ const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
 
   // Map data depending on context (Magasin vs Individual Commercial)
   const fullName = isMagasin 
-    ? (user as any)?.manager?.fullName || (user as any)?.manager?.name || "Manager non assigné"
-    : user?.fullName || "Utilisateur";
+    ? (user as any)?.manager?.fullName || (user as any)?.manager?.name || "Administrateur"
+    : user?.fullName || "Commercial";
 
   const seniority = isMagasin 
     ? (user as any)?.manager?.seniority || ""
     : user?.seniority || "";
 
   const displaySubtitle = isMagasin 
-    ? (user as any)?.name || "Magasin"
-    : (user?.showroomName || user?.showroom?.name || "Magasin Casablanca");
+    ? (user as any)?.name || "Magasin SIQ"
+    : (user?.showroomName || user?.showroom?.name || "Magasin SIQ");
 
   const phone = isMagasin 
     ? (user as any)?.manager?.phone || "Non renseigné" 

@@ -39,6 +39,7 @@ interface MagasinData {
 
 export default function Page() {
   const [search, setSearch] = useState('');
+  const [selectedMagasinId, setSelectedMagasinId] = useState<string>('all');
   const searchParams = useSearchParams();
   const filterMagasinId = searchParams.get('magasinId');
   
@@ -203,6 +204,11 @@ export default function Page() {
   const filteredMagasins = useMemo(() => {
     let data = magasinsData;
     
+    // Filter by selectedMagasinId
+    if (selectedMagasinId !== 'all') {
+      data = data.filter(m => m.id === selectedMagasinId);
+    }
+
     // Filter by magasinId from URL if present
     if (filterMagasinId) {
       data = data.filter(m => m.id === filterMagasinId);
@@ -211,14 +217,18 @@ export default function Page() {
     if (!search) return data;
     
     return data.map(magasin => {
+      const searchLower = search.toLowerCase();
+      const showroomMatch = magasin.name.toLowerCase().includes(searchLower);
+
       // Filter out OWNERS from manager and commercials
       const mManager = (magasin.manager && magasin.manager.role !== 'OWNER' && 
-        magasin.manager.name.toLowerCase().includes(search.toLowerCase())) ? magasin.manager : null;
+        (magasin.manager.name.toLowerCase().includes(searchLower) || showroomMatch)) ? magasin.manager : null;
       
       const mCommercials = magasin.commercials.filter(c => 
         c.role !== 'OWNER' && (
-          c.fullName.toLowerCase().includes(search.toLowerCase()) || 
-          c.role.toLowerCase().includes(search.toLowerCase())
+          c.fullName.toLowerCase().includes(searchLower) || 
+          c.role.toLowerCase().includes(searchLower) ||
+          showroomMatch
         )
       );
       
@@ -229,9 +239,12 @@ export default function Page() {
       };
     }).filter(magasin => 
       magasin.commercials.length > 0 || 
-      (magasin.manager && magasin.manager.role !== 'OWNER' && magasin.manager.name.toLowerCase().includes(search.toLowerCase()))
+      (magasin.manager && magasin.manager.role !== 'OWNER' && (
+        magasin.manager.name.toLowerCase().includes(search.toLowerCase()) || 
+        magasin.name.toLowerCase().includes(search.toLowerCase())
+      ))
     );
-  }, [search, magasinsData, filterMagasinId]);
+  }, [search, magasinsData, filterMagasinId, selectedMagasinId]);
 
   // Aggregate stats (excluding OWNERs)
   const totalEmployees = magasinsData.reduce((acc, mag) => {
@@ -244,42 +257,61 @@ export default function Page() {
   const listMagasins = magasinsData.map(m => ({ id: m.id, name: m.name }));
 
   return (
-    <div className="pt-[60px] p-12 space-y-12 max-w-[1400px] mx-auto min-h-screen bg-[#fbf9f4]">
+    <div className="pt-[90px] p-12 space-y-8 max-w-[1400px] mx-auto min-h-screen bg-[#fbf9f4]">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-[12px] font-mono uppercase tracking-[0.3em] text-yellow-600 font-bold mb-3 font-serif italic">Force de Vente Réseau</h2>
           <h1 className="font-headline text-6xl italic tracking-tight text-stone-900 leading-tight">Nos Commerciaux</h1>
         </div>
 
-        <div className="flex flex-col items-end gap-6">
-          <div className="flex items-center gap-4">
-            <div className="relative w-80 group">
-               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-[20px] group-focus-within:text-yellow-600 transition-colors">search</span>
-               <input 
-                 type="text"
-                 placeholder="Rechercher un collègue ou magasin..."
-                 className="w-full bg-white border border-stone-100 rounded-2xl pl-12 pr-4 py-3.5 text-[13px] shadow-sm focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 outline-none transition-all placeholder:text-stone-300 font-serif italic"
-                 value={search}
-                 onChange={(e) => setSearch(e.target.value)}
-               />
+        <div className="flex flex-col items-end gap-6 max-w-[600px] w-full">
+          <div className="flex items-center gap-6 w-full">
+            <div className="flex items-center h-14 bg-white border border-stone-100 rounded-2xl shadow-sm px-2 flex-1 group transition-all focus-within:border-yellow-600/30 focus-within:ring-4 focus-within:ring-yellow-600/5">
+              <div className="flex items-center px-4 border-r border-stone-100 h-8 shrink-0">
+                <select 
+                  value={selectedMagasinId}
+                  onChange={(e) => setSelectedMagasinId(e.target.value)}
+                  className="bg-transparent text-[9px] font-black uppercase tracking-[0.2em] text-stone-500 outline-none cursor-pointer hover:text-stone-900 transition-colors w-36 appearance-none"
+                >
+                  <option value="all">TOUS LES MAGASINS</option>
+                  {magasinsData.map(m => (
+                    <option key={m.id} value={m.id}>{m.name.toUpperCase()}</option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined text-[14px] text-stone-300 ml-1 pointer-events-none">unfold_more</span>
+              </div>
+
+              <div className="relative flex-1 group flex items-center h-full">
+                 <span className="material-symbols-outlined absolute left-4 text-stone-300 text-[20px] group-focus-within:text-yellow-600 transition-colors">search</span>
+                 <input 
+                   type="text"
+                   placeholder="Rechercher par nom ou rôle..."
+                   className="w-full bg-transparent pl-12 pr-4 h-full text-[13px] outline-none placeholder:text-stone-300 font-sans text-stone-950"
+                   value={search}
+                   onChange={(e) => setSearch(e.target.value)}
+                 />
+              </div>
             </div>
+
             <button 
               onClick={handleOpenAdd}
-              className="bg-stone-900 text-white px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-stone-800 transition-colors shadow-lg"
+              className="h-14 bg-stone-900 text-white px-8 rounded-2xl flex items-center justify-center gap-3 hover:bg-stone-800 transition-all shadow-lg active:scale-95 shrink-0 group"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              <span className="text-[11px] font-bold uppercase tracking-widest">Ajouter</span>
+              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Ajouter</span>
             </button>
           </div>
           
-          <div className="bg-white border border-stone-100 rounded-2xl px-8 py-4 shadow-sm flex items-center gap-6">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] text-stone-400 uppercase font-mono font-bold">Total Réseau</span>
-                <span className="text-3xl font-mono font-bold text-stone-900">{totalEmployees}</span>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-stone-50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[24px] text-stone-400">group</span>
-              </div>
+          <div className="flex items-center gap-6">
+            <div className="bg-white border border-stone-100 rounded-2xl px-6 py-3 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-widest">Effectif Réseau</span>
+                  <span className="text-2xl font-mono font-bold text-stone-900 leading-none">{totalEmployees}</span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px] text-stone-400">group</span>
+                </div>
+            </div>
           </div>
         </div>
       </div>
@@ -290,11 +322,11 @@ export default function Page() {
            <p className="mt-4 text-stone-500 font-mono text-[12px] uppercase tracking-widest">Chargement...</p>
         </div>
       ) : (
-        <div className="space-y-24">
+        <div className="space-y-16">
           {filteredMagasins.map((magasin) => (
             <div key={magasin.id} className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
               {/* Magasin Header */}
-              <div className="flex items-center gap-6 mb-12">
+              <div className="flex items-center gap-6 mb-8">
                 <h2 className="font-headline text-4xl italic text-stone-900 whitespace-nowrap">Equipe {magasin.name}</h2>
                 <div className="h-px bg-stone-200 flex-1"></div>
                 <span className="font-mono text-[11px] font-bold text-stone-400 uppercase tracking-widest bg-white border border-stone-100 px-4 py-1.5 rounded-full shadow-sm">
@@ -302,7 +334,7 @@ export default function Page() {
                 </span>
               </div>
 
-              <div className="flex gap-12 flex-col md:flex-row">
+              <div className="flex gap-8 flex-col md:flex-row">
                  {/* Left column: Responsable Profile */}
                  <div className="w-full md:w-[280px] shrink-0 md:sticky md:top-24 self-start">
                     {magasin.manager ? (

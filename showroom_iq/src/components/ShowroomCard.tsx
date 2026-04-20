@@ -97,7 +97,7 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
             className="group/team flex items-center gap-2 px-3 py-1.5 bg-stone-50 hover:bg-yellow-50 rounded-xl transition-all duration-300"
           >
             <span className="text-[10px] font-bold text-stone-600 group-hover/team:text-yellow-700 uppercase tracking-wider">
-              {commercialCount} {commercialCount <= 1 ? 'Commercial' : 'Commerciaux'}
+              {commercialCount} {commercialCount === 1 ? 'Commercial' : 'Commerciaux'}
             </span>
             <span className="material-symbols-outlined text-[14px] text-stone-300 group-hover/team:text-yellow-600 transition-transform group-hover/team:translate-x-0.5">
               chevron_right

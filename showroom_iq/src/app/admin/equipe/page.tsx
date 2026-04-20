@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UserSlideOver from '@/components/UserSlideOver';
+import PeriodSelector from '@/components/scorecard/PeriodSelector';
 import { toast } from 'react-hot-toast';
 
 interface CommercialScores {
@@ -66,7 +67,19 @@ function getGlobalColor(score: number): { text: string; dot: string; badge: stri
 export default function TeamPage() {
   const [team, setTeam] = useState<Commercial[]>([]);
   const [showroom, setShowroom] = useState<{ id: string; name: string } | null>(null);
+  const [magasins, setMagasins] = useState<{ id: string; name: string }[]>([]);
+  const [selectedShowroomId, setSelectedShowroomId] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isLoading, setIsLoading] = useState(true);
+
+  // Sync state with localStorage on mount
+  useEffect(() => {
+    const savedMonth = localStorage.getItem('selectedMonth');
+    const savedYear = localStorage.getItem('selectedYear');
+    if (savedMonth) setSelectedMonth(parseInt(savedMonth));
+    if (savedYear) setSelectedYear(parseInt(savedYear));
+  }, []);
 
   const [isUserDrawerOpen, setIsUserDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -76,13 +89,27 @@ export default function TeamPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const res = await fetch('http://localhost:3001/api/users/my-team', {
+      
+      const res = await fetch(`http://localhost:3001/api/users/my-team?month=${selectedMonth}&year=${selectedYear}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
       if (result.success) {
         setTeam(result.data);
         setShowroom(result.showroom || null);
+        // If the backend returns managedShowrooms, use them. Otherwise use the primary showroom.
+        if (result.managedShowrooms && result.managedShowrooms.length > 0) {
+          setMagasins(result.managedShowrooms);
+          // Auto-select first showroom if none selected
+          if (!selectedShowroomId) {
+            setSelectedShowroomId(result.managedShowrooms[0].id);
+          }
+        } else if (result.showroom) {
+          setMagasins([result.showroom]);
+          if (!selectedShowroomId) {
+            setSelectedShowroomId(result.showroom.id);
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching team:', err);
@@ -91,7 +118,14 @@ export default function TeamPage() {
     }
   };
 
-  useEffect(() => { fetchTeam(); }, []);
+  useEffect(() => { fetchTeam(); }, [selectedMonth, selectedYear]);
+
+  const handlePeriodChange = (m: number, y: number) => {
+    setSelectedMonth(m);
+    setSelectedYear(y);
+    localStorage.setItem('selectedMonth', m.toString());
+    localStorage.setItem('selectedYear', y.toString());
+  };
 
   const handleEditUser = (e: React.MouseEvent, member: Commercial) => {
     e.preventDefault();
@@ -164,17 +198,38 @@ export default function TeamPage() {
       </header>
 
       <main className="pt-28 px-12 pb-20 max-w-[1600px] mx-auto font-sans">
+        {/* Showroom Selector */}
+        {magasins.length > 1 && (
+          <div className="flex items-center gap-3 mb-12 p-1.5 bg-stone-100/50 backdrop-blur-sm rounded-2xl w-fit border border-stone-200/50">
+            {magasins.map((mag) => (
+              <button
+                key={mag.id}
+                onClick={() => setSelectedShowroomId(mag.id)}
+                className={`px-6 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
+                  selectedShowroomId === mag.id
+                    ? 'bg-white text-stone-900 shadow-sm ring-1 ring-stone-900/5'
+                    : 'text-stone-400 hover:text-stone-600'
+                }`}
+              >
+                {mag.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Page Hero */}
         <div className="mb-12">
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between border-b border-stone-100 pb-8">
             <div>
               <nav className="font-mono text-[9px] uppercase tracking-[0.4em] text-yellow-700 mb-2 font-bold opacity-70">
-                {showroom ? showroom.name : 'Protocol Showroom'}
+                {magasins.find(m => m.id === selectedShowroomId)?.name || (showroom ? showroom.name : 'Showroom')}
               </nav>
               <h2 className="text-4xl font-headline font-light italic text-stone-900 tracking-tight">Focus Équipe</h2>
             </div>
             <div className="text-right">
-              <p className="text-4xl font-headline italic text-stone-900 leading-none">{isLoading ? '–' : team.length}</p>
+              <p className="text-4xl font-headline italic text-stone-900 leading-none">
+                {isLoading ? '–' : team.filter(m => !selectedShowroomId || m.showroom?.id === selectedShowroomId).length}
+              </p>
               <p className="text-[9px] font-mono text-stone-400 uppercase tracking-widest mt-1">Commerciaux</p>
             </div>
           </div>
@@ -191,8 +246,10 @@ export default function TeamPage() {
         {/* Team Grid */}
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {team.map((member) => {
-              const globalColors = getGlobalColor(member.scores.global);
+            {team
+              .filter(m => !selectedShowroomId || m.showroom?.id === selectedShowroomId)
+              .map((member) => {
+                const globalColors = getGlobalColor(member.scores.global);
 
               return (
                 <Link key={member.id} href={`/admin/scorecard/commercial?id=${member.id}`} className="block h-full group">
@@ -303,7 +360,7 @@ export default function TeamPage() {
             })}
 
             {/* Empty state */}
-            {team.length === 0 && !isLoading && (
+            {team.filter(m => !selectedShowroomId || m.showroom?.id === selectedShowroomId).length === 0 && !isLoading && (
               <div className="col-span-3 py-20 flex flex-col items-center gap-4 text-stone-300">
                 <span className="material-symbols-outlined text-[64px]">group_off</span>
                 <p className="font-mono text-[12px] uppercase tracking-widest">Aucun commercial dans votre équipe</p>
@@ -329,8 +386,7 @@ export default function TeamPage() {
         onClose={() => setIsUserDrawerOpen(false)}
         user={selectedUser}
         mode={drawerMode}
-        magasins={showroom ? [{ id: showroom.id, name: showroom.name }] : []}
-        fixedMagasinId={showroom?.id}
+        magasins={magasins}
         onSubmit={handleSaveUser}
         lockRole={true}
       />

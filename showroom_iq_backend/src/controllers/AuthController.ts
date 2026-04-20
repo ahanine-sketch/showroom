@@ -46,16 +46,31 @@ export class AuthController {
    */
   static async login(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
+      const { email, mobile, password } = req.body;
 
-      const user = await prisma.user.findUnique({ where: { email } });
+      let user;
+      if (email) {
+        user = await prisma.user.findUnique({ where: { email } });
+      } else if (mobile) {
+        // Try searching by phone exactly as entered or with +212 if it starts with 0
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { phone: mobile },
+              { phone: mobile.startsWith('0') ? '+212' + mobile.substring(1) : mobile },
+              { phone: mobile.startsWith('+212') ? '0' + mobile.substring(4) : mobile }
+            ]
+          }
+        });
+      }
+
       if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+        return res.status(401).json({ success: false, message: 'Identifiants invalides.' });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.passwordHash);
       if (!isValidPassword) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+        return res.status(401).json({ success: false, message: 'Identifiants invalides.' });
       }
 
       const token = jwt.sign(

@@ -13,11 +13,16 @@ export class ShowroomScoringService {
 
     // 1. Fetch Showroom Objective
     const objective = await prisma.objective.findFirst({
-      where: { showroomId, month, year },
+      where: { showroomId, month, year, type: 'SHOWROOM' },
     });
 
-    if (!objective) return 0;
-    const { conservativeCA, likelyCA, exceedCA } = objective;
+    // Use objective targets, falling back to defaults if stored values are all zero
+    const rawConservativeCA = (objective as any)?.conservativeCA ?? 0;
+    const rawLikelyCA       = (objective as any)?.likelyCA       ?? 0;
+    const rawExceedCA       = (objective as any)?.exceedCA        ?? 0;
+    const conservativeCA = rawConservativeCA > 0 ? rawConservativeCA : 100000;
+    const likelyCA       = rawLikelyCA       > 0 ? rawLikelyCA       : 150000;
+    const exceedCA       = rawExceedCA        > 0 ? rawExceedCA        : 200000;
 
     // 2. Fetch all users in showroom
     const users = await prisma.user.findMany({

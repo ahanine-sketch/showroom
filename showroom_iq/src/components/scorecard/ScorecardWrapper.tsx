@@ -16,9 +16,10 @@ interface ScorecardWrapperProps {
   role: 'admin' | 'owner';
   type?: 'commercial' | 'magasin';
   id?: string | null;
+  headerContent?: React.ReactNode;
 }
 
-const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }: ScorecardWrapperProps) => {
+const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, headerContent }: ScorecardWrapperProps) => {
   const isMagasin = type === 'magasin';
   const searchParams = useSearchParams();
   const userId = propId || searchParams.get('id');
@@ -486,6 +487,12 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId }:
 
       </div>
 
+
+      {headerContent && (
+        <div className="mb-2">
+          {headerContent}
+        </div>
+      )}
 
       {/* Header Section */}
       <div className="flex items-end justify-between px-2 mb-0">
