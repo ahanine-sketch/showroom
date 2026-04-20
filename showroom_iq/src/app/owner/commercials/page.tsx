@@ -325,13 +325,12 @@ export default function Page() {
                         </div>
                         
                         <span className="text-[10px] uppercase font-mono text-stone-400 font-bold mb-6 tracking-[0.2em] border-b border-stone-50 pb-2 w-full text-center pt-2">Responsable</span>
-                        <div className="relative mb-6">
-                            <div className="absolute inset-0 bg-stone-100 rounded-full blur-2xl scale-90 opacity-40"></div>
-                            <div className="w-32 h-32 rounded-full bg-stone-50 border-4 border-white shadow-xl relative z-10 flex items-center justify-center text-stone-300">
-                                <span className="material-symbols-outlined text-[64px]">person</span>
-                            </div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-headline text-2xl text-stone-900 text-center">{magasin.manager.name}</h3>
+                          <div className="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-stone-300">
+                             <span className="material-symbols-outlined text-[18px]">person</span>
+                          </div>
                         </div>
-                        <h3 className="font-headline text-2xl text-stone-900 text-center mb-1">{magasin.manager.name}</h3>
                         <p className="text-[11px] text-stone-300 font-mono italic uppercase tracking-widest">Admin / Manager</p>
                         
                         <div className="mt-8 pt-8 border-t border-stone-50 w-full">
@@ -386,15 +385,12 @@ export default function Page() {
                           
                           <Link href={`/owner/scorecard/commercial?id=${commercial.id}`}>
                             <div className="relative z-10 flex flex-col items-center pt-2 cursor-pointer">
-                              <div className="relative mb-6">
-                                <div className="absolute inset-0 bg-stone-100 rounded-[2rem] blur-xl scale-90 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                <div className="w-20 h-20 rounded-[1.5rem] bg-stone-50 border-2 border-white shadow-md relative z-10 flex items-center justify-center text-stone-300 transition-all duration-700">
-                                  <span className="material-symbols-outlined text-[40px]">person</span>
+                              <div className="flex items-center gap-3 mb-1">
+                                <h3 className="font-headline text-2xl text-stone-900 group-hover:text-yellow-800 transition-colors text-center">{commercial.fullName}</h3>
+                                <div className="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-stone-300">
+                                  <span className="material-symbols-outlined text-[18px]">person</span>
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white z-20 shadow-sm"></div>
                               </div>
-
-                              <h3 className="font-headline text-2xl text-stone-900 mb-1 group-hover:text-yellow-800 transition-colors text-center">{commercial.fullName}</h3>
                               <p className="text-[11px] text-stone-400 font-mono italic mb-6 text-center">{commercial.role === 'ADMIN' ? 'Administrateur' : 'Commercial'}</p>
 
                               <div className="w-full flex items-center justify-between pt-6 border-t border-stone-50">

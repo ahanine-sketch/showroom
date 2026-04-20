@@ -1,20 +1,16 @@
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const logs = await prisma.dailyLog.findMany({ take: 5 });
-  console.log('DailyLogs:', JSON.stringify(logs, null, 2));
-  
-  const evals = await prisma.processEvaluation.findMany({ 
-    where: { type: 'PRESENCE' },
-    take: 5 
+  const users = await prisma.user.findMany({
+    select: { id: true, fullName: true, role: true, showroomId: true }
   });
-  console.log('Presence Evaluations:', JSON.stringify(evals, null, 2));
+  const showrooms = await prisma.showroom.findMany();
+  
+  console.log('--- USERS ---');
+  console.log(users);
+  console.log('--- SHOWROOMS ---');
+  console.log(showrooms);
 }
 
-main()
-  .catch(e => console.error(e))
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch(console.error).finally(() => prisma.$disconnect());

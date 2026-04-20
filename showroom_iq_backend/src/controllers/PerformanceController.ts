@@ -356,15 +356,17 @@ export class PerformanceController {
 
       // 1. CA Score (35 pts)
       let caPoints = 0;
-      if (totalCA >= exceedCA) {
-        caPoints = 35;
-      } else if (totalCA >= likelyCA) {
-        caPoints = 32;
-      } else if (totalCA >= conservativeCA) {
-        const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
-        caPoints = 21 + Math.floor(progress * 10);
-      } else if (totalCA >= conservativeCA * 0.5) {
-        caPoints = 10;
+      if (totalCA > 0) {
+        if (totalCA >= exceedCA) {
+          caPoints = 35;
+        } else if (totalCA >= likelyCA) {
+          caPoints = 32;
+        } else if (totalCA >= conservativeCA) {
+          const progress = (totalCA - conservativeCA) / (likelyCA - conservativeCA);
+          caPoints = 21 + Math.floor(progress * 10);
+        } else if (totalCA >= conservativeCA * 0.5) {
+          caPoints = 10;
+        }
       }
 
       // 2. Devis Score (15 pts) - aligned with ScoringService (rate > 75)

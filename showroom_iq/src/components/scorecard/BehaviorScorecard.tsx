@@ -411,7 +411,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
               </div>
               
               <div className="space-y-8 px-2">
-                 {(role === 'owner' || role === 'admin') && availableWarnings.length > 0 && (
+                 {role === 'owner' && availableWarnings.length > 0 && (
                    <div className="p-6 bg-stone-50 border border-stone-100 rounded-2xl space-y-6 shadow-inner">
                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-400 flex items-center gap-3">
                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
@@ -445,7 +445,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
                    </div>
                  )}
 
-                 {(role === 'owner' || role === 'admin') && availableWarnings.length === 0 && (
+                 {role === 'owner' && availableWarnings.length === 0 && (
                    <div className="p-6 bg-rose-50 border border-rose-100 rounded-2xl text-center">
                      <span className="material-symbols-outlined text-rose-400 text-3xl mb-2">gavel</span>
                      <p className="text-[11px] font-black uppercase text-rose-600 tracking-widest">Toutes les sanctions ont été appliquées</p>

@@ -55,14 +55,7 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
         </div>
 
         {/* Responsable Section */}
-        <div className="flex items-center gap-3 mb-6 pt-2">
-          <div className="w-9 h-9 rounded-full overflow-hidden border border-stone-100 shadow-sm bg-stone-100 flex items-center justify-center">
-            {manager.avatar ? (
-              <img src={manager.avatar} alt={manager.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="material-symbols-outlined text-stone-300 text-[18px]">person</span>
-            )}
-          </div>
+        <div className="flex items-center justify-between mb-6 pt-2 border-b border-stone-50 pb-4">
           <div className="flex flex-col">
             <span className="text-[8px] font-mono text-stone-400 uppercase tracking-widest font-bold">Responsable</span>
             <div className="flex items-center gap-2">
@@ -74,6 +67,9 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
               )}
             </div>
           </div>
+          <div className="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-stone-300">
+            <span className="material-symbols-outlined text-[18px]">person</span>
+          </div>
         </div>
 
 
@@ -81,11 +77,16 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
         {/* Team Section */}
         <div className="pt-4 pb-1 border-t border-stone-50 flex items-center justify-between mb-4">
           <div className="flex -space-x-1.5">
-            {[1, 2, 3].map((i) => (
+            {Array.from({ length: Math.min(commercialCount, 3) }).map((_, i) => (
               <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-stone-50 flex items-center justify-center shadow-sm">
                 <span className="material-symbols-outlined text-[12px] text-stone-400">person</span>
               </div>
             ))}
+            {commercialCount === 0 && (
+               <div className="w-6 h-6 rounded-full border-2 border-dashed border-stone-100 bg-stone-50/30 flex items-center justify-center">
+                 <span className="material-symbols-outlined text-[10px] text-stone-200">person_off</span>
+               </div>
+            )}
           </div>
           <button 
             onClick={(e) => {
@@ -96,7 +97,7 @@ const ShowroomCard = ({ id, name, address, city, manager, performance, score, co
             className="group/team flex items-center gap-2 px-3 py-1.5 bg-stone-50 hover:bg-yellow-50 rounded-xl transition-all duration-300"
           >
             <span className="text-[10px] font-bold text-stone-600 group-hover/team:text-yellow-700 uppercase tracking-wider">
-              {commercialCount} Commercial
+              {commercialCount} {commercialCount <= 1 ? 'Commercial' : 'Commerciaux'}
             </span>
             <span className="material-symbols-outlined text-[14px] text-stone-300 group-hover/team:text-yellow-600 transition-transform group-hover/team:translate-x-0.5">
               chevron_right

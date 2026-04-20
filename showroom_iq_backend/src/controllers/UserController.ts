@@ -237,7 +237,7 @@ export class UserController {
       const newUser = await prisma.user.create({
         data: {
           fullName,
-          email,
+          email: email || null,
           phone: phone || null,
           role: role || 'COMMERCIAL',
           showroomId: showroomId || null,
@@ -291,7 +291,7 @@ export class UserController {
         where: { id },
         data: {
           fullName,
-          email,
+          email: email || null,
           phone: phone || null,
           role,
           showroomId: showroomId || null
@@ -390,7 +390,8 @@ export class UserController {
           fullName: true,
           email: true,
           role: true,
-          avatarUrl: true
+          avatarUrl: true,
+          showroomId: true
         }
       });
 

@@ -55,47 +55,53 @@ export class ShowroomController {
 
       // Calculate performance for each showroom
       const formatted = await Promise.all(showrooms.map(async (s) => {
-        const performance = await ShowroomScoringService.calculatePerformance(s.id, currentMonth, currentYear);
-        
-        return {
-          id: s.id,
-          name: s.name,
-          location: s.location,
-          city: s.city,
-          manager: s.manager ? {
-            id: s.manager.id,
-            name: s.manager.fullName,
-            email: s.manager.email,
-            phone: s.manager.phone,
-            avatar: s.manager.avatarUrl,
-            seniority: (s.manager as any).seniority || ''
-          } : null,
-          commercials: s.users.map(u => ({
-            id: u.id,
-            fullName: u.fullName,
-            email: u.email,
-            phone: u.phone,
-            avatarUrl: u.avatarUrl,
-            role: u.role,
-            targets: u.objectives && u.objectives.length > 0 ? {
-              conservative: u.objectives[0].conservativeCA,
-              likely: u.objectives[0].likelyCA,
-              exceed: u.objectives[0].exceedCA
+        try {
+          const performance = await ShowroomScoringService.calculatePerformance(s.id, currentMonth, currentYear);
+          
+          return {
+            id: s.id,
+            name: s.name,
+            location: s.location,
+            city: s.city,
+            manager: s.manager ? {
+              id: s.manager.id,
+              name: s.manager.fullName,
+              email: s.manager.email,
+              phone: s.manager.phone,
+              avatar: s.manager.avatarUrl,
+              seniority: s.manager.seniority || ''
+            } : null,
+            commercials: s.users.map(u => ({
+              id: u.id,
+              fullName: u.fullName,
+              email: u.email,
+              phone: u.phone,
+              avatarUrl: u.avatarUrl,
+              role: u.role,
+              targets: u.objectives && u.objectives.length > 0 ? {
+                conservative: u.objectives[0].conservativeCA,
+                likely: u.objectives[0].likelyCA,
+                exceed: u.objectives[0].exceedCA
+              } : null
+            })),
+            performance: performance,
+            score: Math.round(performance),
+            status: 'Ouvert',
+            targets: s.objectives.length > 0 ? {
+              conservative: s.objectives[0].conservativeCA,
+              likely: s.objectives[0].likelyCA,
+              exceed: s.objectives[0].exceedCA
             } : null
-          })),
-          performance: performance,
-          score: Math.round(performance),
-          status: 'Ouvert',
-          targets: s.objectives.length > 0 ? {
-            conservative: s.objectives[0].conservativeCA,
-            likely: s.objectives[0].likelyCA,
-            exceed: s.objectives[0].exceedCA
-          } : null
-        };
+          };
+        } catch (calcError: any) {
+          console.error(`Error calculating performance for showroom ${s.id} (${s.name}):`, calcError);
+          throw calcError;
+        }
       }));
 
       return res.json({ success: true, data: formatted });
     } catch (error: any) {
+      console.error('GetAll Showrooms Error:', error);
       return res.status(500).json({ success: false, error: error.message });
     }
   }

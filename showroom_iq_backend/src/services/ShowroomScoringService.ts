@@ -49,13 +49,18 @@ export class ShowroomScoringService {
     // --- SALES SCORING (70 pts) --- Matches frontend isMagasin logic exactly
     // CA (50 pts)
     let caPoints = 0;
-    if (totalStats.ca >= exceedCA) caPoints = 50;
-    else if (totalStats.ca >= likelyCA) caPoints = 45; // Math.floor(50 * 0.9)
-    else if (totalStats.ca >= conservativeCA) {
-      const progress = (totalStats.ca - conservativeCA) / (likelyCA - conservativeCA);
-      caPoints = 10 + Math.floor(progress * 35);
-    } else if (totalStats.ca >= conservativeCA * 0.5) {
-      caPoints = 10;
+    if (totalStats.ca > 0) {
+      if (totalStats.ca >= exceedCA) caPoints = 50;
+      else if (totalStats.ca >= likelyCA) caPoints = 45;
+      else if (totalStats.ca >= conservativeCA) {
+        let progress = 0;
+        if (likelyCA > conservativeCA) {
+          progress = (totalStats.ca - conservativeCA) / (likelyCA - conservativeCA);
+        }
+        caPoints = 10 + Math.floor(progress * 35);
+      } else if (totalStats.ca >= conservativeCA * 0.5) {
+        caPoints = 10;
+      }
     }
 
     // Devis (10 pts) — frontend uses (validated + lost) / created for magasin
