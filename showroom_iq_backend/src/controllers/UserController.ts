@@ -172,6 +172,50 @@ export class UserController {
   }
 
   /**
+   * Get all users with optional filtering for Owner management
+   */
+  static async getAll(req: Request, res: Response) {
+    try {
+      const { role, q, showroomId } = req.query;
+      
+      const users = await prisma.user.findMany({
+        where: {
+          fullName: q ? { contains: q as string, mode: 'insensitive' } : undefined,
+          role: role ? (role as any) : undefined,
+          showroomId: showroomId ? (showroomId as string) : undefined,
+        },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+          avatarUrl: true,
+          showroom: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          objectives: {
+            where: {
+              month: new Date().getMonth() + 1,
+              year: new Date().getFullYear()
+            },
+            take: 1
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return res.json({ success: true, data: users });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
    * Search users by name and optionally filter by role
    */
   static async search(req: Request, res: Response) {

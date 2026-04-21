@@ -138,7 +138,8 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
                         className="w-full appearance-none border border-stone-100 bg-stone-50/50 rounded-xl px-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <option value="COMMERCIAL">Commercial</option>
-                        {!lockRole && <option value="ADMIN">Admin</option>}
+                        <option value="ADMIN">Admin</option>
+                        <option value="OWNER">Propriétaire</option>
                       </select>
                       <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none text-[18px]">expand_more</span>
                     </div>

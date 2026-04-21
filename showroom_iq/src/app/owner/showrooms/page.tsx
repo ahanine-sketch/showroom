@@ -235,7 +235,7 @@ export default function Page() {
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-[12px] font-mono uppercase tracking-[0.3em] text-yellow-600 font-bold mb-3">Gestion de Réseau</h2>
-            <h1 className="font-headline text-5xl italic tracking-tight text-stone-900 leading-tight">Nos Magasins</h1>
+            <h1 className="font-headline text-5xl tracking-tight text-stone-900 leading-tight">Nos Magasins</h1>
           </div>
 
           <div className="flex flex-col items-end gap-6">
@@ -362,7 +362,7 @@ export default function Page() {
             <h2 className="text-[10px] font-mono uppercase tracking-widest text-stone-400 font-bold mb-1">
               Configuration Magasin
             </h2>
-            <h3 className="font-headline text-3xl italic tracking-tight text-stone-900">
+            <h3 className="font-headline text-3xl tracking-tight text-stone-900">
               {drawerMode === 'edit' ? 'Modifier Magasin' : 'Ajouter Magasin'}
             </h3>
           </div>

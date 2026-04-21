@@ -69,6 +69,20 @@ const ObjectiveSalesCard = ({
   const percentage = percentageNum.toFixed(0);
 
 
+  // Helper to get point on arc for labels
+  const getPointOnArc = (value: number, r: number) => {
+    const ratio = Math.min(value / totalValue, 1.1); // Allow slightly over for layout
+    const angle = Math.PI * (1 - Math.min(ratio, 1));
+    return {
+      x: 50 + r * Math.cos(angle),
+      y: 50 - r * Math.sin(angle)
+    };
+  };
+
+  const pBase = getPointOnArc(baseValue, 48);
+  const pLikely = getPointOnArc(likelyValue, 48);
+  const pTotal = getPointOnArc(totalValue, 48);
+
   return (
     <div className={`bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm flex flex-col items-center relative min-h-[430px] justify-between ${className}`}>
       {/* Internal Title Header */}
@@ -100,7 +114,7 @@ const ObjectiveSalesCard = ({
                 <input 
                   type="range" 
                   min="0" 
-                  max={totalValue} 
+                  max={totalValue * 1.1} 
                   step="1000"
                   value={currentValue}
                   onChange={(e) => onValueChange?.(Number(e.target.value))}
@@ -129,10 +143,9 @@ const ObjectiveSalesCard = ({
             
             <text x="8" y="56" fontSize="4" fill="#ef4444" textAnchor="end" className="font-mono font-black">0</text>
             
-            <text x="40" y="0" fontSize="3.5" fill="#eab308" textAnchor="middle" className="font-mono font-bold">{baseValue.toLocaleString('en-US')}</text>
-            <text x="80" y="8" fontSize="3.5" fill="#22c55e" textAnchor="start" className="font-mono font-bold">{(likelyValue).toLocaleString('en-US')}</text>
-
-            <text x="94" y="56" fontSize="4" fill="#15803d" textAnchor="start" className="font-mono font-black">{totalValue.toLocaleString('en-US')}</text>
+            <text x={pBase.x} y={pBase.y - 5} fontSize="3.5" fill="#ef4444" textAnchor="middle" className="font-mono font-black">{baseValue.toLocaleString()}</text>
+            <text x={pLikely.x} y={pLikely.y - 5} fontSize="3.5" fill="#eab308" textAnchor="middle" className="font-mono font-black">{likelyValue.toLocaleString()}</text>
+            <text x={pTotal.x - 4} y={pTotal.y + 8} fontSize="3.5" fill="#22c55e" textAnchor="end" className="font-mono font-black">{totalValue.toLocaleString()}</text>
             
             <g style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: "50px 50px" }} className="transition-transform duration-1000 ease-out delay-150" filter="url(#needleShadow)">
               <path d="M 50 49 L 14 50 L 50 51 Z" fill="#1c1917" />
@@ -148,25 +161,25 @@ const ObjectiveSalesCard = ({
         <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue <= baseValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
           <span className={`w-full h-[8px] rounded-full bg-red-400 mb-3 ${currentValue <= baseValue ? 'shadow-sm ring-1 ring-red-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className={`text-[12px] uppercase tracking-widest ${currentValue <= baseValue ? 'text-red-500 font-black' : 'text-stone-400 font-bold'}`}>Conservative</p>
+            <p className={`text-[10px] uppercase tracking-widest ${currentValue <= baseValue ? 'text-red-500 font-black' : 'text-stone-400 font-bold'}`}>Conservative</p>
           </div>
         </div>
         
-        <div className="w-8 shrink-0"></div>
+        <div className="w-4 shrink-0"></div>
         
         <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue > baseValue && currentValue <= likelyValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
           <span className={`w-full h-[8px] rounded-full bg-yellow-500 mb-3 ${currentValue > baseValue && currentValue <= likelyValue ? 'shadow-sm ring-1 ring-yellow-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className={`text-[12px] uppercase tracking-widest ${currentValue > baseValue && currentValue <= likelyValue ? 'text-yellow-600 font-black' : 'text-stone-400 font-bold'}`}>Likely</p>
+            <p className={`text-[10px] uppercase tracking-widest ${currentValue > baseValue && currentValue <= likelyValue ? 'text-yellow-600 font-black' : 'text-stone-400 font-bold'}`}>Likely</p>
           </div>
         </div>
         
-        <div className="w-8 shrink-0"></div>
+        <div className="w-4 shrink-0"></div>
         
         <div className={`flex flex-col items-center transition-all duration-300 flex-1 ${currentValue > likelyValue ? 'scale-110' : 'opacity-40 grayscale-[0.5]'}`}>
           <span className={`w-full h-[8px] rounded-full bg-green-500 mb-3 ${currentValue > likelyValue ? 'shadow-sm ring-1 ring-green-200' : 'opacity-30'}`}></span>
           <div className="text-center">
-            <p className={`text-[12px] uppercase tracking-widest ${currentValue > likelyValue ? 'text-green-600 font-black' : 'text-stone-400 font-bold'}`}>Exceed</p>
+            <p className={`text-[10px] uppercase tracking-widest ${currentValue > likelyValue ? 'text-green-600 font-black' : 'text-stone-400 font-bold'}`}>Exceed</p>
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ const OwnerSidebar = () => {
         { name: 'Tableau de Bord', href: '/owner/dashboard', icon: 'dashboard' },
         { name: 'Magasins', href: '/owner/showrooms', icon: 'storefront' },
         { name: 'Commerciaux', href: '/owner/commercials', icon: 'groups' },
+        { name: 'Utilisateurs', href: '/owner/users', icon: 'person' },
         { name: 'Rapports', href: '#', icon: 'analytics' },
     ];
 

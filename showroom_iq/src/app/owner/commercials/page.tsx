@@ -260,8 +260,8 @@ export default function Page() {
     <div className="pt-[90px] p-12 space-y-8 max-w-[1400px] mx-auto min-h-screen bg-[#fbf9f4]">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-[12px] font-mono uppercase tracking-[0.3em] text-yellow-600 font-bold mb-3 font-serif italic">Force de Vente Réseau</h2>
-          <h1 className="font-headline text-6xl italic tracking-tight text-stone-900 leading-tight">Nos Commerciaux</h1>
+          <h2 className="text-[12px] font-mono uppercase tracking-[0.3em] text-yellow-600 font-bold mb-3 font-serif">Force de Vente Réseau</h2>
+          <h1 className="font-headline text-6xl tracking-tight text-stone-900 leading-tight">Nos Commerciaux</h1>
         </div>
 
         <div className="flex flex-col items-end gap-6 max-w-[600px] w-full">
@@ -327,7 +327,7 @@ export default function Page() {
             <div key={magasin.id} className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
               {/* Magasin Header */}
               <div className="flex items-center gap-6 mb-8">
-                <h2 className="font-headline text-4xl italic text-stone-900 whitespace-nowrap">Equipe {magasin.name}</h2>
+                <h2 className="font-headline text-4xl text-stone-900 whitespace-nowrap">Equipe {magasin.name}</h2>
                 <div className="h-px bg-stone-200 flex-1"></div>
                 <span className="font-mono text-[11px] font-bold text-stone-400 uppercase tracking-widest bg-white border border-stone-100 px-4 py-1.5 rounded-full shadow-sm">
                   {magasin.commercials.filter(c => c.role !== 'OWNER').length + (magasin.manager && magasin.manager.role !== 'OWNER' ? 1 : 0)} Membres

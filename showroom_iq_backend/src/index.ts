@@ -51,6 +51,7 @@ app.delete('/api/showrooms/:id', authenticate, authorize(['OWNER']), ShowroomCon
 
 // 6. User Management
 app.get('/api/users/profile', authenticate, UserController.getProfile);
+app.get('/api/users', authenticate, authorize(['OWNER']), UserController.getAll);
 app.get('/api/users/my-team', authenticate, authorize(['ADMIN']), UserController.getMyTeam);
 app.get('/api/users/search', authenticate, UserController.search);
 app.get('/api/users/:id', authenticate, UserController.getById);

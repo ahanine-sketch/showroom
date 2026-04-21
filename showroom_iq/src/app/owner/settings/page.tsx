@@ -368,7 +368,7 @@ function SettingsContent() {
         <div className="p-10">
             <div className="flex items-center justify-between mb-10">
                 <div className="space-y-1">
-                    <h3 className="font-serif text-3xl font-black italic text-stone-800 tracking-tighter">Configuration des Notes</h3>
+                    <h3 className="font-serif text-3xl font-black text-stone-800 tracking-tighter">Configuration des Notes</h3>
                     <p className="text-stone-400 text-xs font-medium">Metric active: <span className="text-stone-600 font-bold">{activeMetricName}</span></p>
                 </div>
                 <button
@@ -454,7 +454,7 @@ function SettingsContent() {
                 <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl bg-stone-900 border border-stone-800 shadow-2xl shadow-stone-900/20 flex items-center justify-center text-white text-2xl">💰</div>
                     <div className="space-y-0.5">
-                        <h2 className="font-serif text-4xl font-black italic tracking-tighter text-stone-800">Grille de Conclusion</h2>
+                        <h2 className="font-serif text-4xl font-black tracking-tighter text-stone-800">Grille de Conclusion</h2>
                         <p className="text-stone-400 text-xs font-medium uppercase tracking-widest">Mapping Score Total → Observation</p>
                     </div>
                 </div>
@@ -516,7 +516,7 @@ function SettingsContent() {
                                     <span className="material-symbols-outlined text-[24px]">workspace_premium</span>
                                 </div>
                                 <div>
-                                    <h3 className="font-serif text-2xl font-black italic text-stone-900 tracking-tight">Configuration Bonus</h3>
+                                    <h3 className="font-serif text-2xl font-black text-stone-900 tracking-tight">Configuration Bonus</h3>
                                     <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Ajustement Manuel Propriétaire</p>
                                 </div>
                             </div>
@@ -591,7 +591,7 @@ function SettingsContent() {
 
             {/* Topbar */}
             <header className="h-[60px] bg-white border-b border-stone-200 flex items-center justify-between px-10 sticky top-0 z-40 backdrop-blur-md bg-white/90">
-                <h2 className="font-serif text-xl font-medium tracking-tight italic text-yellow-700">SIQ Configuration</h2>
+                <h2 className="font-serif text-xl font-medium tracking-tight text-yellow-700">SIQ Configuration</h2>
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
