@@ -147,11 +147,13 @@ export default function Page() {
   };
 
   const filteredShowrooms = useMemo(() => {
-    return showrooms.filter(s => 
-      s.name.toLowerCase().includes(search.toLowerCase()) || 
-      (s.city && s.city.toLowerCase().includes(search.toLowerCase())) ||
-      (s.manager && s.manager.name.toLowerCase().includes(search.toLowerCase()))
-    );
+    return showrooms
+      .filter(s => 
+        s.name.toLowerCase().includes(search.toLowerCase()) || 
+        (s.city && s.city.toLowerCase().includes(search.toLowerCase())) ||
+        (s.manager && s.manager.name.toLowerCase().includes(search.toLowerCase()))
+      )
+      .sort((a, b) => b.score - a.score);
   }, [search, showrooms]);
 
   const handleSave = async () => {

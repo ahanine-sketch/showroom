@@ -248,6 +248,7 @@ export default function TeamPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {team
               .filter(m => !selectedShowroomId || m.showroom?.id === selectedShowroomId)
+              .sort((a, b) => b.scores.global - a.scores.global)
               .map((member) => {
                 const globalColors = getGlobalColor(member.scores.global);
 

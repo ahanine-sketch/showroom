@@ -202,8 +202,11 @@ export default function Page() {
   };
 
   const filteredMagasins = useMemo(() => {
-    let data = magasinsData;
+    let data = [...magasinsData];
     
+    // Sort magasins by performance
+    data.sort((a, b) => b.performance - a.performance);
+
     // Filter by selectedMagasinId
     if (selectedMagasinId !== 'all') {
       data = data.filter(m => m.id === selectedMagasinId);
@@ -214,9 +217,7 @@ export default function Page() {
       data = data.filter(m => m.id === filterMagasinId);
     }
 
-    if (!search) return data;
-    
-    return data.map(magasin => {
+    const processMagasin = (magasin: MagasinData) => {
       const searchLower = search.toLowerCase();
       const showroomMatch = magasin.name.toLowerCase().includes(searchLower);
 
@@ -224,27 +225,40 @@ export default function Page() {
       const mManager = (magasin.manager && magasin.manager.role !== 'OWNER' && 
         (magasin.manager.name.toLowerCase().includes(searchLower) || showroomMatch)) ? magasin.manager : null;
       
-      const mCommercials = magasin.commercials.filter(c => 
-        c.role !== 'OWNER' && (
-          c.fullName.toLowerCase().includes(searchLower) || 
-          c.role.toLowerCase().includes(searchLower) ||
-          showroomMatch
+      const mCommercials = magasin.commercials
+        .filter(c => 
+          c.role !== 'OWNER' && (
+            c.fullName.toLowerCase().includes(searchLower) || 
+            c.role.toLowerCase().includes(searchLower) ||
+            showroomMatch
+          )
         )
-      );
+        .sort((a, b) => (performanceScores[b.id] ?? 0) - (performanceScores[a.id] ?? 0));
       
       return {
         ...magasin,
         commercials: mCommercials,
         manager: mManager || (mCommercials.length > 0 && magasin.manager?.role !== 'OWNER' ? magasin.manager : null)
       };
-    }).filter(magasin => 
+    };
+
+    if (!search) {
+      return data.map(magasin => {
+        return {
+          ...magasin,
+          commercials: [...magasin.commercials].sort((a, b) => (performanceScores[b.id] ?? 0) - (performanceScores[a.id] ?? 0))
+        };
+      });
+    }
+
+    return data.map(processMagasin).filter(magasin => 
       magasin.commercials.length > 0 || 
       (magasin.manager && magasin.manager.role !== 'OWNER' && (
         magasin.manager.name.toLowerCase().includes(search.toLowerCase()) || 
         magasin.name.toLowerCase().includes(search.toLowerCase())
       ))
     );
-  }, [search, magasinsData, filterMagasinId, selectedMagasinId]);
+  }, [search, magasinsData, filterMagasinId, selectedMagasinId, performanceScores]);
 
   // Aggregate stats (excluding OWNERs)
   const totalEmployees = magasinsData.reduce((acc, mag) => {
