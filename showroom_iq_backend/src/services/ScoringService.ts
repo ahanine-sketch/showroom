@@ -11,6 +11,10 @@ export class ScoringService {
    * Based on % of Conservative and Likely targets
    * Now uses dynamic levels if provided
    */
+  /**
+   * CA Scoring (35 pts by default)
+   * Based on % of Conservative and Likely targets from Objective
+   */
   static async calculateCAScore(userId: string, ca: number, date: Date, dynamicLevels?: any[]): Promise<{ points: number; label: string }> {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
@@ -23,35 +27,54 @@ export class ScoringService {
 
     const { conservativeCA, likelyCA } = objective;
 
-    // If we have dynamic levels from DB/Settings, we could use them here.
-    // However, CA scoring is logic-heavy (interpolations). 
-    // We'll keep the logic but allow the 'points' ranges to be dynamic if needed.
+    // Resolve dynamic point caps from settings
+    const pointsTB = this.getLevelPointsByRank(dynamicLevels, 'tb', 35);
+    const pointsB_Max = this.getLevelPointsByRank(dynamicLevels, 'b', 30);
+    const pointsMV_Points = this.getLevelPointsByRank(dynamicLevels, 'mv', 10);
     
+    // We assume Moyen's max is derived from Bien's base or a standard logic
+    // But since the UI only has 4-5 levels, we'll map them:
+    const pointsM_Max = this.getLevelPointsByRank(dynamicLevels, 'm', 20);
+
     // Tres Bien: Above Likely
-    if (ca >= likelyCA) return { points: 35, label: 'Très Bien' };
+    if (ca >= likelyCA) return { points: pointsTB, label: 'Très Bien' };
 
     // Bien: Close to Likely (Top 50% of gap)
     const midPoint = (conservativeCA + likelyCA) / 2;
     if (ca >= midPoint) {
       const progress = (ca - midPoint) / (likelyCA - midPoint);
-      const points = Math.min(Math.round(21 + progress * 9), 30);
+      // Interpolate between the high end of Moyen (pointsM_Max) and the high end of Bien (pointsB_Max)
+      const range = pointsB_Max - (pointsM_Max + 1);
+      const points = Math.min(Math.round((pointsM_Max + 1) + progress * range), pointsB_Max);
       return { points, label: 'Bien' };
     }
 
     // Moyen: Low Likely (Bottom 50% of gap)
     if (ca >= conservativeCA) {
-      // Linear interpolation between 11 and 20
       const progress = (ca - conservativeCA) / (midPoint - conservativeCA);
-      const points = Math.min(Math.round(11 + progress * 9), 20);
+      const range = pointsM_Max - (pointsMV_Points + 1);
+      const points = Math.min(Math.round((pointsMV_Points + 1) + progress * range), pointsM_Max);
       return { points, label: 'Moyen' };
     }
 
     // Mauvais: Close to Conservative
-    if (ca >= 0.5 * conservativeCA) return { points: 10, label: 'Mauvais' };
+    if (ca >= 0.5 * conservativeCA) return { points: pointsMV_Points, label: 'Mauvais' };
 
     // Tres Mauvais: Below 0.5 * Conservative
     return { points: 0, label: 'Très Mauvais' };
   }
+
+  /**
+   * Helper to safely extract points from dynamic levels
+   */
+  private static getLevelPointsByRank(levels: any[] | undefined, id: string, fallback: number): number {
+    if (!levels || !Array.isArray(levels)) return fallback;
+    const level = levels.find(l => l.id === id);
+    if (!level) return fallback;
+    const p = parseInt(level.points);
+    return isNaN(p) ? fallback : p;
+  }
+
 
   /**
    * Conversion Score (15 pts)
@@ -346,11 +369,13 @@ export class ScoringService {
       else if (e.warningLevel === 3) processDeduction += 4;
     });
     
-    const procPoints = Math.max(0, 10 - processDeduction);
     const avisPoints = this.calculateAvisScore(avisStats.plus, avisStats.minus, metricConfigs['avis-reputation']);
     const savPoints = this.calculateSAVScore(savStats.tickets, savStats.complaints, metricConfigs['sav-service']);
     
-    const finalBehaviorScore = avisPoints + savPoints + procPoints;
+    // Process points from config (tb level usually defines max points)
+    const maxProcessPoints = this.getLevelPointsByRank(metricConfigs['process-qualite'], 'tb', 10);
+    const finalBehaviorScore = avisPoints + savPoints + Math.max(0, maxProcessPoints - processDeduction);
+
 
     // 3. Calculate Presence (5 pts)
     const presEval = evaluations.find(e => e.type === EvaluationType.PRESENCE);

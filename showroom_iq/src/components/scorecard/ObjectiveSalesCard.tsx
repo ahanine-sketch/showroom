@@ -5,6 +5,8 @@ interface ObjectiveSalesCardProps {
   score: number;
   maxScore: number;
   status: string;
+  /** Hex color from the scoring config (e.g. #22c55e). Forwarded to ScoreBadge. */
+  color?: string;
   caGenerated: string;
   baseValue: number;
   likelyValue: number;
@@ -22,6 +24,7 @@ const ObjectiveSalesCard = ({
   score,
   maxScore,
   status,
+  color,
   caGenerated,
   baseValue,
   likelyValue,
@@ -65,7 +68,7 @@ const ObjectiveSalesCard = ({
   // Percentage Reached
   // Use current relative objective for percentage
   const targetForPercentage = currentPhase === "CONSERVATIVE" ? baseValue : (currentPhase === "LIKELY" ? likelyValue : totalValue);
-  const percentageNum = targetForPercentage > 0 ? (currentValue / targetForPercentage) * 100 : 0;
+  const percentageNum = targetForPercentage > 0 ? (Math.min(currentValue, targetForPercentage) / targetForPercentage) * 100 : 0;
   const percentage = percentageNum.toFixed(0);
 
 
@@ -82,6 +85,8 @@ const ObjectiveSalesCard = ({
   const pBase = getPointOnArc(baseValue, 48);
   const pLikely = getPointOnArc(likelyValue, 48);
   const pTotal = getPointOnArc(totalValue, 48);
+
+  const displayValue = Math.min(currentValue, totalValue);
 
   return (
     <div className={`bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm flex flex-col items-center relative min-h-[430px] justify-between ${className}`}>
@@ -108,13 +113,13 @@ const ObjectiveSalesCard = ({
               <span className="text-[11px] text-stone-400 uppercase tracking-widest font-black mb-4 opacity-60">CA Généré</span>
               <div className="flex flex-col gap-3">
                 <span className="font-mono font-bold text-[18px] px-5 py-2.5 bg-yellow-50/50 rounded-xl text-yellow-600 border border-yellow-100 shadow-sm leading-none flex items-center justify-between min-w-[180px]">
-                  <span>{currentValue.toLocaleString('en-US')}</span>
+                  <span>{displayValue.toLocaleString('en-US')}</span>
                   <span className="text-[10px] opacity-60 ml-0.5">MAD</span>
                 </span>
                 <input 
                   type="range" 
                   min="0" 
-                  max={totalValue * 1.1} 
+                  max={totalValue} 
                   step="1000"
                   value={currentValue}
                   onChange={(e) => onValueChange?.(Number(e.target.value))}
@@ -125,7 +130,7 @@ const ObjectiveSalesCard = ({
          </div>
         
         <div className="flex flex-col items-end">
-          <ScoreBadge score={score} max={maxScore} status={status} />
+          <ScoreBadge score={score} max={maxScore} status={status} color={color} />
         </div>
       </div>
 

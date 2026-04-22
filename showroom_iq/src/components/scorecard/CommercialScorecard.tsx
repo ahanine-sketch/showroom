@@ -98,8 +98,9 @@ const CommercialScorecard = ({
             <ObjectiveSalesCard 
               className="col-span-8"
               score={details?.sales?.points || 0}
-              maxScore={isMagasin ? 50 : 35}
+              maxScore={details?.sales?.maxScore || (isMagasin ? 50 : 35)}
               status={details?.sales?.status || "MAUVAIS"}
+              color={details?.sales?.statusColor}
               caGenerated={(metrics?.caAmount || 0).toLocaleString('en-US')}
               baseValue={metrics?.conservativeCA || 30000}
               likelyValue={metrics?.likelyCA || 50000}
@@ -132,7 +133,12 @@ const CommercialScorecard = ({
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <ScoreBadge score={details?.devis?.points || 0} max={isMagasin ? 10 : 15} status={details?.devis?.status || "MAUVAIS"} />
+                    <ScoreBadge 
+                      score={details?.devis?.points || 0} 
+                      max={details?.devis?.maxScore || (isMagasin ? 10 : 15)} 
+                      status={details?.devis?.status || "MAUVAIS"} 
+                      color={details?.devis?.statusColor}
+                    />
                   </div>
                 </div>
 
@@ -218,7 +224,12 @@ const CommercialScorecard = ({
            </div>
 
            <div className="px-10 py-6 border-b border-stone-100 flex justify-end items-center bg-stone-50/10">
-             <ScoreBadge score={details?.perf?.points || 0} max={isMagasin ? 10 : 15} status={details?.perf?.status || "MAUVAIS"} />
+              <ScoreBadge 
+                score={details?.perf?.points || 0} 
+                max={details?.perf?.maxScore || (isMagasin ? 10 : 15)} 
+                status={details?.perf?.status || "MAUVAIS"} 
+                color={details?.perf?.statusColor}
+              />
            </div>
           
           <div className="grid grid-cols-6 bg-stone-50 border-b border-stone-100 font-mono text-[8px] font-bold uppercase text-stone-400 tracking-widest">

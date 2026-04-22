@@ -189,7 +189,12 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-10 pb-6 border-b border-stone-50 px-2">
-                <ScoreBadge score={details?.avis?.points || 0} max={10} status={details?.avis?.status || "MAUVAIS"} />
+                <ScoreBadge 
+                  score={details?.avis?.points || 0} 
+                  max={details?.avis?.maxScore || 10} 
+                  status={details?.avis?.status || "MAUVAIS"} 
+                  color={details?.avis?.statusColor}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-6 mb-10 px-2">
@@ -327,7 +332,12 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
-                <ScoreBadge score={details?.sav?.points || 0} max={10} status={details?.sav?.status || "MAUVAIS"} />
+                <ScoreBadge 
+                  score={details?.sav?.points || 0} 
+                  max={details?.sav?.maxScore || 10} 
+                  status={details?.sav?.status || "MAUVAIS"} 
+                  color={details?.sav?.statusColor}
+                />
               </div>
               
               <div className="grid grid-cols-2 gap-4 px-2 mb-6">
@@ -407,7 +417,12 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
               <div className="w-full h-16"></div> {/* Spacer for header */}
 
               <div className="flex justify-end items-center mb-8 px-2">
-                <ScoreBadge score={details?.processus?.points || 0} max={10} status={details?.processus?.status || "MAUVAIS"} />
+                <ScoreBadge 
+                  score={details?.processus?.points || 0} 
+                  max={details?.processus?.maxScore || 10} 
+                  status={details?.processus?.status || "MAUVAIS"} 
+                  color={details?.processus?.statusColor}
+                />
               </div>
               
               <div className="space-y-8 px-2">

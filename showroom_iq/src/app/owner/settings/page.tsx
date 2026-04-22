@@ -338,6 +338,29 @@ function SettingsContent() {
     const deleteLevel = (id: string) => setMetricLevels(prev => ({ ...prev, [selectedMetric]: prev[selectedMetric]?.filter(l => l.id !== id) || [] }));
     const updateLevel = (id: string, field: string, value: string) => setMetricLevels(prev => ({ ...prev, [selectedMetric]: prev[selectedMetric]?.map(l => l.id === id ? { ...l, [field]: value } : l) || [] }));
 
+    // ── HELPERS FOR MAX POINTS ──────────────────────────────────────────────
+    const getMaxFromPoints = (pointsStr: string): number => {
+        if (!pointsStr) return 0;
+        const parts = pointsStr.toString().split('-').map(p => p.trim());
+        const lastPart = parts[parts.length - 1];
+        const num = parseFloat(lastPart.replace(/[^\d.]/g, ''));
+        return isNaN(num) ? 0 : num;
+    };
+
+    const getMetricMaxPoints = (levels: any[]): number => {
+        if (!levels || levels.length === 0) return 0;
+        return Math.max(...levels.map(l => getMaxFromPoints(l.points)));
+    };
+
+    const getTotalMaxPoints = (allLevels: Record<string, any[]>, metricGroups: Record<string, any[]>) => {
+        let total = 0;
+        Object.values(metricGroups).flat().forEach(m => {
+            const levels = allLevels[m.id] || [];
+            total += getMetricMaxPoints(levels);
+        });
+        return total;
+    };
+
     const addConclusion    = () => setConclusions(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), name: 'Nouvelle Conclusion', range: 'Score...', color: '#5C5750' }]);
     const deleteConclusion = (id: string) => setConclusions(prev => prev.filter(c => c.id !== id));
     const updateConclusion = (id: string, field: string, value: string) => setConclusions(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
@@ -364,12 +387,18 @@ function SettingsContent() {
         onDelete: (id: string) => void,
         onUpdate: (id: string, f: string, v: string) => void,
         activeMetricName: string,
+        maxPoints: number,
     ) => (
         <div className="p-10">
             <div className="flex items-center justify-between mb-10">
                 <div className="space-y-1">
                     <h3 className="font-serif text-3xl font-black text-stone-800 tracking-tighter">Configuration des Notes</h3>
-                    <p className="text-stone-400 text-xs font-medium">Metric active: <span className="text-stone-600 font-bold">{activeMetricName}</span></p>
+                    <p className="text-stone-400 text-xs font-medium italic">
+                        Metric active: <span className="text-stone-600 font-bold">{activeMetricName}</span>
+                        <span className="ml-3 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-[10px] font-black uppercase tracking-widest border border-yellow-200">
+                            {maxPoints} Max Points
+                        </span>
+                    </p>
                 </div>
                 <button
                     onClick={onAdd}
@@ -448,6 +477,7 @@ function SettingsContent() {
         onUpdateConc: (id: string, f: string, v: string) => void,
         onBonusChange: (b: { min: number, max: number }) => void,
         showBonus = true,
+        totalMaxPoints: number,
     ) => (
         <div className="mt-20">
             <div className="flex items-center justify-between mb-10">
@@ -455,7 +485,12 @@ function SettingsContent() {
                     <div className="w-14 h-14 rounded-2xl bg-stone-900 border border-stone-800 shadow-2xl shadow-stone-900/20 flex items-center justify-center text-white text-2xl">💰</div>
                     <div className="space-y-0.5">
                         <h2 className="font-serif text-4xl font-black tracking-tighter text-stone-800">Grille de Conclusion</h2>
-                        <p className="text-stone-400 text-xs font-medium uppercase tracking-widest">Mapping Score Total → Observation</p>
+                        <div className="flex items-center gap-3">
+                            <p className="text-stone-400 text-xs font-medium uppercase tracking-widest">Mapping Score Total → Observation</p>
+                            <span className="px-3 py-1 bg-stone-900 text-yellow-500 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                                Max points: {totalMaxPoints}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <button
@@ -483,12 +518,24 @@ function SettingsContent() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Intervalle Score</label>
-                                    <input
-                                        className="w-full bg-transparent font-mono text-[13px] font-bold text-stone-500 outline-none focus:text-stone-800 transition-colors"
-                                        value={step.range}
-                                        placeholder="ex: 80 - 100"
-                                        onChange={(e) => onUpdateConc(step.id, 'range', e.target.value)}
-                                    />
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            className="w-full bg-transparent font-mono text-[13px] font-bold text-stone-500 outline-none focus:text-stone-800 transition-colors"
+                                            value={step.range}
+                                            placeholder="ex: 80 - 100"
+                                            onChange={(e) => onUpdateConc(step.id, 'range', e.target.value)}
+                                        />
+                                        <span className="text-[10px] font-black text-stone-300 italic whitespace-nowrap">
+                                            {(() => {
+                                                const match = step.range.match(/(\d+)/);
+                                                if (match && totalMaxPoints > 0) {
+                                                    const val = parseInt(match[1]);
+                                                    return `~ ${((val / totalMaxPoints) * 100).toFixed(0)}%`;
+                                                }
+                                                return '';
+                                            })()}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="space-y-2 relative pr-10">
                                     <button
@@ -655,10 +702,20 @@ function SettingsContent() {
                                 deleteLevel,
                                 updateLevel,
                                 METRICS[selectedCategory].find(m => m.id === selectedMetric)?.name || '',
+                                getMetricMaxPoints(currentLevels)
                             )}
                         </div>
 
-                        {renderConclusionSection(conclusions, bonusConfig, addConclusion, deleteConclusion, updateConclusion, setBonusConfig)}
+                        {renderConclusionSection(
+                            conclusions, 
+                            bonusConfig, 
+                            addConclusion, 
+                            deleteConclusion, 
+                            updateConclusion, 
+                            setBonusConfig,
+                            true,
+                            100
+                        )}
                     </div>
                 )}
 
@@ -715,6 +772,7 @@ function SettingsContent() {
                                 deleteShowroomLevel,
                                 updateShowroomLevel,
                                 METRICS_SHOWROOM[showroomCategory].find(m => m.id === showroomMetric)?.name || '',
+                                getMetricMaxPoints(currentShowroomLevels)
                             )}
                         </div>
 
@@ -726,6 +784,7 @@ function SettingsContent() {
                             updateShowroomConclusion,
                             setShowroomBonusConfig,
                             false, // no bonus for Magasin
+                            100
                         )}
                     </div>
                 )}

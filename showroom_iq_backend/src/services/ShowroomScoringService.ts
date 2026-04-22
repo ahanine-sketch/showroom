@@ -33,6 +33,15 @@ export class ShowroomScoringService {
 
     if (userIds.length === 0) return 0;
 
+    // 2.5 Fetch Dynamic Scoring Configs
+    const configs = await prisma.scoringConfig.findMany();
+    const getLevelPoints = (metric: string, id: string, fallback: number) => {
+      const config = configs.find(c => c.metricName === metric);
+      if (!config || !Array.isArray(config.levels)) return fallback;
+      const level = (config.levels as any[]).find(l => l.id === id);
+      return level ? parseInt(level.points) : fallback;
+    };
+
     // 3. Aggregate Sales Metrics
     const salesMetrics = await prisma.salesMetric.findMany({
       where: { 
@@ -51,42 +60,55 @@ export class ShowroomScoringService {
 
     const avgBasket = salesMetrics.length > 0 ? totalStats.avgBasket / salesMetrics.length : 0;
 
-    // --- SALES SCORING (70 pts) --- Matches frontend isMagasin logic exactly
-    // CA (50 pts)
+    // --- SALES SCORING (70 pts) ---
+    // CA (50 pts by default)
     let caPoints = 0;
+    const pointsTB_CA = getLevelPoints('objectif-ca-magasin', 'tb', 50);
+    const pointsB_CA = getLevelPoints('objectif-ca-magasin', 'b', 45);
+    const pointsM_CA = getLevelPoints('objectif-ca-magasin', 'm', 10); // Base points for conservative
+
     if (totalStats.ca > 0) {
-      if (totalStats.ca >= exceedCA) caPoints = 50;
-      else if (totalStats.ca >= likelyCA) caPoints = 45;
+      if (totalStats.ca >= exceedCA) caPoints = pointsTB_CA;
+      else if (totalStats.ca >= likelyCA) caPoints = pointsB_CA;
       else if (totalStats.ca >= conservativeCA) {
         let progress = 0;
         if (likelyCA > conservativeCA) {
           progress = (totalStats.ca - conservativeCA) / (likelyCA - conservativeCA);
         }
-        caPoints = 10 + Math.floor(progress * 35);
+        caPoints = pointsM_CA + Math.floor(progress * (pointsB_CA - pointsM_CA));
       } else if (totalStats.ca >= conservativeCA * 0.5) {
-        caPoints = 10;
+        caPoints = pointsM_CA;
       }
     }
 
-    // Devis (10 pts) — frontend uses (validated + lost) / created for magasin
+    // Devis (10 pts by default)
     const conversionRate = totalStats.devisCreated > 0 
       ? ((totalStats.devisValidated + totalStats.devisLost) / totalStats.devisCreated) * 100 
       : 0;
+    
     let devisPoints = 0;
-    if (conversionRate >= 75) devisPoints = 10;
-    else if (conversionRate >= 50) devisPoints = 8;
-    else if (conversionRate >= 35) devisPoints = 4;
+    const pointsTB_Conv = getLevelPoints('conversion-rate-magasin', 'tb', 10);
+    const pointsB_Conv = getLevelPoints('conversion-rate-magasin', 'b', 8);
+    const pointsM_Conv = getLevelPoints('conversion-rate-magasin', 'm', 4);
 
-    // Basket (10 pts)
+    if (conversionRate >= 75) devisPoints = pointsTB_Conv;
+    else if (conversionRate >= 50) devisPoints = pointsB_Conv;
+    else if (conversionRate >= 35) devisPoints = pointsM_Conv;
+
+    // Basket (10 pts by default)
     let basketPoints = 0;
-    if (avgBasket >= 20000) basketPoints = 10;
-    else if (avgBasket >= 15000) basketPoints = 8;
-    else if (avgBasket >= 10000) basketPoints = 4;
+    const pointsTB_Basket = getLevelPoints('panier-moyen-magasin', 'tb', 10);
+    const pointsB_Basket = getLevelPoints('panier-moyen-magasin', 'b', 8);
+    const pointsM_Basket = getLevelPoints('panier-moyen-magasin', 'm', 4);
+
+    if (avgBasket >= 20000) basketPoints = pointsTB_Basket;
+    else if (avgBasket >= 15000) basketPoints = pointsB_Basket;
+    else if (avgBasket >= 10000) basketPoints = pointsM_Basket;
 
     const totalSalesScore = caPoints + devisPoints + basketPoints;
 
-    // --- BEHAVIOR SCORING (30 pts) --- Must match frontend exactly
-    // 1. AVIS (Strictly Magasin only per user request)
+    // --- BEHAVIOR SCORING (30 pts) ---
+    // 1. AVIS (10 pts)
     const reviews = await prisma.clientReview.findMany({
       where: {
         showroomId: showroomId,
@@ -96,12 +118,17 @@ export class ShowroomScoringService {
 
     const avisPositifs = reviews.filter(r => r.rating >= 4).length;
     const avisNegatifs = reviews.filter(r => r.rating <= 2).length;
-    let avisPoints = 4; // default MOYEN
-    if (avisNegatifs > 0) avisPoints = 0;
-    else if (avisPositifs > 3) avisPoints = 10;
-    else if (avisPositifs > 0) avisPoints = 8;
+    
+    const pointsTB_Avis = getLevelPoints('avis-reputation-magasin', 'tb', 10);
+    const pointsB_Avis = getLevelPoints('avis-reputation-magasin', 'b', 8);
+    const pointsM_Avis = getLevelPoints('avis-reputation-magasin', 'm', 4);
 
-    // 2. SAV (Aggregated from commercials)
+    let avisPoints = pointsM_Avis; 
+    if (avisNegatifs > 0) avisPoints = 0;
+    else if (avisPositifs > 3) avisPoints = pointsTB_Avis;
+    else if (avisPositifs > 0) avisPoints = pointsB_Avis;
+
+    // 2. SAV (10 pts)
     const savEvaluations = await prisma.processEvaluation.findMany({
       where: {
         type: EvaluationType.SAV,
@@ -112,12 +139,16 @@ export class ShowroomScoringService {
     const savTickets = savEvaluations.reduce((acc, e) => acc + (e.ticketsCount || 0), 0);
     const savPlaintes = savEvaluations.reduce((acc, e) => acc + (e.complaintsCount || 0), 0);
     
-    let savPoints = 10; // default TRES BIEN (no issues)
-    if (savPlaintes > 0) savPoints = 0;
-    else if (savTickets > 4) savPoints = 4;
-    else if (savTickets > 0) savPoints = 8;
+    const pointsTB_SAV = getLevelPoints('sav-service-magasin', 'tb', 10);
+    const pointsB_SAV = getLevelPoints('sav-service-magasin', 'b', 8);
+    const pointsM_SAV = getLevelPoints('sav-service-magasin', 'm', 4);
 
-    // 3. PROCESS (Strictly Magasin only per user request)
+    let savPoints = pointsTB_SAV; 
+    if (savPlaintes > 0) savPoints = 0;
+    else if (savTickets > 4) savPoints = pointsM_SAV;
+    else if (savTickets > 0) savPoints = pointsB_SAV;
+
+    // 3. PROCESS (10 pts)
     const processEvaluations = await prisma.processEvaluation.findMany({
       where: {
         type: EvaluationType.PROCESS,
@@ -126,13 +157,19 @@ export class ShowroomScoringService {
       }
     });
     const processWarningsCount = processEvaluations.length;
-    let processPoints = 10; // default TRES BIEN
-    if (processWarningsCount === 1) processPoints = 8;
-    else if (processWarningsCount === 2) processPoints = 4;
+    
+    const pointsTB_Proc = getLevelPoints('process-qualite-magasin', 'tb', 10);
+    const pointsB_Proc = getLevelPoints('process-qualite-magasin', 'b', 8);
+    const pointsM_Proc = getLevelPoints('process-qualite-magasin', 'm', 4);
+
+    let processPoints = pointsTB_Proc;
+    if (processWarningsCount === 1) processPoints = pointsB_Proc;
+    else if (processWarningsCount === 2) processPoints = pointsM_Proc;
     else if (processWarningsCount >= 3) processPoints = 0;
 
     const totalBehaviorScore = avisPoints + savPoints + processPoints;
 
     return Math.min(100, totalSalesScore + totalBehaviorScore);
+
   }
 }

@@ -511,8 +511,9 @@ const CalendarScorecard = ({
               {!isMagasin && (
                 <ScoreBadge 
                   score={scores?.details?.presenceData?.points ?? 5} 
-                  max={5} 
+                  max={scores?.details?.presenceData?.maxScore || 5} 
                   status={scores?.details?.presenceData?.status || "TRES BIEN"} 
+                  color={scores?.details?.presenceData?.statusColor}
                 />
               )}
             </div>

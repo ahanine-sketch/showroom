@@ -11,6 +11,12 @@ interface ScoreOverviewProps {
     presenceMax: number;
     bonus: number;
     bonusMax: number;
+    isMagasin?: boolean;
+    globalStatus?: string;
+    globalStatusColor?: string;
+    ventesStatusColor?: string;
+    behaviorStatusColor?: string;
+    presenceStatusColor?: string;
   };
 }
 
@@ -30,74 +36,64 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
 
   const totalScore = scores.ventes + scores.comportement + scores.presence + scores.bonus;
 
-  let performanceStatus = "MAUVAIS";
-  let badgeClasses = "bg-red-50 text-red-600 border border-red-100";
+  let performanceStatus = scores.globalStatus || "MAUVAIS";
+  let statusColor = scores.globalStatusColor || '#C0392B';
 
   const isMagasin = scores.isMagasin;
 
-  if (isMagasin) {
-    if (totalScore >= 90) {
-      performanceStatus = "TRES BIEN";
-      badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
-    } else if (totalScore >= 60) {
-      performanceStatus = "BIEN";
-      badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
-    } else if (totalScore >= 50) {
-      performanceStatus = "MOYEN";
-      badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
+  const getBadgeStyles = (color: string) => {
+    if (color.startsWith('#')) {
+      return {
+        backgroundColor: `${color}15`, // 15% opacity for bg
+        color: color,
+        border: `1px solid ${color}30`
+      };
     }
-  } else {
-    if (totalScore >= 80) {
-      performanceStatus = "TRES BIEN";
-      badgeClasses = "bg-emerald-50 text-emerald-600 border border-emerald-100";
-    } else if (totalScore >= 60) {
-      performanceStatus = "BIEN";
-      badgeClasses = "bg-yellow-50 text-yellow-600 border border-yellow-200 shadow-sm";
-    } else if (totalScore >= 40) {
-      performanceStatus = "MOYEN";
-      badgeClasses = "bg-orange-50 text-orange-600 border border-orange-100 shadow-sm";
-    }
-  }
+    const mapping: Record<string, any> = {
+      emerald: { backgroundColor: '#ECFDF5', color: '#059669', border: '1px solid #D1FAE5' },
+      green: { backgroundColor: '#F0FDF4', color: '#16A34A', border: '1px solid #DCFCE7' },
+      yellow: { backgroundColor: '#FEFCE8', color: '#CA8A04', border: '1px solid #FEF08A' },
+      orange: { backgroundColor: '#FFF7ED', color: '#EA580C', border: '1px solid #FFEDD5' },
+      red: { backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FEE2E2' },
+      blue: { backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #DBEAFE' },
+    };
+    return mapping[color.toLowerCase()] || mapping.red;
+  };
 
-  /** Bar color based on exact point thresholds per metric */
-  const getSubScoreBarColor = (label: string, score: number): string => {
-    if (label === "Ventes") {
-      if (isMagasin) {
-        if (score >= 63) return "bg-emerald-400";
-        if (score >= 42) return "bg-yellow-400";
-        if (score >= 35) return "bg-orange-400";
-        return "bg-rose-500";
-      }
-      if (score >= 55) return "bg-emerald-400";   // Très Bien
-      if (score >= 45) return "bg-yellow-400";    // Bien
-      if (score >= 35) return "bg-orange-400";    // Moyen
-      return "bg-rose-500";                        // Mauvais
-    }
-    if (label === "Comportement") {
-      if (isMagasin) {
-        if (score >= 27) return "bg-emerald-400";
-        if (score >= 18) return "bg-yellow-400";
-        if (score >= 15) return "bg-orange-400";
-        return "bg-rose-500";
-      }
-      if (score >= 25) return "bg-emerald-400";
-      if (score >= 16) return "bg-yellow-400";
-      if (score >= 10) return "bg-orange-400";
-      return "bg-rose-500";
-    }
-    if (label === "Présence") {
-      if (score >= 5) return "bg-emerald-400";
-      if (score >= 3) return "bg-yellow-400";
-      if (score >= 1) return "bg-orange-400";
-      return "bg-rose-500";
-    }
-    // Bonus — always neutral gray
-    return "bg-stone-300";
+  /** Bar color based on percentage thresholds per metric */
+  const getSubScoreBarColor = (label: string, score: number, max: number): any => {
+    if (label === "Bonus") return { backgroundColor: '#D6D3D1' };
+    
+    let color = '';
+    if (label === "Ventes") color = scores.ventesStatusColor || '';
+    if (label === "Comportement") color = scores.behaviorStatusColor || '';
+    if (label === "Présence") color = scores.presenceStatusColor || '';
+
+    if (color.startsWith('#')) return { backgroundColor: color };
+    
+    const map: Record<string, string> = { 
+      emerald: '#34D399', 
+      green: '#4ADE80', 
+      yellow: '#FACC15', 
+      orange: '#FB923C', 
+      red: '#F43F5E', 
+      blue: '#60A5FA' 
+    };
+    
+    if (map[color.toLowerCase()]) return { backgroundColor: map[color.toLowerCase()] };
+
+    if (max <= 0) return { backgroundColor: '#F43F5E' };
+    
+    const percentage = (score / max) * 100;
+    if (percentage >= 80) return { backgroundColor: '#34D399' };
+    if (percentage >= 60) return { backgroundColor: '#FACC15' };
+    if (percentage >= 40) return { backgroundColor: '#FB923C' };
+    return { backgroundColor: '#F43F5E' };
   };
 
   const MetricRow = ({ label, score, max }: { label: string, score: number, max: number }) => {
-    const percentage = max > 0 ? (score / max) * 100 : 0;
-    const barColor = getSubScoreBarColor(label, score);
+    const percentage = max > 0 ? Math.min(100, (score / max) * 100) : 0;
+    const barStyle = getSubScoreBarColor(label, score, max);
 
     return (
       <div className="flex items-center gap-4 group/metric">
@@ -110,8 +106,8 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
             </span>
             <div className="w-14 h-1 bg-stone-100 rounded-full overflow-hidden shadow-inner flex-shrink-0">
                <div
-                 className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
-                 style={{ width: `${percentage}%` }}
+                 className="h-full rounded-full transition-all duration-700 ease-out"
+                 style={{ width: `${percentage}%`, ...barStyle }}
                />
             </div>
          </div>
@@ -126,7 +122,10 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
 
         <div className="flex flex-col items-end justify-center pt-4">
           <span className="text-[9px] text-stone-400 uppercase font-black tracking-[0.3em] mb-2.5 opacity-60">Score Global</span>
-          <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${badgeClasses}`}>
+          <span 
+            className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg"
+            style={getBadgeStyles(statusColor)}
+          >
             {performanceStatus}
           </span>
         </div>
