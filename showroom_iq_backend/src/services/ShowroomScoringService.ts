@@ -39,7 +39,14 @@ export class ShowroomScoringService {
       const config = configs.find(c => c.metricName === metric);
       if (!config || !Array.isArray(config.levels)) return fallback;
       const level = (config.levels as any[]).find(l => l.id === id);
-      return level ? parseInt(level.points) : fallback;
+      if (!level) return fallback;
+      
+      const pStr = String(level.points || '');
+      if (pStr.includes('-')) {
+        const parts = pStr.split('-').map(v => parseInt(v.trim()));
+        return Math.max(...parts.filter(v => !isNaN(v)));
+      }
+      return parseInt(pStr) || fallback;
     };
 
     // 3. Aggregate Sales Metrics
@@ -60,12 +67,20 @@ export class ShowroomScoringService {
 
     const avgBasket = salesMetrics.length > 0 ? totalStats.avgBasket / salesMetrics.length : 0;
 
-    // --- SALES SCORING (70 pts) ---
+    const globalSettingsRaw = await prisma.globalSettings.findMany();
+    const globalSettings: any = {};
+    globalSettingsRaw.forEach(s => {
+      globalSettings[s.key] = s.value;
+    });
+
+    const weights = globalSettings.siq_showroom_weights || { ventes: 70, comportement: 30 };
+
+    // --- SALES SCORING (Normalized to weights.ventes) ---
     // CA (50 pts by default)
     let caPoints = 0;
-    const pointsTB_CA = getLevelPoints('objectif-ca-magasin', 'tb', 50);
-    const pointsB_CA = getLevelPoints('objectif-ca-magasin', 'b', 45);
-    const pointsM_CA = getLevelPoints('objectif-ca-magasin', 'm', 10); // Base points for conservative
+    const pointsTB_CA = getLevelPoints('showroom:objectif-ca', 'tb', 50);
+    const pointsB_CA = getLevelPoints('showroom:objectif-ca', 'b', 45);
+    const pointsM_CA = getLevelPoints('showroom:objectif-ca', 'm', 10); // Base points for conservative
 
     if (totalStats.ca > 0) {
       if (totalStats.ca >= exceedCA) caPoints = pointsTB_CA;
@@ -87,9 +102,9 @@ export class ShowroomScoringService {
       : 0;
     
     let devisPoints = 0;
-    const pointsTB_Conv = getLevelPoints('conversion-rate-magasin', 'tb', 10);
-    const pointsB_Conv = getLevelPoints('conversion-rate-magasin', 'b', 8);
-    const pointsM_Conv = getLevelPoints('conversion-rate-magasin', 'm', 4);
+    const pointsTB_Conv = getLevelPoints('showroom:devis', 'tb', 10);
+    const pointsB_Conv = getLevelPoints('showroom:devis', 'b', 8);
+    const pointsM_Conv = getLevelPoints('showroom:devis', 'm', 4);
 
     if (conversionRate >= 75) devisPoints = pointsTB_Conv;
     else if (conversionRate >= 50) devisPoints = pointsB_Conv;
@@ -97,9 +112,9 @@ export class ShowroomScoringService {
 
     // Basket (10 pts by default)
     let basketPoints = 0;
-    const pointsTB_Basket = getLevelPoints('panier-moyen-magasin', 'tb', 10);
-    const pointsB_Basket = getLevelPoints('panier-moyen-magasin', 'b', 8);
-    const pointsM_Basket = getLevelPoints('panier-moyen-magasin', 'm', 4);
+    const pointsTB_Basket = getLevelPoints('showroom:kpis-panier-moyen', 'tb', 10);
+    const pointsB_Basket = getLevelPoints('showroom:kpis-panier-moyen', 'b', 8);
+    const pointsM_Basket = getLevelPoints('showroom:kpis-panier-moyen', 'm', 4);
 
     if (avgBasket >= 20000) basketPoints = pointsTB_Basket;
     else if (avgBasket >= 15000) basketPoints = pointsB_Basket;
@@ -119,9 +134,9 @@ export class ShowroomScoringService {
     const avisPositifs = reviews.filter(r => r.rating >= 4).length;
     const avisNegatifs = reviews.filter(r => r.rating <= 2).length;
     
-    const pointsTB_Avis = getLevelPoints('avis-reputation-magasin', 'tb', 10);
-    const pointsB_Avis = getLevelPoints('avis-reputation-magasin', 'b', 8);
-    const pointsM_Avis = getLevelPoints('avis-reputation-magasin', 'm', 4);
+    const pointsTB_Avis = getLevelPoints('showroom:avis', 'tb', 10);
+    const pointsB_Avis = getLevelPoints('showroom:avis', 'b', 8);
+    const pointsM_Avis = getLevelPoints('showroom:avis', 'm', 4);
 
     let avisPoints = pointsM_Avis; 
     if (avisNegatifs > 0) avisPoints = 0;
@@ -139,9 +154,9 @@ export class ShowroomScoringService {
     const savTickets = savEvaluations.reduce((acc, e) => acc + (e.ticketsCount || 0), 0);
     const savPlaintes = savEvaluations.reduce((acc, e) => acc + (e.complaintsCount || 0), 0);
     
-    const pointsTB_SAV = getLevelPoints('sav-service-magasin', 'tb', 10);
-    const pointsB_SAV = getLevelPoints('sav-service-magasin', 'b', 8);
-    const pointsM_SAV = getLevelPoints('sav-service-magasin', 'm', 4);
+    const pointsTB_SAV = getLevelPoints('showroom:service', 'tb', 10);
+    const pointsB_SAV = getLevelPoints('showroom:service', 'b', 8);
+    const pointsM_SAV = getLevelPoints('showroom:service', 'm', 4);
 
     let savPoints = pointsTB_SAV; 
     if (savPlaintes > 0) savPoints = 0;
@@ -158,9 +173,9 @@ export class ShowroomScoringService {
     });
     const processWarningsCount = processEvaluations.length;
     
-    const pointsTB_Proc = getLevelPoints('process-qualite-magasin', 'tb', 10);
-    const pointsB_Proc = getLevelPoints('process-qualite-magasin', 'b', 8);
-    const pointsM_Proc = getLevelPoints('process-qualite-magasin', 'm', 4);
+    const pointsTB_Proc = getLevelPoints('showroom:showroom', 'tb', 10);
+    const pointsB_Proc = getLevelPoints('showroom:showroom', 'b', 8);
+    const pointsM_Proc = getLevelPoints('showroom:showroom', 'm', 4);
 
     let processPoints = pointsTB_Proc;
     if (processWarningsCount === 1) processPoints = pointsB_Proc;
@@ -169,7 +184,41 @@ export class ShowroomScoringService {
 
     const totalBehaviorScore = avisPoints + savPoints + processPoints;
 
-    return Math.min(100, totalSalesScore + totalBehaviorScore);
+    // 4. PRESENCE (5 pts)
+    const presenceLogs = await prisma.dailyLog.findMany({
+      where: {
+        showroomId: showroomId,
+        date: { gte: startOfMonth, lte: endOfMonth }
+      }
+    });
+    const absences = presenceLogs.filter(l => l.status === 'Absence').length;
+    const retards = presenceLogs.filter(l => l.status === 'Retard').length;
+    const totalFaults = absences + retards;
+
+    const pointsTB_Pres = getLevelPoints('assiduite', 'tb', 5);
+    const pointsB_Pres = getLevelPoints('assiduite', 'b', 3);
+    const pointsM_Pres = getLevelPoints('assiduite', 'm', 1);
+
+    let presenceScore = 0;
+    if (totalFaults === 0) presenceScore = pointsTB_Pres;
+    else if (totalFaults === 1) presenceScore = pointsB_Pres;
+    else if (totalFaults === 2) presenceScore = pointsM_Pres;
+
+    const presenceScoreFinal = presenceScore;
+
+    // 5. BONUS
+    const bonuses = await prisma.bonusHistory.findMany({
+        where: {
+            userId: { in: userIds },
+            month,
+            year
+        }
+    });
+    const bonusScore = bonuses.reduce((acc, b) => acc + b.amount, 0);
+
+    const totalScore = totalSalesScore + totalBehaviorScore + presenceScoreFinal + bonusScore;
+
+    return Math.min(100, totalScore);
 
   }
 }

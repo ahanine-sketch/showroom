@@ -5,11 +5,11 @@ import { useSearchParams } from 'next/navigation';
 
 // Luxury Color Presets
 const LUXURY_COLORS = [
-    { name: 'Emerald', hex: '#2A7D4F' },
-    { name: 'Gold', hex: '#B8960C' },
-    { name: 'Amber', hex: '#D4802A' },
-    { name: 'Red', hex: '#C0392B' },
-    { name: 'Stone', hex: '#5C5750' },
+    { name: 'Green',  hex: '#2A7D4F' },
+    { name: 'Yellow', hex: '#EAB308' },
+    { name: 'Orange', hex: '#EA580C' },
+    { name: 'Red',    hex: '#C0392B' },
+    { name: 'Stone',  hex: '#5C5750' },
 ];
 
 // ── COMMERCIAL ──────────────────────────────────────────────────────────────
@@ -39,45 +39,45 @@ const METRICS: Record<string, { id: string, name: string, driver: string }[]> = 
 const DEFAULT_COMMERCIAL_LEVELS: Record<string, any[]> = {
     'objectif-ca': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'Above Likely', points: '35', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Close to Likely (> 50% gap)', points: '21 - 30', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'Low Likely (< 50% gap)', points: '11 - 20', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Close to Likely (> 50% gap)', points: '21 - 30', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'Low Likely (< 50% gap)', points: '11 - 20', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Close Conservative', points: '10', color: '#C0392B' },
         { id: 'tmv',name: 'TRÈS MAUVAIS', criteria: 'Below 50% Conservative', points: '0', color: '#5C5750' },
     ],
     'conversion-rate': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'Above 75%', points: '15', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Between 50% and 75%', points: '10', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'Between 35% and 50%', points: '5', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Between 50% and 75%', points: '10', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'Between 35% and 50%', points: '5', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Below 35%', points: '0', color: '#C0392B' },
     ],
     'panier-moyen': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'Above 20 000 MAD', points: '15', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: '15 000 - 20 000 MAD', points: '10', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: '10 000 - 15 000 MAD', points: '5', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: '15 000 - 20 000 MAD', points: '10', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: '10 000 - 15 000 MAD', points: '5', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Below 10 000 MAD', points: '0', color: '#C0392B' },
     ],
     'avis-reputation': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'More than 3 Positive Reviews', points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Up to 3 Positive Reviews', points: '8', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'No Reviews at all', points: '4', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Up to 3 Positive Reviews', points: '8', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'No Reviews at all', points: '4', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'At least 1 Negative Review', points: '0', color: '#C0392B' },
     ],
     'sav-service': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'No Tickets No Complaints', points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Up to 4 Tickets / 0 Complaints', points: '8', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'More than 4 Tickets / 0 Complaints', points: '4', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Up to 4 Tickets / 0 Complaints', points: '8', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'More than 4 Tickets / 0 Complaints', points: '4', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'At least 1 Complaint', points: '0', color: '#C0392B' },
     ],
     'discipline-process': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'No Warnings', points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: '1st Warning', points: '8', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: '2nd Warning', points: '4', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: '1st Warning', points: '8', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: '2nd Warning', points: '4', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: '3rd Warning', points: '0', color: '#C0392B' },
     ],
     'assiduite': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: "Pas de retards ni d'absences", points: '5', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Moins de 2 retards ou absences', points: '3', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'Entre 2 et 4 absences et retards', points: '1', color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Moins de 2 retards ou absences', points: '3', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'Entre 2 et 4 absences et retards', points: '1', color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Plus de 4 absences ou retards', points: '0', color: '#C0392B' },
     ],
 };
@@ -87,7 +87,6 @@ const DEFAULT_COMMERCIAL_LEVELS: Record<string, any[]> = {
 const CATEGORIES_SHOWROOM = [
     { id: 'ventes', name: 'Ventes', icon: '📊' },
     { id: 'comportement', name: 'Comportement', icon: '⭐' },
-    { id: 'presence', name: 'Présence', icon: '📅' },
 ];
 
 const METRICS_SHOWROOM: Record<string, { id: string, name: string, driver: string }[]> = {
@@ -102,56 +101,55 @@ const METRICS_SHOWROOM: Record<string, { id: string, name: string, driver: strin
         { id: 'showroom:showroom', name: 'Showroom', driver: 'Variété, propreté et mise en place' },
     ],
     presence: [
-        { id: 'showroom:assiduite', name: 'Assiduité / Présence', driver: 'Retards & Absences' },
-    ],
+        { id: 'showroom:assiduite', name: 'Assiduité', driver: 'Retards & Absences' },
+    ]
 };
 
 const DEFAULT_SHOWROOM_LEVELS: Record<string, any[]> = {
     // VENTES (70 pts total)
     'showroom:objectif-ca': [
         { id: 'tb',  name: 'TRÈS BIEN',   criteria: 'Above Likely Target',        points: '40 - 50', color: '#2A7D4F' },
-        { id: 'b',   name: 'BIEN',        criteria: 'Close to Likely',            points: '30 - 40', color: '#B8960C' },
-        { id: 'm',   name: 'MOYEN',       criteria: 'Low Likely',                 points: '20 - 30', color: '#D4802A' },
+        { id: 'b',   name: 'BIEN',        criteria: 'Close to Likely',            points: '30 - 40', color: '#EAB308' },
+        { id: 'm',   name: 'MOYEN',       criteria: 'Low Likely',                 points: '20 - 30', color: '#EA580C' },
         { id: 'mv',  name: 'MAUVAIS',     criteria: 'Close Conservative',         points: '10',      color: '#C0392B' },
         { id: 'tmv', name: 'TRÈS MAUVAIS',criteria: 'Close to 0',                 points: '0',       color: '#5C5750' },
     ],
     'showroom:devis': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'Above 75%',          points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: '50% to 75%',         points: '8',  color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: '35% to 50%',         points: '4',  color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: '50% to 75%',         points: '8',  color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: '35% to 50%',         points: '4',  color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Below 35%',          points: '0',  color: '#C0392B' },
     ],
     'showroom:kpis-panier-moyen': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'Above 20 000 MAD',     points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: '15 000 - 20 000 MAD',  points: '8',  color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: '10 000 - 15 000 MAD',  points: '4',  color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: '15 000 - 20 000 MAD',  points: '8',  color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: '10 000 - 15 000 MAD',  points: '4',  color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'Below 10 000 MAD',     points: '0',  color: '#C0392B' },
     ],
     // COMPORTEMENT (30 pts total)
     'showroom:avis': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'More than 3 Positive Reviews', points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Up to 3 Positive Reviews',     points: '8',  color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'No Reviews at all',            points: '4',  color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Up to 3 Positive Reviews',     points: '8',  color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'No Reviews at all',            points: '4',  color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'At least 1 Negative Review',   points: '0',  color: '#C0392B' },
     ],
     'showroom:service': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'No Tickets, No Complaints',             points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Up to 4 Tickets but 0 Complaints',      points: '8',  color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'More than 4 Tickets but 0 Complaints',  points: '4',  color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Up to 4 Tickets but 0 Complaints',      points: '8',  color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'More than 4 Tickets but 0 Complaints',  points: '4',  color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: 'At least 1 Complaint',                  points: '0',  color: '#C0392B' },
     ],
     'showroom:showroom': [
         { id: 'tb', name: 'TRÈS BIEN', criteria: 'No Warnings',       points: '10', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: '1st Warning (-2)',  points: '8',  color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: '2nd Warning (-4)',  points: '4',  color: '#D4802A' },
+        { id: 'b',  name: 'BIEN',      criteria: '1st Warning (-2)',  points: '8',  color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: '2nd Warning (-4)',  points: '4',  color: '#EA580C' },
         { id: 'mv', name: 'MAUVAIS',   criteria: '3rd Warning (-4)',  points: '0',  color: '#C0392B' },
     ],
-    // PRÉSENCE (5 pts)
     'showroom:assiduite': [
-        { id: 'tb', name: 'TRÈS BIEN', criteria: 'Perfect attendance', points: '5', color: '#2A7D4F' },
-        { id: 'b',  name: 'BIEN',      criteria: 'Up to 1 late / absence', points: '3', color: '#B8960C' },
-        { id: 'm',  name: 'MOYEN',     criteria: 'Between 2-4 lates / absences', points: '1', color: '#D4802A' },
-        { id: 'mv', name: 'MAUVAIS',   criteria: 'More than 4 absences or lates', points: '0', color: '#C0392B' },
+        { id: 'tb', name: 'TRÈS BIEN', criteria: "Pas de retards ni d'absences", points: '5', color: '#2A7D4F' },
+        { id: 'b',  name: 'BIEN',      criteria: 'Moins de 2 retards ou absences', points: '3', color: '#EAB308' },
+        { id: 'm',  name: 'MOYEN',     criteria: 'Entre 2 et 4 absences et retards', points: '1', color: '#EA580C' },
+        { id: 'mv', name: 'MAUVAIS',   criteria: 'Plus de 4 absences ou retards', points: '0', color: '#C0392B' },
     ],
 };
 
@@ -214,8 +212,8 @@ function SettingsContent() {
     const [metricLevels, setMetricLevels] = useState<Record<string, any[]>>(DEFAULT_COMMERCIAL_LEVELS);
     const [conclusions, setConclusions] = useState([
         { id: 'c1', name: 'Très Bien', range: 'Score > 80', color: '#2A7D4F' },
-        { id: 'c2', name: 'Bien',      range: 'Score 60 - 80', color: '#B8960C' },
-        { id: 'c3', name: 'Moyen',     range: 'Score 40 - 60', color: '#D4802A' },
+        { id: 'c2', name: 'Bien',      range: 'Score 60 - 80', color: '#EAB308' },
+        { id: 'c3', name: 'Moyen',     range: 'Score 40 - 60', color: '#EA580C' },
         { id: 'c4', name: 'Mauvais',   range: 'Score < 40',    color: '#C0392B' },
     ]);
     const [bonusConfig, setBonusConfig] = useState({ min: 0, max: 5 });
@@ -226,11 +224,23 @@ function SettingsContent() {
     const [showroomLevels, setShowroomLevels]     = useState<Record<string, any[]>>(DEFAULT_SHOWROOM_LEVELS);
     const [showroomConclusions, setShowroomConclusions] = useState([
         { id: 'sc1', name: 'Très Bien', range: 'Score ≥ 90',      color: '#2A7D4F' },
-        { id: 'sc2', name: 'Bien',      range: 'Score 60 - 89',   color: '#B8960C' },
-        { id: 'sc3', name: 'Moyen',     range: 'Score 50 - 59',   color: '#D4802A' },
+        { id: 'sc2', name: 'Bien',      range: 'Score 60 - 89',   color: '#EAB308' },
+        { id: 'sc3', name: 'Moyen',     range: 'Score 50 - 59',   color: '#EA580C' },
         { id: 'sc4', name: 'Mauvais',   range: 'Score < 50',      color: '#C0392B' },
     ]);
     const [showroomBonusConfig, setShowroomBonusConfig] = useState({ min: 0, max: 5 });
+
+    // ── WEIGHTS STATE ────────────────────────────────────────────────────────
+    const [commWeights, setCommWeights] = useState({ 
+        ventes: 65, ventes_tb: 55, ventes_b: 45, ventes_m: 35, ventes_mv: 0,
+        comportement: 30, comportement_tb: 25, comportement_b: 16, comportement_m: 10, comportement_mv: 0,
+        presence: 5, presence_tb: 5, presence_b: 3, presence_m: 1, presence_mv: 0
+    });
+    const [showroomWeights, setShowroomWeights] = useState({ 
+        ventes: 70, ventes_tb: 55, ventes_b: 45, ventes_m: 35, ventes_mv: 0,
+        comportement: 30, comportement_tb: 25, comportement_b: 16, comportement_m: 10, comportement_mv: 0,
+        presence: 0, presence_tb: 5, presence_b: 3, presence_m: 1, presence_mv: 0
+    });
 
     // ── SHARED UI STATE ──────────────────────────────────────────────────────
     const [isSaving,  setIsSaving]  = useState(false);
@@ -272,6 +282,9 @@ function SettingsContent() {
                     if (dbGlobal.siq_bonus_config)         setBonusConfig(dbGlobal.siq_bonus_config);
                     if (dbGlobal.siq_showroom_conclusions) setShowroomConclusions(dbGlobal.siq_showroom_conclusions);
                     if (dbGlobal.siq_showroom_bonus)       setShowroomBonusConfig(dbGlobal.siq_showroom_bonus);
+                    
+                    if (dbGlobal.siq_weights) setCommWeights(dbGlobal.siq_weights);
+                    if (dbGlobal.siq_showroom_weights) setShowroomWeights(dbGlobal.siq_showroom_weights);
                 }
             } catch (err) {
                 console.error('Failed to fetch configs', err);
@@ -304,6 +317,8 @@ function SettingsContent() {
                 { key: 'siq_bonus_config',         value: bonusConfig },
                 { key: 'siq_showroom_conclusions', value: showroomConclusions },
                 { key: 'siq_showroom_bonus',       value: showroomBonusConfig },
+                { key: 'siq_weights',              value: commWeights },
+                { key: 'siq_showroom_weights',     value: showroomWeights },
             ].map(({ key, value }) =>
                 fetch('http://localhost:3001/api/settings/global', {
                     method: 'POST',
@@ -464,6 +479,250 @@ function SettingsContent() {
                         Aucune note configurée. Cliquez sur "Ajouter une Note" pour commencer.
                     </div>
                 )}
+            </div>
+        </div>
+    );
+
+    const renderWeightSection = (
+        weights: any,
+        onUpdate: (category: string, value: number) => void,
+        isMagasin: boolean
+    ) => (
+        <div className="space-y-10">
+            <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-stone-900 flex items-center justify-center shadow-lg shadow-stone-200">
+                    <span className="material-symbols-outlined text-white text-[24px]">balance</span>
+                </div>
+                <div className="space-y-1">
+                    <h3 className="text-[22px] font-serif italic text-stone-800">Pondération des Catégories</h3>
+                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">Répartition des points sur 100</p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] p-10 border border-stone-100 shadow-xl shadow-stone-100/50">
+                <div className={`grid grid-cols-1 ${isMagasin ? 'lg:grid-cols-2' : 'lg:grid-cols-3'} gap-8`}>
+                    {/* Ventes */}
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-stone-50 rounded-[32px] opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                        <div className="relative space-y-8">
+                            <div className="flex items-center justify-between px-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-green-600 text-[18px]">payments</span>
+                                    </div>
+                                    <span className="text-[11px] font-black text-stone-700 uppercase tracking-widest">Ventes</span>
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <input
+                                        type="number"
+                                        className="w-16 bg-transparent text-right text-2xl font-black text-stone-800 outline-none"
+                                        value={weights.ventes}
+                                        onChange={(e) => onUpdate('ventes', parseInt(e.target.value) || 0)}
+                                    />
+                                    <span className="text-[10px] font-black text-stone-300 uppercase">Pts</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 bg-white p-6 rounded-3xl border border-stone-100 shadow-sm">
+                                <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-50 pb-2">Seuils de Performance</span>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter">T. Bien (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-green-100 transition-all"
+                                            value={weights.ventes_tb}
+                                            onChange={(e) => onUpdate('ventes_tb', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-yellow-600 uppercase tracking-tighter">Bien (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-yellow-100 transition-all"
+                                            value={weights.ventes_b}
+                                            onChange={(e) => onUpdate('ventes_b', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-orange-600 uppercase tracking-tighter">Moyen (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-orange-100 transition-all"
+                                            value={weights.ventes_m}
+                                            onChange={(e) => onUpdate('ventes_m', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-red-600 uppercase tracking-tighter">Mauvais (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-red-100 transition-all"
+                                            value={weights.ventes_mv}
+                                            onChange={(e) => onUpdate('ventes_mv', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Comportement */}
+                    <div className="relative group">
+                        <div className="absolute -inset-4 bg-stone-50 rounded-[32px] opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                        <div className="relative space-y-8 border-l border-stone-100 pl-8">
+                            <div className="flex items-center justify-between px-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-blue-600 text-[18px]">verified_user</span>
+                                    </div>
+                                    <span className="text-[11px] font-black text-stone-700 uppercase tracking-widest">Comportement</span>
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <input
+                                        type="number"
+                                        className="w-16 bg-transparent text-right text-2xl font-black text-stone-800 outline-none"
+                                        value={weights.comportement}
+                                        onChange={(e) => onUpdate('comportement', parseInt(e.target.value) || 0)}
+                                    />
+                                    <span className="text-[10px] font-black text-stone-300 uppercase">Pts</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 bg-white p-6 rounded-3xl border border-stone-100 shadow-sm">
+                                <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-50 pb-2">Seuils de Performance</span>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter">T. Bien (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-green-100 transition-all"
+                                            value={weights.comportement_tb}
+                                            onChange={(e) => onUpdate('comportement_tb', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-yellow-600 uppercase tracking-tighter">Bien (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-yellow-100 transition-all"
+                                            value={weights.comportement_b}
+                                            onChange={(e) => onUpdate('comportement_b', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-orange-600 uppercase tracking-tighter">Moyen (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-orange-100 transition-all"
+                                            value={weights.comportement_m}
+                                            onChange={(e) => onUpdate('comportement_m', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[8px] font-black text-red-600 uppercase tracking-tighter">Mauvais (≥)</span>
+                                        <input 
+                                            type="number"
+                                            className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-red-100 transition-all"
+                                            value={weights.comportement_mv}
+                                            onChange={(e) => onUpdate('comportement_mv', parseInt(e.target.value) || 0)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {!isMagasin && (
+                        <div className="relative group">
+                            <div className="absolute -inset-4 bg-stone-50 rounded-[32px] opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                            <div className="relative space-y-8 border-l border-stone-100 pl-8">
+                                <div className="flex items-center justify-between px-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-orange-600 text-[18px]">calendar_today</span>
+                                        </div>
+                                        <span className="text-[11px] font-black text-stone-700 uppercase tracking-widest">Présence</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                        <input
+                                            type="number"
+                                            className="w-16 bg-transparent text-right text-2xl font-black text-stone-800 outline-none"
+                                            value={weights.presence}
+                                            onChange={(e) => onUpdate('presence', parseInt(e.target.value) || 0)}
+                                        />
+                                        <span className="text-[10px] font-black text-stone-300 uppercase">Pts</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 bg-white p-6 rounded-3xl border border-stone-100 shadow-sm">
+                                    <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest block border-b border-stone-50 pb-2">Seuils de Performance</span>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="space-y-2">
+                                            <span className="text-[8px] font-black text-green-600 uppercase tracking-tighter">T. Bien (≥)</span>
+                                            <input 
+                                                type="number"
+                                                className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-green-100 transition-all"
+                                                value={weights.presence_tb}
+                                                onChange={(e) => onUpdate('presence_tb', parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <span className="text-[8px] font-black text-yellow-600 uppercase tracking-tighter">Bien (≥)</span>
+                                            <input 
+                                                type="number"
+                                                className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-yellow-100 transition-all"
+                                                value={weights.presence_b}
+                                                onChange={(e) => onUpdate('presence_b', parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <span className="text-[8px] font-black text-orange-600 uppercase tracking-tighter">Moyen (≥)</span>
+                                            <input 
+                                                type="number"
+                                                className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-orange-100 transition-all"
+                                                value={weights.presence_m}
+                                                onChange={(e) => onUpdate('presence_m', parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <span className="text-[8px] font-black text-red-600 uppercase tracking-tighter">Mauvais (≥)</span>
+                                            <input 
+                                                type="number"
+                                                className="w-full h-10 bg-stone-50 border-none rounded-xl px-2 text-center font-mono text-[11px] font-bold text-stone-800 focus:ring-2 ring-red-100 transition-all"
+                                                value={weights.presence_mv}
+                                                onChange={(e) => onUpdate('presence_mv', parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-12 pt-8 border-t border-stone-50 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="px-4 py-2 bg-stone-900 rounded-full">
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                                Total : {weights.ventes + weights.comportement + (!isMagasin ? weights.presence : 0)} / 100
+                            </span>
+                        </div>
+                        {(weights.ventes + weights.comportement + (!isMagasin ? weights.presence : 0)) !== 100 && (
+                            <div className="flex items-center gap-2 text-red-500 animate-bounce">
+                                <span className="material-symbols-outlined text-[18px]">error</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Le total doit être égal à 100</span>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 bg-stone-50 px-6 py-3 rounded-2xl border border-stone-100 max-w-md">
+                        <span className="material-symbols-outlined text-stone-400 text-[18px]">info</span>
+                        <p className="text-[9px] text-stone-500 font-medium italic leading-relaxed">
+                            <strong className="text-stone-800 uppercase not-italic">Rappel :</strong> Assurez-vous que la somme des points max des métriques individuelles correspond aux poids définis ci-dessus.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -706,6 +965,12 @@ function SettingsContent() {
                             )}
                         </div>
 
+                        {renderWeightSection(
+                            commWeights,
+                            (cat, val) => setCommWeights(prev => ({ ...prev, [cat]: val })),
+                            false
+                        )}
+
                         {renderConclusionSection(
                             conclusions, 
                             bonusConfig, 
@@ -714,7 +979,7 @@ function SettingsContent() {
                             updateConclusion, 
                             setBonusConfig,
                             true,
-                            100
+                            commWeights.ventes + commWeights.comportement + commWeights.presence
                         )}
                     </div>
                 )}
@@ -775,6 +1040,12 @@ function SettingsContent() {
                                 getMetricMaxPoints(currentShowroomLevels)
                             )}
                         </div>
+
+                        {renderWeightSection(
+                            showroomWeights,
+                            (cat, val) => setShowroomWeights(prev => ({ ...prev, [cat]: val })),
+                            true
+                        )}
 
                         {renderConclusionSection(
                             showroomConclusions,

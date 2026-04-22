@@ -34,7 +34,7 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
   };
 
 
-  const totalScore = scores.ventes + scores.comportement + scores.presence + scores.bonus;
+  const totalScore = scores.totalScore !== undefined ? scores.totalScore : (scores.ventes + scores.comportement + scores.presence + scores.bonus);
 
   let performanceStatus = scores.globalStatus || "MAUVAIS";
   let statusColor = scores.globalStatusColor || '#C0392B';
@@ -123,7 +123,7 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
         <div className="flex flex-col items-end justify-center pt-4">
           <span className="text-[9px] text-stone-400 uppercase font-black tracking-[0.3em] mb-2.5 opacity-60">Score Global</span>
           <span 
-            className="text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg"
+            className="text-[13px] font-bold tracking-widest px-4 py-1.5 rounded-lg border-2"
             style={getBadgeStyles(statusColor)}
           >
             {performanceStatus}
@@ -136,7 +136,7 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
       </div>
 
       {/* Bottom part: Breakdown with subtle progress bars matches Image 1 */}
-      <div className="flex gap-12 border-l border-stone-100 pl-12">
+      <div className={`flex gap-12 border-stone-100 ${isMagasin ? 'border-none' : 'border-l pl-12'}`}>
         <div className="flex flex-col gap-3">
            <MetricRow label="Ventes" score={scores.ventes} max={scores.ventesMax} />
            <MetricRow label="Comportement" score={scores.comportement} max={scores.comportementMax} />

@@ -71,12 +71,32 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const [devisOuvert, setDevisOuvert] = useState(0);
   const [panierMoyen, setPanierMoyen] = useState(0);
 
+  // Dynamic Weights from Configs
+  const weights = isMagasin 
+    ? (globalSettings.siq_showroom_weights || { 
+        ventes: 70, ventes_tb: 55, ventes_b: 45, ventes_m: 35, ventes_mv: 0,
+        comportement: 30, comportement_tb: 25, comportement_b: 16, comportement_m: 10, comportement_mv: 0,
+        presence: 0, presence_tb: 5, presence_b: 3, presence_m: 1, presence_mv: 0
+      })
+    : (globalSettings.siq_weights || { 
+        ventes: 65, ventes_tb: 55, ventes_b: 45, ventes_m: 35, ventes_mv: 0,
+        comportement: 30, comportement_tb: 25, comportement_b: 16, comportement_m: 10, comportement_mv: 0,
+        presence: 5, presence_tb: 5, presence_b: 3, presence_m: 1, presence_mv: 0
+      });
+
   // Helper for dynamic points from settings
   const getLevelPoints = (metric: string, levelId: string, fallback: number) => {
     const config = scoringConfigs.find(c => c.metricName === metric);
     if (!config || !Array.isArray(config.levels)) return fallback;
     const level = (config.levels as any[]).find(l => l.id === levelId);
-    return level ? parseInt(level.points) : fallback;
+    if (!level) return fallback;
+    
+    const pStr = String(level.points || '');
+    if (pStr.includes('-')) {
+        const parts = pStr.split('-').map(v => parseInt(v.trim()));
+        return Math.max(...parts.filter(v => !isNaN(v)));
+    }
+    return parseInt(pStr) || fallback;
   };
 
   const getLevelName = (metric: string, levelId: string, fallback: string) => {
@@ -96,7 +116,14 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const getMaxPoints = (metric: string, fallback: number) => {
     const config = scoringConfigs.find(c => c.metricName === metric);
     if (!config || !Array.isArray(config.levels)) return fallback;
-    const points = config.levels.map(l => parseInt(l.points) || 0);
+    const points = config.levels.map(l => {
+        const pStr = String(l.points || '');
+        if (pStr.includes('-')) {
+            const parts = pStr.split('-').map(v => parseInt(v.trim()));
+            return Math.max(...parts.filter(v => !isNaN(v)));
+        }
+        return parseInt(pStr) || 0;
+    });
     return points.length > 0 ? Math.max(...points) : fallback;
   };
 
@@ -104,28 +131,42 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
 
   const getVentesStatus = (metric: string, score: number, max: number) => {
     let levelId = 'mv';
-    if (max > 0) {
-      if (score >= max * 0.8) levelId = 'tb';
-      else if (score >= max * 0.6) levelId = 'b';
-      else if (score >= max * 0.4) levelId = 'm';
-    }
+    const tb = weights.ventes_tb !== undefined ? weights.ventes_tb : max * 0.8;
+    const b = weights.ventes_b !== undefined ? weights.ventes_b : max * 0.6;
+    const m = weights.ventes_m !== undefined ? weights.ventes_m : max * 0.4;
+    const mv = weights.ventes_mv !== undefined ? weights.ventes_mv : 0;
+
+    if (score >= tb) levelId = 'tb';
+    else if (score >= b) levelId = 'b';
+    else if (score >= m) levelId = 'm';
+    else if (score >= mv) levelId = 'mv';
+
+    const defaultColors: Record<string, string> = { tb: '#2A7D4F', b: '#EAB308', m: '#EA580C', mv: '#C0392B' };
+
     return { 
       name: getLevelName(metric, levelId, levelId === 'tb' ? "TRÈS BIEN" : levelId === 'b' ? "BIEN" : levelId === 'm' ? "MOYEN" : "MAUVAIS"), 
-      color: getLevelColor(metric, levelId),
+      color: getLevelColor(metric, levelId) || defaultColors[levelId],
       id: levelId
     };
   };
 
   const getBehaviorStatus = (metric: string, score: number, max: number) => {
     let levelId = 'mv';
-    if (max > 0) {
-      if (score >= max * 0.8) levelId = 'tb';
-      else if (score >= max * 0.6) levelId = 'b';
-      else if (score >= max * 0.4) levelId = 'm';
-    }
+    const tb = weights.comportement_tb !== undefined ? weights.comportement_tb : max * 0.8;
+    const b = weights.comportement_b !== undefined ? weights.comportement_b : max * 0.6;
+    const m = weights.comportement_m !== undefined ? weights.comportement_m : max * 0.4;
+    const mv = weights.comportement_mv !== undefined ? weights.comportement_mv : 0;
+
+    if (score >= tb) levelId = 'tb';
+    else if (score >= b) levelId = 'b';
+    else if (score >= m) levelId = 'm';
+    else if (score >= mv) levelId = 'mv';
+
+    const defaultColors: Record<string, string> = { tb: '#2A7D4F', b: '#EAB308', m: '#EA580C', mv: '#C0392B' };
+
     return { 
       name: getLevelName(metric, levelId, levelId === 'tb' ? "TRÈS BIEN" : levelId === 'b' ? "BIEN" : levelId === 'm' ? "MOYEN" : "MAUVAIS"), 
-      color: getLevelColor(metric, levelId),
+      color: getLevelColor(metric, levelId) || defaultColors[levelId],
       id: levelId
     };
   };
@@ -141,34 +182,51 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   };
 
   const getGlobalStatus = (score: number) => {
-    const metric = isMagasin ? 'showroom:conclusion' : 'commercial-conclusion';
-    const config = scoringConfigs.find(c => c.metricName === metric);
+    const configKey = isMagasin ? 'siq_showroom_conclusions' : 'siq_conclusions';
+    let levelsData = globalSettings[configKey];
     
-    if (config && Array.isArray(config.levels)) {
+    // Handle potential stringified JSON from older versions or misconfiguration
+    if (typeof levelsData === 'string') {
+        try { levelsData = JSON.parse(levelsData); } catch (e) { levelsData = null; }
+    }
+
+    if (Array.isArray(levelsData)) {
         // Try to find the matching level based on thresholds
-        const levels = [...config.levels].sort((a, b) => {
-            const valA = parseInt(a.range?.replace(/[^0-9]/g, '') || '0');
-            const valB = parseInt(b.range?.replace(/[^0-9]/g, '') || '0');
-            return valB - valA; // Descending
+        const levels = [...levelsData].sort((a, b) => {
+            const numA = parseInt(String(a.range || '').match(/\d+/)?.[0] || '0');
+            const numB = parseInt(String(b.range || '').match(/\d+/)?.[0] || '0');
+            return numB - numA;
         });
 
         for (const level of levels) {
-            const rangeStr = level.range || '';
-            const threshold = parseInt(rangeStr.replace(/[^0-9]/g, '') || '0');
-            if (rangeStr.includes('≥') || rangeStr.includes('>')) {
+            const rangeStr = String(level.range || '');
+            const numbers = rangeStr.match(/\d+/g)?.map(Number) || [];
+            
+            if (rangeStr.includes('≥') || rangeStr.includes('>') || rangeStr.toLowerCase().includes('sup')) {
+                const threshold = numbers[0] || 0;
                 if (score >= threshold) return { name: level.name, color: level.color };
-            } else if (rangeStr.includes('-')) {
-                const [min, max] = rangeStr.split('-').map(v => parseInt(v));
+            } else if (rangeStr.includes('<') || rangeStr.toLowerCase().includes('inf')) {
+                const threshold = numbers[0] || 0;
+                if (score < threshold) return { name: level.name, color: level.color };
+            } else if (rangeStr.includes('-') || numbers.length >= 2) {
+                const min = Math.min(...numbers);
+                const max = Math.max(...numbers);
                 if (score >= min && score <= max) return { name: level.name, color: level.color };
+            } else if (numbers.length === 1) {
+                // Single number fallback, treat as minimum threshold unless it looks like a max
+                if (score >= numbers[0]) return { name: level.name, color: level.color };
             }
         }
     }
 
     // Fallback to defaults
-    if (score >= 80) return { name: getLevelName(metric, 'tb', "TRÈS BIEN"), color: getLevelColor(metric, 'tb') };
-    if (score >= 60) return { name: getLevelName(metric, 'b', "BIEN"), color: getLevelColor(metric, 'b') };
-    if (score >= 40) return { name: getLevelName(metric, 'm', "MOYEN"), color: getLevelColor(metric, 'm') };
-    return { name: getLevelName(metric, 'mv', "MAUVAIS"), color: getLevelColor(metric, 'mv') };
+    const metric = isMagasin ? 'showroom:objectif-ca' : 'objectif-ca';
+    const defaultColors: Record<string, string> = { tb: '#2A7D4F', b: '#EAB308', m: '#EA580C', mv: '#C0392B' };
+    
+    if (score >= 80) return { name: getLevelName(metric, 'tb', "TRÈS BIEN"), color: getLevelColor(metric, 'tb') || defaultColors['tb'] };
+    if (score >= 60) return { name: getLevelName(metric, 'b', "BIEN"), color: getLevelColor(metric, 'b') || defaultColors['b'] };
+    if (score >= 40) return { name: getLevelName(metric, 'm', "MOYEN"), color: getLevelColor(metric, 'm') || defaultColors['m'] };
+    return { name: getLevelName(metric, 'mv', "MAUVAIS"), color: getLevelColor(metric, 'mv') || defaultColors['mv'] };
   };
 
   // Behavior derived from evaluations
@@ -351,32 +409,46 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsMV = getLevelPoints(metric, 'mv', 10);
     
     if (caAmount >= exceedCA) {
-        return { points: pointsTB, status: getVentesStatus(metric, pointsTB, pointsTB).name, statusColor: getVentesStatus(metric, pointsTB, pointsTB).color };
+        return { 
+            points: pointsTB, 
+            status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
+            statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
+        };
     }
     
     if (caAmount >= likelyCA) {
         const progress = (caAmount - likelyCA) / (exceedCA - likelyCA);
-        const pointRange = pointsTB - pointsB;
-        const points = pointsB + Math.floor(progress * pointRange);
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
+        return { 
+            points, 
+            status: getLevelName(metric, 'b', "BIEN"), 
+            statusColor: getLevelColor(metric, 'b') || '#EAB308' 
+        };
     }
 
     if (caAmount >= conservativeCA) {
         const progress = (caAmount - conservativeCA) / (likelyCA - conservativeCA);
-        const startPoints = isMagasin ? pointsM : (pointsM + 1);
-        const pointRange = pointsB - startPoints;
-        const points = startPoints + Math.floor(progress * pointRange);
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        const points = pointsM + Math.floor(progress * (pointsB - pointsM));
+        return { 
+            points, 
+            status: getLevelName(metric, 'm', "MOYEN"), 
+            statusColor: getLevelColor(metric, 'm') || '#EA580C' 
+        };
     }
     
     if (caAmount >= conservativeCA * 0.5) {
-        return { points: pointsMV, status: getVentesStatus(metric, pointsMV, pointsTB).name, statusColor: getVentesStatus(metric, pointsMV, pointsTB).color };
+        return { 
+            points: pointsMV, 
+            status: getLevelName(metric, 'mv', "MAUVAIS"), 
+            statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+        };
     }
     
-    const mvStatus = getVentesStatus(metric, 0, pointsTB);
-    return { points: 0, status: mvStatus.name, statusColor: mvStatus.color };
+    return { 
+        points: 0, 
+        status: getLevelName(metric, 'mv', "MAUVAIS"), 
+        statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+    };
   };
 
   // 2. Devis Score (15 pts for Commercial, 10 pts for Magasin)
@@ -388,22 +460,35 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsM = getLevelPoints(metric, 'm', isMagasin ? 4 : 5);
 
     if (conversionRate >= 75) {
-        return { points: pointsTB, status: getVentesStatus(metric, pointsTB, pointsTB).name, statusColor: getVentesStatus(metric, pointsTB, pointsTB).color };
+        return { 
+            points: pointsTB, 
+            status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
+            statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
+        };
     }
     if (conversionRate >= 50) {
         const progress = (conversionRate - 50) / (75 - 50);
         const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        return { 
+            points, 
+            status: getLevelName(metric, 'b', "BIEN"), 
+            statusColor: getLevelColor(metric, 'b') || '#EAB308' 
+        };
     }
-    if (conversionRate >= 35) {
-        const progress = (conversionRate - 35) / (50 - 35);
+    if (conversionRate >= 25) {
+        const progress = (conversionRate - 25) / (50 - 25);
         const points = pointsM + Math.floor(progress * (pointsB - pointsM));
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        return { 
+            points, 
+            status: getLevelName(metric, 'm', "MOYEN"), 
+            statusColor: getLevelColor(metric, 'm') || '#EA580C' 
+        };
     }
-    const mvStatus = getVentesStatus(metric, 0, pointsTB);
-    return { points: 0, status: mvStatus.name, statusColor: mvStatus.color };
+    return { 
+        points: 0, 
+        status: getLevelName(metric, 'mv', "MAUVAIS"), 
+        statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+    };
   };
 
   // 3. Performance Score (15 pts for Commercial, 10 pts for Magasin)
@@ -413,23 +498,40 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsB = getLevelPoints(metric, 'b', isMagasin ? 8 : 10);
     const pointsM = getLevelPoints(metric, 'm', isMagasin ? 4 : 5);
 
-    if (panierMoyen >= 20000) {
-        return { points: pointsTB, status: getVentesStatus(metric, pointsTB, pointsTB).name, statusColor: getVentesStatus(metric, pointsTB, pointsTB).color };
+    if (panierMoyen >= (isMagasin ? 20000 : exceedCA * 0.1)) {
+        return { 
+            points: pointsTB, 
+            status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
+            statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
+        };
     }
-    if (panierMoyen >= 15000) {
-        const progress = (panierMoyen - 15000) / (20000 - 15000);
+    if (panierMoyen >= (isMagasin ? 15000 : exceedCA * 0.08)) {
+        const threshold = isMagasin ? 15000 : exceedCA * 0.08;
+        const nextThreshold = isMagasin ? 20000 : exceedCA * 0.1;
+        const progress = (panierMoyen - threshold) / (nextThreshold - threshold);
         const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        return { 
+            points, 
+            status: getLevelName(metric, 'b', "BIEN"), 
+            statusColor: getLevelColor(metric, 'b') || '#EAB308' 
+        };
     }
-    if (panierMoyen >= 10000) {
-        const progress = (panierMoyen - 10000) / (15000 - 10000);
+    if (panierMoyen >= (isMagasin ? 10000 : exceedCA * 0.05)) {
+        const threshold = isMagasin ? 10000 : exceedCA * 0.05;
+        const nextThreshold = isMagasin ? 15000 : exceedCA * 0.08;
+        const progress = (panierMoyen - threshold) / (nextThreshold - threshold);
         const points = pointsM + Math.floor(progress * (pointsB - pointsM));
-        const statusObj = getVentesStatus(metric, points, pointsTB);
-        return { points, status: statusObj.name, statusColor: statusObj.color };
+        return { 
+            points, 
+            status: getLevelName(metric, 'm', "MOYEN"), 
+            statusColor: getLevelColor(metric, 'm') || '#EA580C' 
+        };
     }
-    const mvStatus = getVentesStatus(metric, 0, pointsTB);
-    return { points: 0, status: mvStatus.name, statusColor: mvStatus.color };
+    return { 
+        points: 0, 
+        status: getLevelName(metric, 'mv', "MAUVAIS"), 
+        statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+    };
   };
 
   // 4. Behavior Scores (30 pts)
@@ -439,11 +541,32 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsB = getLevelPoints(metric, 'b', 8);
     const pointsM = getLevelPoints(metric, 'm', 4);
 
-    if (avisNegatifs > 0) return { points: 0, status: getBehaviorStatus(metric, 0, pointsTB).name, statusColor: getBehaviorStatus(metric, 0, pointsTB).color };
-    if (avisPositifs > 3) return { points: pointsTB, status: getBehaviorStatus(metric, pointsTB, pointsTB).name, statusColor: getBehaviorStatus(metric, pointsTB, pointsTB).color };
-    if (avisPositifs > 0) return { points: pointsB, status: getBehaviorStatus(metric, pointsB, pointsTB).name, statusColor: getBehaviorStatus(metric, pointsB, pointsTB).color };
-    const mStatus = getBehaviorStatus(metric, pointsM, pointsTB);
-    return { points: pointsM, status: mStatus.name, statusColor: mStatus.color };
+    if (avisNegatifs > 0) {
+        return { 
+            points: 0, 
+            status: getLevelName(metric, 'mv', "MAUVAIS"), 
+            statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+        };
+    }
+    if (avisPositifs > 3) {
+        return { 
+            points: pointsTB, 
+            status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
+            statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
+        };
+    }
+    if (avisPositifs > 0) {
+        return { 
+            points: pointsB, 
+            status: getLevelName(metric, 'b', "BIEN"), 
+            statusColor: getLevelColor(metric, 'b') || '#EAB308' 
+        };
+    }
+    return { 
+        points: pointsM, 
+        status: getLevelName(metric, 'm', "MOYEN"), 
+        statusColor: getLevelColor(metric, 'm') || '#EA580C' 
+    };
   };
 
   const getSavScore = () => {
@@ -452,11 +575,32 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsB = getLevelPoints(metric, 'b', 8);
     const pointsM = getLevelPoints(metric, 'm', 4);
 
-    if (savPlaintes > 0) return { points: 0, status: getBehaviorStatus(metric, 0, pointsTB).name, statusColor: getBehaviorStatus(metric, 0, pointsTB).color };
-    if (savTickets > 4) return { points: pointsM, status: getBehaviorStatus(metric, pointsM, pointsTB).name, statusColor: getBehaviorStatus(metric, pointsM, pointsTB).color };
-    if (savTickets > 0) return { points: pointsB, status: getBehaviorStatus(metric, pointsB, pointsTB).name, statusColor: getBehaviorStatus(metric, pointsB, pointsTB).color };
-    const tbStatus = getBehaviorStatus(metric, pointsTB, pointsTB);
-    return { points: pointsTB, status: tbStatus.name, statusColor: tbStatus.color };
+    if (savPlaintes > 0) {
+        return { 
+            points: 0, 
+            status: getLevelName(metric, 'mv', "MAUVAIS"), 
+            statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
+        };
+    }
+    if (savTickets > 4) {
+        return { 
+            points: pointsM, 
+            status: getLevelName(metric, 'm', "MOYEN"), 
+            statusColor: getLevelColor(metric, 'm') || '#EA580C' 
+        };
+    }
+    if (savTickets > 0) {
+        return { 
+            points: pointsB, 
+            status: getLevelName(metric, 'b', "BIEN"), 
+            statusColor: getLevelColor(metric, 'b') || '#EAB308' 
+        };
+    }
+    return { 
+        points: pointsTB, 
+        status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
+        statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
+    };
   };
 
   const getProcessusScore = () => {
@@ -474,8 +618,17 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     });
 
     const finalPoints = Math.max(0, pointsTB - totalDeductions);
-    const pStatus = getBehaviorStatus(metric, finalPoints, pointsTB);
-    return { points: finalPoints, status: pStatus.name, statusColor: pStatus.color };
+    
+    let levelId = 'mv';
+    if (finalPoints >= pointsTB) levelId = 'tb';
+    else if (finalPoints >= pointsB) levelId = 'b';
+    else if (finalPoints >= pointsM) levelId = 'm';
+
+    return { 
+        points: finalPoints, 
+        status: getLevelName(metric, levelId, levelId.toUpperCase()), 
+        statusColor: getLevelColor(metric, levelId) || (levelId === 'tb' ? '#2A7D4F' : levelId === 'b' ? '#EAB308' : levelId === 'm' ? '#EA580C' : '#C0392B')
+    };
   };
 
   // 5. Presence Score (5 pts)
@@ -484,9 +637,10 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const retards = presenceLogs.filter(l => l.status === 'Retard').length;
     const totalFaults = absences + retards;
     
-    const pointsTB = getLevelPoints('assiduite', 'tb', 5);
-    const pointsB = getLevelPoints('assiduite', 'b', 3);
-    const pointsM = getLevelPoints('assiduite', 'm', 1);
+    const metric = isMagasin ? 'showroom:assiduite' : 'assiduite';
+    const pointsTB = getLevelPoints(metric, 'tb', 5);
+    const pointsB = getLevelPoints(metric, 'b', 3);
+    const pointsM = getLevelPoints(metric, 'm', 1);
 
     let levelId = 'mv';
     let points = 0;
@@ -513,25 +667,27 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const prosData = getProcessusScore();
   const presenceData = getPresenceScore();
 
-  // Dynamic Max Scores from Configs
+
+  // Dynamic Max Scores from Configs (Individual metrics)
   const salesMax = getMaxPoints(isMagasin ? 'showroom:objectif-ca' : 'objectif-ca', isMagasin ? 50 : 35);
   const devisMax = getMaxPoints(isMagasin ? 'showroom:devis' : 'conversion-rate', isMagasin ? 10 : 15);
   const perfMax = getMaxPoints(isMagasin ? 'showroom:kpis-panier-moyen' : 'panier-moyen', isMagasin ? 10 : 15);
   const avisMax = getMaxPoints(isMagasin ? 'showroom:avis' : 'avis-reputation', 10);
   const savMax = getMaxPoints(isMagasin ? 'showroom:service' : 'sav-service', 10);
   const prosMax = getMaxPoints(isMagasin ? 'showroom:showroom' : 'discipline-process', 10);
-  const presenceMax = isMagasin ? 0 : getMaxPoints('assiduite', 5);
-  const bonusMax = 5; // Bonus is usually fixed small amount, but could be dynamic if needed
+  const presenceMaxVal = getMaxPoints('assiduite', 5);
+  const bonusMax = 5;
 
   const totalSalesScore = salesData.points + devisData.points + perfData.points;
-  const totalSalesMax = salesMax + devisMax + perfMax;
+  const totalSalesMax = weights.ventes;
   
   const totalBehaviorScore = avisData.points + savData.points + prosData.points;
-  const totalBehaviorMax = avisMax + savMax + prosMax;
+  const totalBehaviorMax = weights.comportement;
 
 
-    const totalPoints = totalSalesScore + totalBehaviorScore + (isMagasin ? 0 : presenceData.points + bonusScore);
+    const totalPoints = totalSalesScore + totalBehaviorScore + (presenceData?.points || 0) + bonusScore;
     const globalStatusObj = getGlobalStatus(totalPoints);
+    const presenceMax = weights.presence || 0;
 
   const currentScores = {
     isMagasin,
@@ -546,12 +702,12 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     comportementMax: totalBehaviorMax,
     behaviorStatus: getBehaviorStatus(isMagasin ? 'showroom:showroom' : 'discipline-process', totalBehaviorScore, totalBehaviorMax).name,
     behaviorStatusColor: getBehaviorStatus(isMagasin ? 'showroom:showroom' : 'discipline-process', totalBehaviorScore, totalBehaviorMax).color,
-    presence: isMagasin ? 0 : presenceData.points,
-    presenceMax: isMagasin ? 0 : presenceMax,
-    presenceStatus: isMagasin ? "N/A" : presenceData.status,
-    presenceStatusColor: isMagasin ? '' : presenceData.color,
-    bonus: isMagasin ? 0 : bonusScore,
-    bonusMax: isMagasin ? 0 : bonusMax,
+    presence: presenceData.points,
+    presenceMax,
+    presenceStatus: presenceData.status,
+    presenceStatusColor: (presenceData.color || '#C0392B'),
+    bonus: bonusScore,
+    bonusMax: bonusMax,
 
     details: {
       sales: { ...salesData, maxScore: salesMax, statusColor: salesData.statusColor },
@@ -604,7 +760,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             { id: 'ressources', label: 'Ressources' }
           ].filter(tab => {
             if (isMagasin) {
-                // Show Ventes, Behavior, and Calendar for Magasin
+                // Show Ventes, Behavior and Calendar for Magasin. Hide only Ressources.
                 return tab.id !== 'ressources';
             }
             return true;
@@ -619,7 +775,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
           ))}
         </nav>
         
-        {(role === 'owner' || role === 'admin') && !isMagasin && (
+        {(role === 'owner' || role === 'admin') && (
           <button 
             onClick={() => setIsBonusOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md active:scale-95 mr-1 group transition-all"
