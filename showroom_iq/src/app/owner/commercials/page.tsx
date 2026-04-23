@@ -173,11 +173,13 @@ export default function Page() {
   const handleSaveUser = async (data: any) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const url = slideOverMode === 'edit' && selectedUser?.id
-        ? `http://localhost:3001/api/users/${selectedUser.id}`
+      const isExistingUser = (slideOverMode === 'edit' && selectedUser?.id) || data.id;
+      
+      const url = isExistingUser
+        ? `http://localhost:3001/api/users/${isExistingUser}`
         : `http://localhost:3001/api/users`;
       
-      const method = slideOverMode === 'edit' && selectedUser?.id ? 'PUT' : 'POST';
+      const method = isExistingUser ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
@@ -307,13 +309,6 @@ export default function Page() {
               </div>
             </div>
 
-            <button 
-              onClick={handleOpenAdd}
-              className="h-14 bg-stone-900 text-white px-8 rounded-2xl flex items-center justify-center gap-3 hover:bg-stone-800 transition-all shadow-lg active:scale-95 shrink-0 group"
-            >
-              <span className="material-symbols-outlined text-[20px] group-hover:rotate-90 transition-transform">add</span>
-              <span className="text-[11px] font-black uppercase tracking-[0.2em]">Ajouter</span>
-            </button>
           </div>
           
           <div className="flex items-center gap-6">
@@ -360,13 +355,6 @@ export default function Page() {
                             title="Modifier"
                           >
                             <span className="material-symbols-outlined text-[14px]">edit</span>
-                          </button>
-                          <button 
-                            onClick={(e) => handleDeleteClick(e, magasin.manager!.id, magasin.manager!.name)}
-                            className="w-8 h-8 rounded-full border border-stone-100 flex items-center justify-center text-stone-400 hover:text-red-600 hover:border-red-600 transition-colors bg-stone-50"
-                            title="Supprimer"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">delete</span>
                           </button>
                         </div>
                         
@@ -419,13 +407,6 @@ export default function Page() {
                               title="Modifier"
                             >
                               <span className="material-symbols-outlined text-[14px]">edit</span>
-                            </button>
-                            <button 
-                              onClick={(e) => handleDeleteClick(e, commercial.id, commercial.fullName)}
-                              className="w-8 h-8 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-400 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"
-                              title="Supprimer"
-                            >
-                              <span className="material-symbols-outlined text-[14px]">delete</span>
                             </button>
                           </div>
                           
@@ -510,7 +491,7 @@ export default function Page() {
         mode={slideOverMode}
         user={selectedUser}
         magasins={listMagasins}
-        fixedMagasinId={selectedUser?.magasinId}
+        fixedMagasinId={slideOverMode === 'create' ? selectedUser?.magasinId : undefined}
         onSubmit={handleSaveUser}
       />
 

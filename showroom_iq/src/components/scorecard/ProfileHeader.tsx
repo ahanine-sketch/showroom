@@ -19,6 +19,10 @@ interface ProfileHeaderProps {
     presenceMax: number;
     bonus: number;
     bonusMax: number;
+    totalScore?: number;
+    isMagasin?: boolean;
+    globalStatus?: string;
+    globalStatusColor?: string;
   };
 }
 

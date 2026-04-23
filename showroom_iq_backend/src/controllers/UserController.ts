@@ -41,7 +41,8 @@ export class UserController {
       const commercials = await prisma.user.findMany({
         where: { 
           showroomId: { in: showroomIds }, 
-          role: 'COMMERCIAL' 
+          role: 'COMMERCIAL',
+          status: 'ACTIVE'
         },
         select: { 
           id: true, 
@@ -176,20 +177,30 @@ export class UserController {
    */
   static async getAll(req: Request, res: Response) {
     try {
-      const { role, q, showroomId } = req.query;
+      const { role, q, showroomId, status } = req.query;
       
+      const where: any = {
+        fullName: q ? { contains: q as string, mode: 'insensitive' } : undefined,
+        role: role ? (role as any) : undefined,
+        showroomId: showroomId ? (showroomId as string) : undefined,
+      };
+
+      if (status && status !== 'ALL') {
+        where.status = status as any;
+      } else if (!status) {
+        where.status = 'ACTIVE';
+      }
+      // If status is 'ALL', no status filter is applied, returning all users.
+
       const users = await prisma.user.findMany({
-        where: {
-          fullName: q ? { contains: q as string, mode: 'insensitive' } : undefined,
-          role: role ? (role as any) : undefined,
-          showroomId: showroomId ? (showroomId as string) : undefined,
-        },
+        where,
         select: {
           id: true,
           fullName: true,
           email: true,
           phone: true,
           role: true,
+          status: true,
           createdAt: true,
           avatarUrl: true,
           showroom: {
@@ -221,21 +232,30 @@ export class UserController {
   static async search(req: Request, res: Response) {
 
     try {
-      const { q, role } = req.query;
+      const { q, role, status } = req.query;
       
-      const users = await prisma.user.findMany({
-        where: {
-          fullName: {
-            contains: q as string,
-            mode: 'insensitive'
-          },
-          ...(role ? { role: role as any } : {})
+      const where: any = {
+        fullName: {
+          contains: q as string,
+          mode: 'insensitive'
         },
+        ...(role ? { role: role as any } : {}),
+      };
+
+      if (status && status !== 'ALL') {
+        where.status = status as any;
+      } else if (!status) {
+        where.status = 'ACTIVE';
+      }
+
+      const users = await prisma.user.findMany({
+        where,
         select: {
           id: true,
           fullName: true,
           email: true,
           role: true,
+          status: true,
           avatarUrl: true
         },
         take: 10
@@ -264,6 +284,7 @@ export class UserController {
           role: true,
           seniority: true,
           avatarUrl: true,
+          status: true,
           showroom: {
             select: {
               id: true,
@@ -307,6 +328,7 @@ export class UserController {
           phone: phone || null,
           role: role || 'COMMERCIAL',
           showroomId: showroomId || null,
+          status: req.body.status || 'ACTIVE',
           passwordHash,
           avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${fullName}`
         }
@@ -360,7 +382,8 @@ export class UserController {
           email: email || null,
           phone: phone || null,
           role,
-          showroomId: showroomId || null
+          showroomId: showroomId || null,
+          status: req.body.status || undefined
         }
       });
 
@@ -464,6 +487,29 @@ export class UserController {
       if (!user) {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
+
+      return res.json({ success: true, data: user });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
+   * Toggle user status (Active/Blocked)
+   */
+  static async toggleStatus(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!['ACTIVE', 'BLOCKED'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Invalid status' });
+      }
+
+      const user = await prisma.user.update({
+        where: { id },
+        data: { status }
+      });
 
       return res.json({ success: true, data: user });
     } catch (error: any) {

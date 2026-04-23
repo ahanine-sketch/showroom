@@ -20,12 +20,14 @@ export class ShowroomController {
               email: true,
               phone: true,
               avatarUrl: true,
-              seniority: true
+              seniority: true,
+              status: true
             }
           },
           users: {
             where: {
-              role: 'COMMERCIAL'
+              role: 'COMMERCIAL',
+              status: 'ACTIVE'
             },
             select: {
               id: true,
@@ -63,7 +65,7 @@ export class ShowroomController {
             name: s.name,
             location: s.location,
             city: s.city,
-            manager: s.manager ? {
+            manager: s.manager && (s.manager as any).status === 'ACTIVE' ? {
               id: s.manager.id,
               name: s.manager.fullName,
               email: s.manager.email,
@@ -128,11 +130,15 @@ export class ShowroomController {
               email: true,
               phone: true,
               avatarUrl: true,
-              seniority: true
+              seniority: true,
+              status: true
             }
           },
           users: {
-            where: { role: 'COMMERCIAL' },
+            where: { 
+              role: 'COMMERCIAL',
+              status: 'ACTIVE'
+            },
             select: {
               id: true,
               fullName: true,
@@ -188,7 +194,7 @@ export class ShowroomController {
         name: s.name,
         location: s.location,
         city: s.city,
-        manager: s.manager ? {
+        manager: s.manager && (s.manager as any).status === 'ACTIVE' ? {
           id: s.manager.id,
           name: (s.manager as any).fullName,
           email: s.manager.email,

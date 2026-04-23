@@ -68,6 +68,10 @@ export class AuthController {
         return res.status(401).json({ success: false, message: 'Identifiants invalides.' });
       }
 
+      if (user.status === 'BLOCKED') {
+        return res.status(403).json({ success: false, message: 'Votre compte est bloqué. Veuillez contacter l\'administrateur.' });
+      }
+
       const isValidPassword = await bcrypt.compare(password, user.passwordHash);
       if (!isValidPassword) {
         return res.status(401).json({ success: false, message: 'Identifiants invalides.' });

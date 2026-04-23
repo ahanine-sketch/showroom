@@ -58,6 +58,7 @@ app.get('/api/users/:id', authenticate, UserController.getById);
 
 app.post('/api/users', authenticate, authorize(['OWNER', 'ADMIN']), UserController.create);
 app.put('/api/users/:id', authenticate, authorize(['OWNER', 'ADMIN']), UserController.update);
+app.put('/api/users/:id/status', authenticate, authorize(['OWNER']), UserController.toggleStatus);
 app.delete('/api/users/:id', authenticate, authorize(['OWNER', 'ADMIN']), UserController.delete);
 
 

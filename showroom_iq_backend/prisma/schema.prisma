@@ -28,6 +28,7 @@ model User {
   salesMetrics     SalesMetric[]
   bonusHistory     BonusHistory[]
   managedShowrooms Showroom[]          @relation("Manager")
+  status           UserStatus          @default(ACTIVE)
   showroom         Showroom?           @relation(fields: [showroomId], references: [id])
 }
 
@@ -147,6 +148,11 @@ enum Role {
   OWNER
   ADMIN
   COMMERCIAL
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
 }
 
 enum EvaluationType {

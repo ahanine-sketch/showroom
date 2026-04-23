@@ -73,7 +73,8 @@ export class ShowroomScoringService {
       globalSettings[s.key] = s.value;
     });
 
-    const weights = globalSettings.siq_showroom_weights || { ventes: 70, comportement: 30 };
+    const rawWeights = globalSettings.siq_showroom_weights || { ventes: 70, comportement: 30 };
+    const weights = { ...rawWeights, presence: 0 };
 
     // --- SALES SCORING (Normalized to weights.ventes) ---
     // CA (50 pts by default)
@@ -126,7 +127,10 @@ export class ShowroomScoringService {
     // 1. AVIS (10 pts)
     const reviews = await prisma.clientReview.findMany({
       where: {
-        showroomId: showroomId,
+        OR: [
+          { showroomId: showroomId },
+          { userId: { in: userIds } }
+        ],
         date: { gte: startOfMonth, lte: endOfMonth }
       }
     });
@@ -167,7 +171,10 @@ export class ShowroomScoringService {
     const processEvaluations = await prisma.processEvaluation.findMany({
       where: {
         type: EvaluationType.PROCESS,
-        showroomId: showroomId,
+        OR: [
+          { showroomId: showroomId },
+          { userId: { in: userIds } }
+        ],
         date: { gte: startOfMonth, lte: endOfMonth }
       }
     });
@@ -187,7 +194,10 @@ export class ShowroomScoringService {
     // 4. PRESENCE (5 pts)
     const presenceLogs = await prisma.dailyLog.findMany({
       where: {
-        showroomId: showroomId,
+        OR: [
+          { showroomId: showroomId },
+          { userId: { in: userIds } }
+        ],
         date: { gte: startOfMonth, lte: endOfMonth }
       }
     });
@@ -206,17 +216,8 @@ export class ShowroomScoringService {
 
     const presenceScoreFinal = presenceScore;
 
-    // 5. BONUS
-    const bonuses = await prisma.bonusHistory.findMany({
-        where: {
-            userId: { in: userIds },
-            month,
-            year
-        }
-    });
-    const bonusScore = bonuses.reduce((acc, b) => acc + b.amount, 0);
-
-    const totalScore = totalSalesScore + totalBehaviorScore + presenceScoreFinal + bonusScore;
+    const presenceWeight = weights.presence || 0;
+    const totalScore = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? presenceScoreFinal : 0);
 
     return Math.min(100, totalScore);
 

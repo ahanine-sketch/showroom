@@ -73,7 +73,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
 
   // Dynamic Weights from Configs
   const weights = isMagasin 
-    ? (globalSettings.siq_showroom_weights || { 
+    ? (globalSettings.siq_showroom_weights ? { ...globalSettings.siq_showroom_weights, presence: 0 } : { 
         ventes: 70, ventes_tb: 55, ventes_b: 45, ventes_m: 35, ventes_mv: 0,
         comportement: 30, comportement_tb: 25, comportement_b: 16, comportement_m: 10, comportement_mv: 0,
         presence: 0, presence_tb: 5, presence_b: 3, presence_m: 1, presence_mv: 0
@@ -685,7 +685,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const totalBehaviorMax = weights.comportement;
 
 
-    const totalPoints = totalSalesScore + totalBehaviorScore + (presenceData?.points || 0) + bonusScore;
+    const presenceWeight = isMagasin ? 0 : (weights.presence || 0);
+    const totalPoints = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? (presenceData?.points || 0) : 0) + (isMagasin ? 0 : bonusScore);
     const globalStatusObj = getGlobalStatus(totalPoints);
     const presenceMax = weights.presence || 0;
 
@@ -702,8 +703,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     comportementMax: totalBehaviorMax,
     behaviorStatus: getBehaviorStatus(isMagasin ? 'showroom:showroom' : 'discipline-process', totalBehaviorScore, totalBehaviorMax).name,
     behaviorStatusColor: getBehaviorStatus(isMagasin ? 'showroom:showroom' : 'discipline-process', totalBehaviorScore, totalBehaviorMax).color,
-    presence: presenceData.points,
-    presenceMax,
+    presence: isMagasin ? 0 : presenceData.points,
+    presenceMax: isMagasin ? 0 : presenceMax,
     presenceStatus: presenceData.status,
     presenceStatusColor: (presenceData.color || '#C0392B'),
     bonus: bonusScore,
@@ -760,8 +761,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             { id: 'ressources', label: 'Ressources' }
           ].filter(tab => {
             if (isMagasin) {
-                // Show Ventes, Behavior and Calendar for Magasin. Hide only Ressources.
-                return tab.id !== 'ressources';
+                // Show only Ventes and Behavior for Magasin.
+                return tab.id !== 'ressources' && tab.id !== 'calendar';
             }
             return true;
           }).map((tab) => (
@@ -775,7 +776,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
           ))}
         </nav>
         
-        {(role === 'owner' || role === 'admin') && (
+        {(role === 'owner' || role === 'admin') && !isMagasin && (
           <button 
             onClick={() => setIsBonusOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md active:scale-95 mr-1 group transition-all"

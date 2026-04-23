@@ -17,6 +17,8 @@ interface ScoreOverviewProps {
     ventesStatusColor?: string;
     behaviorStatusColor?: string;
     presenceStatusColor?: string;
+    totalScore?: number;
+    isMagasin?: boolean;
   };
 }
 
@@ -34,12 +36,14 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
   };
 
 
-  const totalScore = scores.totalScore !== undefined ? scores.totalScore : (scores.ventes + scores.comportement + scores.presence + scores.bonus);
+  const isMagasin = !!scores.isMagasin;
+  
+  const totalScore = scores.totalScore !== undefined 
+    ? scores.totalScore 
+    : (scores.ventes + scores.comportement + (isMagasin ? 0 : (scores.presence + scores.bonus)));
 
   let performanceStatus = scores.globalStatus || "MAUVAIS";
   let statusColor = scores.globalStatusColor || '#C0392B';
-
-  const isMagasin = scores.isMagasin;
 
   const getBadgeStyles = (color: string) => {
     if (color.startsWith('#')) {

@@ -374,7 +374,8 @@ export class ScoringService {
     
     // Process points from config (tb level usually defines max points)
     const maxProcessPoints = this.getLevelPointsByRank(metricConfigs['process-qualite'], 'tb', 10);
-    const finalBehaviorScore = avisPoints + savPoints + Math.max(0, maxProcessPoints - processDeduction);
+    const procPoints = Math.max(0, maxProcessPoints - processDeduction);
+    const finalBehaviorScore = avisPoints + savPoints + procPoints;
 
 
     // 3. Calculate Presence (5 pts)

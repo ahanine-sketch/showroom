@@ -306,6 +306,16 @@ export class PerformanceController {
       const m = parseInt(month);
       const y = parseInt(year);
 
+      // Verify user is active
+      const user = await prisma.user.findUnique({ 
+        where: { id: userId },
+        select: { status: true }
+      });
+
+      if (!user || user.status !== 'ACTIVE') {
+        return res.status(404).json({ success: false, error: 'Utilisateur introuvable ou bloqué' });
+      }
+
       if (isNaN(m) || isNaN(y)) {
         return res.status(400).json({ success: false, error: 'Invalid month or year' });
       }
@@ -540,7 +550,10 @@ export class PerformanceController {
 
       // 1. Get all users in this showroom
       const users = await prisma.user.findMany({
-        where: { showroomId },
+        where: { 
+          showroomId,
+          status: 'ACTIVE'
+        },
         select: { id: true }
       });
       const userIds = users.map(u => u.id);
@@ -553,9 +566,10 @@ export class PerformanceController {
       const evaluations = await prisma.processEvaluation.findMany({
         where: {
           OR: [
-            { type: 'PROCESS', showroomId: showroomId },
-            { type: 'SAV', userId: { in: userIds } }
+            { showroomId: showroomId },
+            { userId: { in: userIds } }
           ],
+          type: { in: [EvaluationType.PROCESS, EvaluationType.SAV] },
           date: { gte: startDate, lte: endDate },
         },
         orderBy: { date: 'desc' },
@@ -564,7 +578,10 @@ export class PerformanceController {
       // 3. Fetch client reviews (Strictly Magasin only per user request)
       const clientReviews = await prisma.clientReview.findMany({
         where: {
-          showroomId: showroomId,
+          OR: [
+            { showroomId: showroomId },
+            { userId: { in: userIds } }
+          ],
           date: { gte: startDate, lte: endDate },
         },
         orderBy: { date: 'desc' },
@@ -592,7 +609,10 @@ export class PerformanceController {
       // 5. Fetch daily logs (Presence/Notes aggregated from team only)
       const dailyLogs = await prisma.dailyLog.findMany({
         where: {
-          userId: { in: userIds },
+          OR: [
+            { showroomId: showroomId },
+            { userId: { in: userIds } }
+          ],
           date: { gte: startDate, lte: endDate },
         },
         include: {
