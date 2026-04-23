@@ -216,6 +216,7 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
                               <input 
                                 type="text" 
                                 name="phone"
+                                placeholder="+2126XXXXXXXX"
                                 defaultValue={user?.phone}
                                 className="w-full border border-stone-100 bg-stone-50/50 rounded-xl pl-10 pr-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner"
                               />

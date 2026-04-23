@@ -182,8 +182,6 @@ export default function Page() {
 </div>
 
 <div className="fixed -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
-</main>
-
-    </>
+    </main>
   );
 }

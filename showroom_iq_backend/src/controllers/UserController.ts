@@ -3,6 +3,34 @@ import prisma from '../config/prisma';
 import bcrypt from 'bcryptjs';
 
 export class UserController {
+  /**
+   * Helper to normalize Moroccan phone numbers to +212 format
+   */
+  private static normalizePhone(phone: string | null): string | null {
+    if (!phone) return null;
+    let normalized = phone.trim().replace(/[\s-]/g, '');
+    
+    if (normalized.startsWith('+212')) return normalized;
+    
+    if (normalized.startsWith('0') && normalized.length === 10) {
+      return '+212' + normalized.substring(1);
+    }
+    
+    if (normalized.length === 9 && (normalized.startsWith('6') || normalized.startsWith('7'))) {
+      return '+212' + normalized;
+    }
+
+    if (normalized.startsWith('212') && normalized.length === 12) {
+      return '+' + normalized;
+    }
+
+    if (normalized.startsWith('00212')) {
+      return '+' + normalized.substring(2);
+    }
+    
+    return normalized;
+  }
+
 
   /**
    * Get the admin's team (commercials in their showroom) with real performance scores.
@@ -321,11 +349,13 @@ export class UserController {
       // Default password since it is created by admin
       const passwordHash = await bcrypt.hash("P123456@@", 10);
       
+      const normalizedPhone = this.normalizePhone(phone);
+      
       const newUser = await prisma.user.create({
         data: {
           fullName,
           email: email || null,
-          phone: phone || null,
+          phone: normalizedPhone,
           role: role || 'COMMERCIAL',
           showroomId: showroomId || null,
           status: req.body.status || 'ACTIVE',
@@ -375,12 +405,14 @@ export class UserController {
       const { id } = req.params;
       const { fullName, email, phone, role, showroomId, targets } = req.body;
 
+      const normalizedPhone = this.normalizePhone(phone);
+
       const user = await prisma.user.update({
         where: { id },
         data: {
           fullName,
           email: email || null,
-          phone: phone || null,
+          phone: normalizedPhone,
           role,
           showroomId: showroomId || null,
           status: req.body.status || undefined

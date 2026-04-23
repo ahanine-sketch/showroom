@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { ScoringService } from '../services/ScoringService';
 
 export class BehaviorController {
   /**
@@ -242,7 +243,7 @@ export class BehaviorController {
       return res.status(500).json({ success: false, error: error.message });
     }
   }
-}
+
   /**
    * Delete a review by ID
    */

@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loginType, setLoginType] = useState<'email' | 'mobile'>('mobile');
-  const [email, setEmail] = useState('');
-  const [mobile, setMobile] = useState('');
+  const [mobile, setMobile] = useState('+212');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,9 +17,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      const body = loginType === 'email' 
-        ? { email, password } 
-        : { mobile, password };
+      const body = { mobile, password };
 
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
@@ -89,51 +85,27 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div className="flex p-1 bg-surface-container-low rounded-full mb-8 max-w-fit">
-              <button 
-                type="button"
-                onClick={() => setLoginType('mobile')}
-                className={`px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider rounded-full transition-all ${loginType === 'mobile' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-outline hover:text-on-surface'}`}
-              >
-                Mobile
-              </button>
-              <button 
-                type="button"
-                onClick={() => setLoginType('email')}
-                className={`px-6 py-1.5 text-[11px] font-mono uppercase tracking-wider rounded-full transition-all ${loginType === 'email' ? 'bg-surface-container-lowest text-on-surface shadow-sm' : 'text-outline hover:text-on-surface'}`}
-              >
-                Email
-              </button>
-            </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {loginType === 'email' ? (
-                <div className="space-y-1.5">
-                  <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="email">Adresse e-mail</label>
-                  <input 
-                    className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/60" 
-                    id="email" 
-                    placeholder="nom@showroom.com" 
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              ) : (
                 <div className="space-y-1.5">
                   <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="mobile">Numéro Mobile</label>
                   <input 
                     className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/60" 
                     id="mobile" 
-                    placeholder="0612345678 or +212..." 
+                    placeholder="+212..." 
                     type="tel"
                     value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val.startsWith('+212')) {
+                        setMobile(val);
+                      } else if (val === '' || '+212'.startsWith(val)) {
+                         setMobile('+212');
+                      }
+                    }}
                     required
                   />
                 </div>
-              )}
 
               <div className="space-y-1.5">
                 <div className="flex justify-between items-end ml-1">
