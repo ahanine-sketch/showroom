@@ -8,6 +8,29 @@ const prisma_1 = __importDefault(require("../config/prisma"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 class UserController {
     /**
+     * Helper to normalize Moroccan phone numbers to +212 format
+     */
+    static normalizePhone(phone) {
+        if (!phone)
+            return null;
+        let normalized = phone.trim().replace(/[\s-]/g, '');
+        if (normalized.startsWith('+212'))
+            return normalized;
+        if (normalized.startsWith('0') && normalized.length === 10) {
+            return '+212' + normalized.substring(1);
+        }
+        if (normalized.length === 9 && (normalized.startsWith('6') || normalized.startsWith('7'))) {
+            return '+212' + normalized;
+        }
+        if (normalized.startsWith('212') && normalized.length === 12) {
+            return '+' + normalized;
+        }
+        if (normalized.startsWith('00212')) {
+            return '+' + normalized.substring(2);
+        }
+        return normalized;
+    }
+    /**
      * Get the admin's team (commercials in their showroom) with real performance scores.
      */
     static async getMyTeam(req, res) {
@@ -294,11 +317,12 @@ class UserController {
             const { fullName, email, phone, role, showroomId, targets } = req.body;
             // Default password since it is created by admin
             const passwordHash = await bcryptjs_1.default.hash("P123456@@", 10);
+            const normalizedPhone = this.normalizePhone(phone);
             const newUser = await prisma_1.default.user.create({
                 data: {
                     fullName,
                     email: email || null,
-                    phone: phone || null,
+                    phone: normalizedPhone,
                     role: role || 'COMMERCIAL',
                     showroomId: showroomId || null,
                     status: req.body.status || 'ACTIVE',
@@ -343,12 +367,13 @@ class UserController {
         try {
             const id = req.params.id;
             const { fullName, email, phone, role, showroomId, targets } = req.body;
+            const normalizedPhone = this.normalizePhone(phone);
             const user = await prisma_1.default.user.update({
                 where: { id },
                 data: {
                     fullName,
                     email: email || null,
-                    phone: phone || null,
+                    phone: normalizedPhone,
                     role,
                     showroomId: showroomId || null,
                     status: req.body.status || undefined
