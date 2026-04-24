@@ -51,7 +51,7 @@ const AdminHeader = () => {
         <div className="flex items-center gap-3">
           <div className="text-right">
             <p className="text-[12px] font-medium leading-none text-stone-900">{user?.fullName || 'Chargement...'}</p>
-            <p className="text-[10px] font-label text-stone-400 uppercase mt-1">Directeur Showroom</p>
+            <p className="text-[10px] font-label text-stone-400 uppercase mt-1">Responsable du magasin</p>
           </div>
           <div className="w-8 h-8 rounded-full bg-stone-50 border-2 border-stone-50 flex items-center justify-center text-stone-300 shadow-sm">
             <span className="material-symbols-outlined text-[20px]">person</span>
