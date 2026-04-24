@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import OwnerSidebar from '@/components/OwnerSidebar';
 import OwnerHeader from '@/components/OwnerHeader';
 
@@ -9,11 +9,15 @@ export default function OwnerLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-surface">
-      <OwnerSidebar />
+      <Suspense fallback={<div>Loading sidebar...</div>}>
+        <OwnerSidebar />
+      </Suspense>
       <div className="flex-1 ml-[240px] flex flex-col">
         <OwnerHeader />
         <main className="flex-1">
-          {children}
+          <Suspense fallback={<div>Loading content...</div>}>
+            {children}
+          </Suspense>
         </main>
       </div>
     </div>

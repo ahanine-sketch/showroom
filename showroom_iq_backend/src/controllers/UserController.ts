@@ -300,7 +300,7 @@ export class UserController {
    */
   static async getById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       
       const user = await prisma.user.findUnique({
         where: { id },
@@ -402,7 +402,7 @@ export class UserController {
    */
   static async update(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { fullName, email, phone, role, showroomId, targets } = req.body;
 
       const normalizedPhone = this.normalizePhone(phone);
@@ -471,7 +471,7 @@ export class UserController {
    */
   static async delete(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       // Unset manager from any showroom they manage
       await prisma.showroom.updateMany({
@@ -531,7 +531,7 @@ export class UserController {
    */
   static async toggleStatus(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { status } = req.body;
 
       if (!['ACTIVE', 'BLOCKED'].includes(status)) {

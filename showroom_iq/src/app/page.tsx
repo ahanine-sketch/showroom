@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mobile, setMobile] = useState('');
+  const [mobile, setMobile] = useState('+212');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,15 +17,8 @@ export default function LoginPage() {
     setError('');
     
     try {
-      // Ensure mobile number is sent with +212 prefix
-      // If user typed 06..., remove the 0 and prepend +212
-      let cleanMobile = mobile.trim();
-      if (cleanMobile.startsWith('0')) {
-        cleanMobile = cleanMobile.substring(1);
-      }
-      
       const body = { 
-        mobile: `+212${cleanMobile}`, 
+        mobile, 
         password 
       };
 
@@ -99,19 +92,21 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <label className="font-sans text-[11px] uppercase tracking-wider text-outline font-semibold ml-1" htmlFor="mobile">Numéro Mobile</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
-                    <span className="font-mono text-[14px] text-on-surface font-medium">+212</span>
-                    <div className="w-[1px] h-4 bg-outline-variant/30 mx-1"></div>
-                  </div>
                   <input 
-                    className="w-full h-12 pl-20 pr-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/40 font-mono" 
+                    className="w-full h-12 px-4 bg-surface-container-low ghost-border rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all outline-none text-on-surface placeholder:text-outline-variant/40 font-mono" 
                     id="mobile" 
-                    placeholder="6XXXXXXXX" 
+                    placeholder="+2126XXXXXXXX" 
                     type="tel"
                     value={mobile}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      if (val.length <= 10) setMobile(val);
+                      let val = e.target.value;
+                      if (!val.startsWith('+212')) {
+                        val = '+212';
+                      }
+                      const digits = val.substring(4).replace(/\D/g, '');
+                      if (digits.length <= 9) {
+                        setMobile('+212' + digits);
+                      }
                     }}
                     required
                   />

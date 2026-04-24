@@ -1,0 +1,192 @@
+
+> showroom_iq@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./src/app/admin/equipe/page.tsx
+121:37  Warning: React Hook useEffect has a missing dependency: 'fetchTeam'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/admin/settings/page.tsx
+21:1  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+42:1  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./src/app/commercial/dashboard/page.tsx
+21:1  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./src/app/layout.tsx
+21:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+22:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+./src/app/owner/commercials/page.tsx
+112:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/scorecard/BonusSlideOver.tsx
+38:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/scorecard/ScorecardWrapper.tsx
+344:6  Warning: React Hook useEffect has a missing dependency: 'fetchEvaluations'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/24) ...
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/dashboard". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/dashboard/page.js:1:5000)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/showrooms". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/510.js:1:3854)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/showrooms". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/scorecard/calendar". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/calendar/page.js:1:5139)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/scorecard/calendar". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/scorecard/bonus". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/bonus/page.js:1:4989)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/scorecard/bonus". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/settings". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at i (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/settings/page.js:1:45099)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/settings". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/scorecard/ressources". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/ressources/page.js:1:5154)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/scorecard/ressources". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (6/24) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/scorecard/behavior". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/behavior/page.js:1:5140)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/scorecard/behavior". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/scorecard/commercial". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/commercial/page.js:1:5154)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/scorecard/commercial". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (12/24) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/commercials". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/scorecard/behavior/page.js:1:5140)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/commercials". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (18/24) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/owner/users". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at a (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:10472)
+    at c (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/chunks/764.js:1:21317)
+    at l (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/.next/server/app/owner/dashboard/page.js:1:5000)
+    at nj (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+    at nM (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+    at nB (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+    at nD (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+    at nL (/Users/mac/Desktop/Sketch APPS/Sketch performance/showroom_iq/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/owner/users". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ✓ Generating static pages (24/24)
+
+> Export encountered errors on following paths:
+	/owner/commercials/page: /owner/commercials
+	/owner/dashboard/page: /owner/dashboard
+	/owner/scorecard/behavior/page: /owner/scorecard/behavior
+	/owner/scorecard/bonus/page: /owner/scorecard/bonus
+	/owner/scorecard/calendar/page: /owner/scorecard/calendar
+	/owner/scorecard/commercial/page: /owner/scorecard/commercial
+	/owner/scorecard/ressources/page: /owner/scorecard/ressources
+	/owner/settings/page: /owner/settings
+	/owner/showrooms/page: /owner/showrooms
+	/owner/users/page: /owner/users

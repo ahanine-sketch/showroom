@@ -11,6 +11,10 @@ interface ScorecardProps {
   scores?: any;
   evaluations?: any[];
   onRefresh?: () => Promise<void>;
+  viewMonth?: number;
+  viewYear?: number;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
 }
 
 

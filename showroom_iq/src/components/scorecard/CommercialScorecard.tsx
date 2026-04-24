@@ -8,10 +8,17 @@ import QuotesDrawer from './QuotesDrawer';
 
 interface ScorecardProps {
   role: 'admin' | 'owner';
-  activeTab: 'commercial' | 'behavior' | 'calendar' | 'ressources';
+  activeTab?: 'commercial' | 'behavior' | 'calendar' | 'ressources';
   hideNav?: boolean;
   isDashboard?: boolean;
-  userData?: any;
+  userData?: {
+    fullName?: string;
+    phone?: string;
+    seniority?: string;
+    avatarUrl?: string;
+    showroomName?: string;
+    showroom?: { name: string };
+  };
   scores?: any;
   isMagasin?: boolean;
   viewMonth?: number;
@@ -22,16 +29,12 @@ interface ScorecardProps {
 
 const CommercialScorecard = ({ 
     role, 
-    activeTab, 
-    hideNav, 
     isDashboard, 
     userData, 
     scores, 
     isMagasin: propIsMagasin,
     viewMonth,
-    viewYear,
-    onPrevMonth,
-    onNextMonth
+    viewYear
   }: ScorecardProps) => {
   const isMagasin = propIsMagasin || scores?.isMagasin;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -61,7 +64,6 @@ const CommercialScorecard = ({
     setIsDrawerOpen(true);
   };
 
-  const basePath = `/${role}/scorecard`;
 
 
 

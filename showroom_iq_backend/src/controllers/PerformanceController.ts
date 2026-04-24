@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ScoringService } from '../services/ScoringService';
 import prisma from '../config/prisma';
+import { EvaluationType } from '@prisma/client';
 
 export class PerformanceController {
   /**
@@ -42,7 +43,8 @@ export class PerformanceController {
    */
   static async getDailyPerformance(req: Request, res: Response) {
     try {
-        const { userId, date } = req.params;
+        const userId = req.params.userId as string;
+        const date = req.params.date as string;
         const targetDate = new Date(date as string);
         targetDate.setHours(0, 0, 0, 0);
 
@@ -145,7 +147,7 @@ export class PerformanceController {
    */
   static async getBonusHistory(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId = req.params.userId as string;
       const history = await prisma.bonusHistory.findMany({
         where: { userId },
         orderBy: { date: 'desc' }
@@ -302,9 +304,10 @@ export class PerformanceController {
    */
   static async getGlobalScore(req: Request, res: Response) {
     try {
-      const { userId, month, year } = req.params;
-      const m = parseInt(month);
-      const y = parseInt(year);
+      const userId = req.params.userId as string;
+      const { month, year } = req.params;
+      const m = parseInt(month as string);
+      const y = parseInt(year as string);
 
       // Verify user is active
       const user = await prisma.user.findUnique({ 
@@ -461,9 +464,10 @@ export class PerformanceController {
    */
   static async getMonthlyEvaluations(req: Request, res: Response) {
     try {
-      const { userId, month, year } = req.params;
-      const m = parseInt(month);
-      const y = parseInt(year);
+      const userId = req.params.userId as string;
+      const { month, year } = req.params;
+      const m = parseInt(month as string);
+      const y = parseInt(year as string);
 
       if (isNaN(m) || isNaN(y)) {
         return res.status(400).json({ success: false, error: "Invalid month or year parameters" });
@@ -537,9 +541,10 @@ export class PerformanceController {
    */
   static async getShowroomEvaluations(req: Request, res: Response) {
     try {
-      const { showroomId, month, year } = req.params;
-      const m = parseInt(month);
-      const y = parseInt(year);
+      const showroomId = req.params.showroomId as string;
+      const { month, year } = req.params;
+      const m = parseInt(month as string);
+      const y = parseInt(year as string);
 
       if (isNaN(m) || isNaN(y)) {
         return res.status(400).json({ success: false, error: "Invalid month or year parameters" });

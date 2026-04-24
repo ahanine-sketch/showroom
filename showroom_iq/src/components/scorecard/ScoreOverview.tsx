@@ -1,7 +1,6 @@
 import React from 'react';
 
 interface ScoreOverviewProps {
-  role: 'admin' | 'owner';
   scores?: {
     ventes: number;
     ventesMax: number;
@@ -18,11 +17,10 @@ interface ScoreOverviewProps {
     behaviorStatusColor?: string;
     presenceStatusColor?: string;
     totalScore?: number;
-    isMagasin?: boolean;
   };
 }
 
-const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
+const ScoreOverview = ({ scores: propScores }: ScoreOverviewProps) => {
   // Use props or default to mockup data if not provided
   const scores = propScores || {
     ventes: 54,
@@ -42,8 +40,8 @@ const ScoreOverview = ({ role, scores: propScores }: ScoreOverviewProps) => {
     ? scores.totalScore 
     : (scores.ventes + scores.comportement + (isMagasin ? 0 : (scores.presence + scores.bonus)));
 
-  let performanceStatus = scores.globalStatus || "MAUVAIS";
-  let statusColor = scores.globalStatusColor || '#C0392B';
+  const performanceStatus = scores.globalStatus || "MAUVAIS";
+  const statusColor = scores.globalStatusColor || '#C0392B';
 
   const getBadgeStyles = (color: string) => {
     if (color.startsWith('#')) {

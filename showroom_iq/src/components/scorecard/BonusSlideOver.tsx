@@ -11,6 +11,8 @@ interface BonusHistory {
 }
 
 interface BonusSlideOverProps {
+  isOpen: boolean;
+  onClose: () => void;
   userId: string;
   viewMonth?: number;
   viewYear?: number;
@@ -33,6 +35,7 @@ export default function BonusSlideOver({ isOpen, onClose, userId, viewMonth, vie
     } else {
       document.body.style.overflow = 'unset';
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const fetchData = async () => {

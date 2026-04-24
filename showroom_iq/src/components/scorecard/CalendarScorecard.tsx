@@ -16,6 +16,8 @@ interface ScorecardProps {
   viewYear?: number;
   setViewMonth?: (m: number) => void;
   setViewYear?: (y: number) => void;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
 }
 
 const CalendarScorecard = ({ 
@@ -29,7 +31,9 @@ const CalendarScorecard = ({
   viewMonth = new Date().getMonth() + 1,
   viewYear = new Date().getFullYear(),
   setViewMonth,
-  setViewYear
+  setViewYear,
+  onPrevMonth,
+  onNextMonth
 }: ScorecardProps) => {
   const isMagasin = scores?.isMagasin;
   const details = scores?.details || {};

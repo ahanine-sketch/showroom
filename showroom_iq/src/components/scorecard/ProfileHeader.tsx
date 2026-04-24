@@ -4,11 +4,21 @@ import ScoreOverview from './ScoreOverview';
 interface ProfileHeaderProps {
   role: 'admin' | 'owner';
   user?: {
-    fullName: string;
-    phone: string;
-    seniority: string;
+    fullName?: string;
+    phone?: string;
+    seniority?: string;
     avatarUrl?: string;
     showroomName?: string;
+    name?: string;
+    showroom?: {
+      name: string;
+    };
+    manager?: {
+      fullName?: string;
+      name?: string;
+      seniority?: string;
+      phone?: string;
+    };
   };
   scores?: {
     ventes: number;
@@ -27,23 +37,23 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
-  const isMagasin = (scores as any)?.isMagasin;
+  const isMagasin = scores?.isMagasin;
 
   // Map data depending on context (Magasin vs Individual Commercial)
   const fullName = isMagasin 
-    ? (user as any)?.manager?.fullName || (user as any)?.manager?.name || "Administrateur"
+    ? user?.manager?.fullName || user?.manager?.name || "Administrateur"
     : user?.fullName || "Commercial";
 
   const seniority = isMagasin 
-    ? (user as any)?.manager?.seniority || ""
+    ? user?.manager?.seniority || ""
     : user?.seniority || "";
 
   const displaySubtitle = isMagasin 
-    ? (user as any)?.name || "Magasin SIQ"
+    ? user?.name || "Magasin SIQ"
     : (user?.showroomName || user?.showroom?.name || "Magasin SIQ");
 
   const phone = isMagasin 
-    ? (user as any)?.manager?.phone || "Non renseigné" 
+    ? user?.manager?.phone || "Non renseigné" 
     : user?.phone || "Non renseigné";
 
   // In Image 2, the subtitle icon is location_on for the showroom name.
@@ -71,7 +81,7 @@ const ProfileHeader = ({ role, user, scores }: ProfileHeaderProps) => {
           </span>
         </div>
       </div>
-      <ScoreOverview role={role} scores={scores} />
+      <ScoreOverview scores={scores} />
     </div>
   );
 };

@@ -224,18 +224,7 @@ export default function UserSlideOver({ isOpen, onClose, user, mode, fixedMagasi
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-bold text-stone-400 uppercase tracking-widest mb-2">Email Professional</label>
-                          <div className="relative">
-                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-stone-300 text-[18px]">mail</span>
-                            <input 
-                              type="email" 
-                              name="email"
-                              defaultValue={user?.email}
-                              className="w-full border border-stone-100 bg-stone-50/50 rounded-xl pl-12 pr-4 py-3.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-yellow-600/20 focus:border-yellow-600 transition-all shadow-inner"
-                            />
-                          </div>
-                        </div>
+                        {/* Email field removed */}
                       </div>
                     </div>
                   ) : (

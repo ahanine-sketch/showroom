@@ -61,7 +61,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   // --- CENTRALIZED STATE ---
   const [evaluations, setEvaluations] = useState<any[]>([]);
   const [scoringConfigs, setScoringConfigs] = useState<any[]>([]);
-  const [globalSettings, setGlobalSettings] = useState<any>({});
+  const [globalSettings, setGlobalSettings] = useState<Record<string, any>>({});
   
   // Ventes State
   const [caAmount, setCaAmount] = useState(0);
@@ -116,7 +116,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const getMaxPoints = (metric: string, fallback: number) => {
     const config = scoringConfigs.find(c => c.metricName === metric);
     if (!config || !Array.isArray(config.levels)) return fallback;
-    const points = config.levels.map(l => {
+    const points = config.levels.map((l: any) => {
         const pStr = String(l.points || '');
         if (pStr.includes('-')) {
             const parts = pStr.split('-').map(v => parseInt(v.trim()));
@@ -171,15 +171,6 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     };
   };
 
-  const getStatusId = (status: string) => {
-    switch (status) {
-      case "TRES BIEN": return 'tb';
-      case "BIEN": return 'b';
-      case "MOYEN": return 'm';
-      case "MAUVAIS": return 'mv';
-      default: return 'mv';
-    }
-  };
 
   const getGlobalStatus = (score: number) => {
     const configKey = isMagasin ? 'siq_showroom_conclusions' : 'siq_conclusions';
@@ -350,6 +341,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   useEffect(() => {
     fetchScoringConfigs();
     fetchEvaluations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, viewMonth, viewYear]);
 
   
@@ -675,7 +667,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const avisMax = getMaxPoints(isMagasin ? 'showroom:avis' : 'avis-reputation', 10);
   const savMax = getMaxPoints(isMagasin ? 'showroom:service' : 'sav-service', 10);
   const prosMax = getMaxPoints(isMagasin ? 'showroom:showroom' : 'discipline-process', 10);
-  const presenceMaxVal = getMaxPoints('assiduite', 5);
+  const presenceMax = getMaxPoints('assiduite', 5);
   const bonusMax = 5;
 
   const totalSalesScore = salesData.points + devisData.points + perfData.points;
@@ -688,7 +680,6 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const presenceWeight = isMagasin ? 0 : (weights.presence || 0);
     const totalPoints = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? (presenceData?.points || 0) : 0) + (isMagasin ? 0 : bonusScore);
     const globalStatusObj = getGlobalStatus(totalPoints);
-    const presenceMax = weights.presence || 0;
 
   const currentScores = {
     isMagasin,
@@ -761,8 +752,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             { id: 'ressources', label: 'Ressources' }
           ].filter(tab => {
             if (isMagasin) {
-                // Show only Ventes and Behavior for Magasin.
-                return tab.id !== 'ressources' && tab.id !== 'calendar';
+                // Show Ventes, Behavior, and Calendar for Magasin.
+                return tab.id !== 'ressources';
             }
             return true;
           }).map((tab) => (

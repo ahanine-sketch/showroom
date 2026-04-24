@@ -255,7 +255,9 @@ export class BehaviorController {
       // Safety check: ensure we are only deleting AVIS types which have JSON notes
       if (existing && existing.type === 'AVIS' && existing.notes) {
         await prisma.processEvaluation.delete({ where: { id } });
-        await ScoringService.updateDailyScore(existing.userId, existing.date);
+        if (existing.userId) {
+          await ScoringService.updateDailyScore(existing.userId, existing.date);
+        }
       }
       
       return res.json({ success: true });

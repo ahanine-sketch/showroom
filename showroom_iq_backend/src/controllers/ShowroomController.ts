@@ -113,7 +113,7 @@ export class ShowroomController {
    */
   static async getById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
       const year = parseInt(req.query.year as string) || new Date().getFullYear();
 
@@ -294,7 +294,7 @@ export class ShowroomController {
    */
   static async delete(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       
       // We might need to handle resetting users assigned to this showroom
       await prisma.$transaction(async (tx) => {
@@ -326,7 +326,7 @@ export class ShowroomController {
    */
   static async update(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, city, location, managerId, commercialIds, targets } = req.body;
 
       const result = await prisma.$transaction(async (tx) => {
