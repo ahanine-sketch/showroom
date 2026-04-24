@@ -1,0 +1,6 @@
+.agent/
+scripts/
+showroom_iq/scripts/
+showroom_iq_backend/scripts/
+*.sql
+*backup*.json
