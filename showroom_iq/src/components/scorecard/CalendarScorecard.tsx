@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect } from 'react';
 import ProfileHeader from './ProfileHeader';
 import ScoreBadge from './ScoreBadge';
@@ -59,7 +60,7 @@ const CalendarScorecard = ({
   const handleAddPresence = async () => {
     if (setters.setPresenceLogs) {
       try {
-        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+        const response = await fetch(`${API_BASE_URL}/api/performance/evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ const CalendarScorecard = ({
   const handleAddNote = async () => {
     if (setters.setNotesList) {
       try {
-        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+        const response = await fetch(`${API_BASE_URL}/api/performance/evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

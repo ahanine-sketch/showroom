@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -253,7 +254,7 @@ function SettingsContent() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem('auth_token');
-                const response = await fetch('http://localhost:3001/api/settings/configs', {
+                const response = await fetch(`${API_BASE_URL}/api/settings/configs`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -304,7 +305,7 @@ function SettingsContent() {
             // Save all metrics (Commercial + Showroom combined)
             const allLevels = { ...metricLevels, ...showroomLevels };
             const metricPromises = Object.entries(allLevels).map(([metricName, levels]) =>
-                fetch('http://localhost:3001/api/settings/metric', {
+                fetch(`${API_BASE_URL}/api/settings/metric`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ metricName, weight: 1, levels }),
@@ -320,7 +321,7 @@ function SettingsContent() {
                 { key: 'siq_weights',              value: commWeights },
                 { key: 'siq_showroom_weights',     value: showroomWeights },
             ].map(({ key, value }) =>
-                fetch('http://localhost:3001/api/settings/global', {
+                fetch(`${API_BASE_URL}/api/settings/global`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ key, value }),

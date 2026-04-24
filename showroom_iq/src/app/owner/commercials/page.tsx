@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -61,7 +62,7 @@ export default function Page() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3001/api/showrooms', {
+      const response = await fetch(`${API_BASE_URL}/api/showrooms`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -90,7 +91,7 @@ export default function Page() {
     const results = await Promise.allSettled(
       allCommercials.map(async (c) => {
         const res = await fetch(
-          `http://localhost:3001/api/performance/global-score/${c.id}/${month}/${year}`,
+          `${API_BASE_URL}/api/performance/global-score/${c.id}/${month}/${year}`,
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
         const data = await res.json();
@@ -151,7 +152,7 @@ export default function Page() {
     if (!userToDelete) return;
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:3001/api/users/${userToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -177,8 +178,8 @@ export default function Page() {
       const isExistingUser = (slideOverMode === 'edit' && selectedUser?.id) || data.id;
       
       const url = isExistingUser
-        ? `http://localhost:3001/api/users/${isExistingUser}`
-        : `http://localhost:3001/api/users`;
+        ? `${API_BASE_URL}/api/users/${isExistingUser}`
+        : `${API_BASE_URL}/api/users`;
       
       const method = isExistingUser ? 'PUT' : 'POST';
 

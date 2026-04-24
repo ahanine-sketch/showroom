@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useMemo, useEffect } from 'react';
 import ShowroomCard from '@/components/ShowroomCard';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -78,7 +79,7 @@ export default function Page() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const res = await fetch('http://localhost:3001/api/showrooms', {
+      const res = await fetch(`${API_BASE_URL}/api/showrooms`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -101,7 +102,7 @@ export default function Page() {
       }
       try {
         const token = localStorage.getItem('auth_token');
-        const res = await fetch(`http://localhost:3001/api/users/search?q=${managerQuery}`, {
+        const res = await fetch(`${API_BASE_URL}/api/users/search?q=${managerQuery}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -123,7 +124,7 @@ export default function Page() {
       }
       try {
         const token = localStorage.getItem('auth_token');
-        const res = await fetch(`http://localhost:3001/api/users/search?q=${commercialQuery}&role=COMMERCIAL`, {
+        const res = await fetch(`${API_BASE_URL}/api/users/search?q=${commercialQuery}&role=COMMERCIAL`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -170,8 +171,8 @@ export default function Page() {
       };
 
       const url = drawerMode === 'edit' && editId 
-        ? `http://localhost:3001/api/showrooms/${editId}` 
-        : 'http://localhost:3001/api/showrooms';
+        ? `${API_BASE_URL}/api/showrooms/${editId}` 
+        : `${API_BASE_URL}/api/showrooms`;
       
       const method = drawerMode === 'edit' ? 'PUT' : 'POST';
 
@@ -211,7 +212,7 @@ export default function Page() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const res = await fetch(`http://localhost:3001/api/showrooms/${showroomToDelete}`, {
+      const res = await fetch(`${API_BASE_URL}/api/showrooms/${showroomToDelete}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

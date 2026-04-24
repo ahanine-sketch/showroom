@@ -1,5 +1,7 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
+
 import React, { useEffect, useState } from 'react';
 import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
@@ -15,7 +17,7 @@ export default function AdminDashboard() {
         const month = new Date().getMonth() + 1;
         const year = new Date().getFullYear();
 
-        const response = await fetch(`http://localhost:3001/api/users/my-team?month=${month}&year=${year}`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/my-team?month=${month}&year=${year}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();

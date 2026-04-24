@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
@@ -18,7 +19,7 @@ const AdminHeader = () => {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
         
-        const res = await fetch('http://localhost:3001/api/users/profile', {
+        const res = await fetch(`${API_BASE_URL}/api/users/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();

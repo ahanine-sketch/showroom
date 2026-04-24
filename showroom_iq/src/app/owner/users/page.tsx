@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import OwnerHeader from '@/components/OwnerHeader';
@@ -67,7 +68,7 @@ export default function UsersManagementPage() {
             const token = localStorage.getItem('auth_token');
             
             // Fetch Users - include all status for management view
-            const usersRes = await fetch('http://localhost:3001/api/users?status=ALL', {
+            const usersRes = await fetch(`${API_BASE_URL}/api/users?status=ALL`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const usersResult = await usersRes.json();
@@ -76,7 +77,7 @@ export default function UsersManagementPage() {
             }
 
             // Fetch Magasins for the drawer
-            const magasinsRes = await fetch('http://localhost:3001/api/showrooms', {
+            const magasinsRes = await fetch(`${API_BASE_URL}/api/showrooms`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const magasinsResult = await magasinsRes.json();
@@ -128,7 +129,7 @@ export default function UsersManagementPage() {
         if (!userToDelete) return;
         try {
             const token = localStorage.getItem('auth_token');
-            const res = await fetch(`http://localhost:3001/api/users/${userToDelete}`, {
+            const res = await fetch(`${API_BASE_URL}/api/users/${userToDelete}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -151,8 +152,8 @@ export default function UsersManagementPage() {
         try {
             const token = localStorage.getItem('auth_token');
             const url = drawerMode === 'edit' 
-                ? `http://localhost:3001/api/users/${selectedUser.id}` 
-                : 'http://localhost:3001/api/users';
+                ? `${API_BASE_URL}/api/users/${selectedUser.id}` 
+                : `${API_BASE_URL}/api/users`;
             const method = drawerMode === 'edit' ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
@@ -182,7 +183,7 @@ export default function UsersManagementPage() {
             const token = localStorage.getItem('auth_token');
             const newStatus = currentStatus === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
             
-            const res = await fetch(`http://localhost:3001/api/users/${userId}/status`, {
+            const res = await fetch(`${API_BASE_URL}/api/users/${userId}/status`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',

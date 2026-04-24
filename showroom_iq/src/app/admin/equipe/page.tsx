@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UserSlideOver from '@/components/UserSlideOver';
@@ -90,7 +91,7 @@ export default function TeamPage() {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
       
-      const res = await fetch(`http://localhost:3001/api/users/my-team?month=${selectedMonth}&year=${selectedYear}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/my-team?month=${selectedMonth}&year=${selectedYear}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -157,8 +158,8 @@ export default function TeamPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const url = drawerMode === 'edit' && selectedUser?.id
-        ? `http://localhost:3001/api/users/${selectedUser.id}`
-        : `http://localhost:3001/api/users`;
+        ? `${API_BASE_URL}/api/users/${selectedUser.id}`
+        : `${API_BASE_URL}/api/users`;
       const method = drawerMode === 'edit' ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,

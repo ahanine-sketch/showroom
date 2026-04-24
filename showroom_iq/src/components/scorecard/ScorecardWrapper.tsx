@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CommercialScorecard from './CommercialScorecard';
@@ -279,7 +280,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
 
   const fetchScoringConfigs = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/settings/configs', {
+      const response = await fetch(`${API_BASE_URL}/api/settings/configs`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
       });
       const result = await response.json();
@@ -295,8 +296,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const fetchEvaluations = async () => {
     try {
       const endpoint = isMagasin 
-        ? `http://localhost:3001/api/performance/evaluations/showroom/${userId}/${viewMonth}/${viewYear}`
-        : `http://localhost:3001/api/performance/evaluations/${userId}/${viewMonth}/${viewYear}`;
+        ? `${API_BASE_URL}/api/performance/evaluations/showroom/${userId}/${viewMonth}/${viewYear}`
+        : `${API_BASE_URL}/api/performance/evaluations/${userId}/${viewMonth}/${viewYear}`;
 
       const response = await fetch(endpoint, {
         headers: {
@@ -354,8 +355,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
       
       try {
         const endpoint = isMagasin 
-          ? `http://localhost:3001/api/showrooms/${userId}`
-          : `http://localhost:3001/api/users/${userId}`;
+          ? `${API_BASE_URL}/api/showrooms/${userId}`
+          : `${API_BASE_URL}/api/users/${userId}`;
 
         const response = await fetch(endpoint, {
           headers: {
@@ -848,8 +849,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
               await fetchEvaluations();
               // Refresh data from correct endpoint based on type
               const endpoint = isMagasin
-                ? `http://localhost:3001/api/showrooms/${userId}`
-                : `http://localhost:3001/api/users/${userId}`;
+                ? `${API_BASE_URL}/api/showrooms/${userId}`
+                : `${API_BASE_URL}/api/users/${userId}`;
               const response = await fetch(endpoint, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
               });
@@ -875,8 +876,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             onRefresh={async () => {
               await fetchEvaluations();
               const endpoint = isMagasin
-                ? `http://localhost:3001/api/showrooms/${userId}`
-                : `http://localhost:3001/api/users/${userId}`;
+                ? `${API_BASE_URL}/api/showrooms/${userId}`
+                : `${API_BASE_URL}/api/users/${userId}`;
               const response = await fetch(endpoint, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
               });

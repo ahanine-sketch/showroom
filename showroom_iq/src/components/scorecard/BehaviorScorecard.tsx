@@ -1,6 +1,7 @@
 import React from 'react';
 import ProfileHeader from './ProfileHeader';
 import ScoreBadge from './ScoreBadge';
+import { API_BASE_URL } from '@/config';
 
 interface ScorecardProps {
   role: 'admin' | 'owner';
@@ -74,7 +75,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   const handleAddMalus = async () => {
     if (malusComment && malusType && targetId) {
       try {
-        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+        const response = await fetch(`${API_BASE_URL}/api/performance/evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   const handleAddAvis = async () => {
     if (newAvisName && newAvisComment && targetId) {
       try {
-        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+        const response = await fetch(`${API_BASE_URL}/api/performance/evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -135,7 +136,7 @@ const BehaviorScorecard = ({ role, activeTab, hideNav, isDashboard, userData, sc
   const handleAddSav = async () => {
     if (savComment && targetId) {
       try {
-        const response = await fetch('http://localhost:3001/api/performance/evaluation', {
+        const response = await fetch(`${API_BASE_URL}/api/performance/evaluation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

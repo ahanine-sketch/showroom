@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/config';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -42,14 +43,14 @@ export default function BonusSlideOver({ isOpen, onClose, userId, viewMonth, vie
     try {
       const token = localStorage.getItem('auth_token');
       // Fetch Bonus History
-      const historyRes = await fetch(`http://localhost:3001/api/performance/bonus-history/${userId}`, {
+      const historyRes = await fetch(`${API_BASE_URL}/api/performance/bonus-history/${userId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const historyData = await historyRes.json();
       if (historyData.success) setHistory(historyData.data);
 
       // Fetch Global settings for limits
-      const settingsRes = await fetch('http://localhost:3001/api/settings/configs', {
+      const settingsRes = await fetch(`${API_BASE_URL}/api/settings/configs`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const settingsData = await settingsRes.json();
@@ -68,7 +69,7 @@ export default function BonusSlideOver({ isOpen, onClose, userId, viewMonth, vie
     setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3001/api/performance/bonus', {
+      const response = await fetch(`${API_BASE_URL}/api/performance/bonus`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
