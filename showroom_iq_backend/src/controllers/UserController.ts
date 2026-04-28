@@ -302,6 +302,9 @@ export class UserController {
     try {
       const id = req.params.id as string;
       
+      const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+      const year = parseInt(req.query.year as string) || new Date().getFullYear();
+      
       const user = await prisma.user.findUnique({
         where: { id },
         select: {
@@ -321,8 +324,8 @@ export class UserController {
           },
           objectives: {
             where: {
-              month: new Date().getMonth() + 1,
-              year: new Date().getFullYear()
+              month,
+              year
             },
             take: 1
           }

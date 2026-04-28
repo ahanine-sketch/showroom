@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
+import { ScoringService } from '../services/ScoringService';
 
 const PRESENCE_STATUSES = ['Retard', 'Absence', 'Congé'];
 
@@ -88,6 +89,13 @@ export class CalendarController {
           motif: record.activity
         }
       });
+
+      // Bug B8 fix: update daily score so presence is immediately reflected
+      if (record.userId) {
+        ScoringService.updateDailyScore(record.userId, record.date).catch((err) =>
+          console.error('[CalendarController] score update failed after presence log:', err)
+        );
+      }
     } catch (error: any) {
       return res.status(500).json({ success: false, error: error.message });
     }

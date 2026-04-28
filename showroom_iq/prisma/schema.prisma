@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -49,7 +48,7 @@ model Showroom {
 }
 
 model Objective {
-  id             String    @id @default(uuid())
+  id             String          @id @default(uuid())
   userId         String?
   showroomId     String?
   month          Int
@@ -59,11 +58,12 @@ model Objective {
   conservativeCA Float
   likelyCA       Float
   exceedCA       Float
-  type           String    @default("GLOBAL")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  showroom       Showroom? @relation(fields: [showroomId], references: [id])
-  user           User?     @relation(fields: [userId], references: [id])
+  type           String          @default("GLOBAL")
+  status         ObjectiveStatus @default(CONFIRMED)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  showroom       Showroom?       @relation(fields: [showroomId], references: [id])
+  user           User?           @relation(fields: [userId], references: [id])
 
   @@index([userId, dateStart, dateEnd])
   @@index([showroomId, dateStart, dateEnd])
@@ -82,6 +82,7 @@ model SalesMetric {
   devisCreated   Int      @default(0)
   devisLost      Int      @default(0)
   devisValidated Int      @default(0)
+  devisOpened    Int      @default(0)
   user           User?    @relation(fields: [userId], references: [id])
 
   @@index([userId, date])
@@ -182,6 +183,57 @@ model BonusHistory {
   @@index([userId, dateStart, dateEnd])
 }
 
+model MonthlySnapshot {
+  id                  String   @id @default(uuid())
+  userId              String?
+  showroomId          String?
+  month               Int
+  year                Int
+  type                String   // "COMMERCIAL" | "SHOWROOM"
+  
+  // Sales Metrics
+  totalCA             Float    @default(0)
+  totalDevisCreated   Int      @default(0)
+  totalDevisValidated Int      @default(0)
+  totalDevisLost      Int      @default(0)
+  totalDevisOpened    Int      @default(0)
+  avgBasket           Float    @default(0)
+  
+  // Scores
+  salesScore          Float    @default(0)
+  behaviorScore       Float    @default(0)
+  presenceScore       Float    @default(0)
+  bonusScore          Float    @default(0)
+  globalScore         Float    @default(0)
+  
+  // Objectifs
+  conservativeCA      Float    @default(0)
+  likelyCA            Float    @default(0)
+  exceedCA            Float    @default(0)
+  caAchievedPercent   Float    @default(0)
+  
+  // Behavior Summary
+  avisPositifs        Int      @default(0)
+  avisNegatifs        Int      @default(0)
+  savTickets          Int      @default(0)
+  savPlaintes         Int      @default(0)
+  processWarnings     Int      @default(0)
+  
+  // Presence
+  absences            Int      @default(0)
+  retards             Int      @default(0)
+  
+  // Bonus
+  totalBonus          Float    @default(0)
+  
+  // Metadata
+  frozenAt            DateTime @default(now())
+  data                Json?    // Optional field for extra blob data
+
+  @@unique([userId, month, year])
+  @@unique([showroomId, month, year])
+}
+
 model ClientReview {
   id         String    @id @default(uuid())
   userId     String?
@@ -206,6 +258,11 @@ enum UserStatus {
   BLOCKED
 }
 
+enum ObjectiveStatus {
+  DRAFT
+  CONFIRMED
+}
+
 enum EvaluationType {
   AVIS
   SAV
@@ -214,3 +271,4 @@ enum EvaluationType {
   DAILY_NOTE
   SHOWROOM
 }
+

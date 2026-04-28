@@ -25,43 +25,32 @@ export class ScoringService {
 
     if (!objective) return { points: 0, label: 'Mauvais' };
 
-    const { conservativeCA, likelyCA } = objective;
+    const { conservativeCA, likelyCA, exceedCA } = objective;
 
     // Resolve dynamic point caps from settings
     const pointsTB = this.getLevelPointsByRank(dynamicLevels, 'tb', 35);
     const pointsB_Max = this.getLevelPointsByRank(dynamicLevels, 'b', 30);
+    const pointsM_Max = this.getLevelPointsByRank(dynamicLevels, 'm', 20);
     const pointsMV_Points = this.getLevelPointsByRank(dynamicLevels, 'mv', 10);
     
-    // We assume Moyen's max is derived from Bien's base or a standard logic
-    // But since the UI only has 4-5 levels, we'll map them:
-    const pointsM_Max = this.getLevelPointsByRank(dynamicLevels, 'm', 20);
+    // Tres Bien: Above Exceed
+    if (ca >= exceedCA) return { points: pointsTB, label: 'Très Bien' };
 
-    // Tres Bien: Above Likely
-    if (ca >= likelyCA) return { points: pointsTB, label: 'Très Bien' };
-
-    // Bien: Close to Likely (Top 50% of gap)
-    const midPoint = (conservativeCA + likelyCA) / 2;
-    if (ca >= midPoint) {
-      const progress = (ca - midPoint) / (likelyCA - midPoint);
-      // Interpolate between the high end of Moyen (pointsM_Max) and the high end of Bien (pointsB_Max)
-      const range = pointsB_Max - (pointsM_Max + 1);
-      const points = Math.min(Math.round((pointsM_Max + 1) + progress * range), pointsB_Max);
-      return { points, label: 'Bien' };
+    // Bien: Above Likely
+    if (ca >= likelyCA) {
+      return { points: pointsB_Max, label: 'Bien' };
     }
 
-    // Moyen: Low Likely (Bottom 50% of gap)
+    // Moyen: Above Conservative
     if (ca >= conservativeCA) {
-      const progress = (ca - conservativeCA) / (midPoint - conservativeCA);
-      const range = pointsM_Max - (pointsMV_Points + 1);
-      const points = Math.min(Math.round((pointsMV_Points + 1) + progress * range), pointsM_Max);
-      return { points, label: 'Moyen' };
+      return { points: pointsM_Max, label: 'Moyen' };
     }
 
-    // Mauvais: Close to Conservative
+    // Mauvais: Close to Conservative (>= 50%)
     if (ca >= 0.5 * conservativeCA) return { points: pointsMV_Points, label: 'Mauvais' };
 
     // Tres Mauvais: Below 0.5 * Conservative
-    return { points: 0, label: 'Très Mauvais' };
+    return { points: 0, label: 'Mauvais' };
   }
 
   /**
@@ -108,8 +97,8 @@ export class ScoringService {
       }
     }
 
-    // Fallback to defaults
-    if (rate > 75) return 15;
+    // Fallback to exact thresholds
+    if (rate >= 75) return 15;
     if (rate >= 50) return 10;
     if (rate >= 35) return 5;
     return 0;

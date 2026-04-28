@@ -8,9 +8,10 @@ import BehaviorScorecard from './BehaviorScorecard';
 import CalendarScorecard from './CalendarScorecard';
 import RessourcesScorecard from './RessourcesScorecard';
 import BonusSlideOver from './BonusSlideOver';
+import BonusScorecard from './BonusScorecard';
 
 
-type TabType = 'commercial' | 'behavior' | 'calendar' | 'ressources';
+type TabType = 'commercial' | 'behavior' | 'calendar' | 'bonus' | 'ressources';
 
 interface ScorecardWrapperProps {
   initialTab: TabType;
@@ -40,7 +41,21 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
   ];
 
+  const isFrozen = useMemo(() => {
+    const d = new Date();
+    const currentMonth = d.getMonth() + 1;
+    const currentYear = d.getFullYear();
+    return (viewYear < currentYear) || (viewYear === currentYear && viewMonth < currentMonth);
+  }, [viewMonth, viewYear]);
+
   const handlePrevMonth = () => {
+    // Clear states to avoid flickering old data
+    setEvaluations([]);
+    setPresenceLogs([]);
+    setNotesList([]);
+    setUserData(null);
+    setLoading(true);
+
     if (viewMonth === 1) {
       setViewMonth(12);
       setViewYear(prev => prev - 1);
@@ -50,6 +65,13 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   };
 
   const handleNextMonth = () => {
+    // Clear states to avoid flickering old data
+    setEvaluations([]);
+    setPresenceLogs([]);
+    setNotesList([]);
+    setUserData(null);
+    setLoading(true);
+
     if (viewMonth === 12) {
       setViewMonth(1);
       setViewYear(prev => prev + 1);
@@ -65,6 +87,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   const [globalSettings, setGlobalSettings] = useState<Record<string, any>>({});
   
   // Ventes State
+  const [snapTargets, setSnapTargets] = useState<{c: number, l: number, e: number} | null>(null);
   const [caAmount, setCaAmount] = useState(0);
   const [devisCreated, setDevisCreated] = useState(0);
   const [devisValidated, setDevisValidated] = useState(0);
@@ -262,6 +285,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   // Calendar & Presence State
   const [presenceLogs, setPresenceLogs] = useState<any[]>([]);
   const [notesList, setNotesList] = useState<any[]>([]);
+  const [bonuses, setBonuses] = useState<any[]>([]);
   const [bonusScore, setBonusScore] = useState(0);
 
 
@@ -269,14 +293,18 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
   // Sync state when userData loads (reads real metrics from backend for magasin)
   useEffect(() => {
     if (userData) {
-      setCaAmount(userData.caAmount || 0);
-      setDevisCreated(userData.devisCreated || 0);
-      setDevisValidated(userData.devisValidated || 0);
-      setDevisVolee(userData.devisLost || 0);
-      setDevisOuvert(userData.devisOpened || 0);
-      setPanierMoyen(userData.avgBasket || 0);
+      // If frozen, these should have been set by the snapshot fetch
+      // If not frozen, we use the live data from userData
+      if (!isFrozen) {
+        setCaAmount(userData.caAmount || 0);
+        setDevisCreated(userData.devisCreated || 0);
+        setDevisValidated(userData.devisValidated || 0);
+        setDevisVolee(userData.devisLost || 0);
+        setDevisOuvert(userData.devisOpened || 0);
+        setPanierMoyen(userData.avgBasket || 0);
+      }
     }
-  }, [userData]);
+  }, [userData, isFrozen]);
 
   const fetchScoringConfigs = async () => {
     try {
@@ -333,6 +361,9 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
         if (typeof result.bonusTotal === 'number') {
           setBonusScore(result.bonusTotal);
         }
+        if (result.bonuses) {
+          setBonuses(result.bonuses);
+        }
       }
     } catch (error) {
       console.error('Error fetching evaluations:', error);
@@ -355,8 +386,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
       
       try {
         const endpoint = isMagasin 
-          ? `${API_BASE_URL}/api/showrooms/${userId}`
-          : `${API_BASE_URL}/api/users/${userId}`;
+          ? `${API_BASE_URL}/api/showrooms/${userId}?month=${viewMonth}&year=${viewYear}`
+          : `${API_BASE_URL}/api/users/${userId}?month=${viewMonth}&year=${viewYear}`;
 
         const response = await fetch(endpoint, {
           headers: {
@@ -366,6 +397,46 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
         const result = await response.json();
         if (result.success) {
           setUserData(result.data);
+
+          // If this is a past month, we fetch the snapshot to override metrics
+          if (isFrozen) {
+            const snapEndpoint = isMagasin
+              ? `${API_BASE_URL}/api/snapshot/showroom?showroomId=${userId}&month=${viewMonth}&year=${viewYear}`
+              : `${API_BASE_URL}/api/snapshot/commercial?userId=${userId}&month=${viewMonth}&year=${viewYear}`;
+            
+            const snapResponse = await fetch(snapEndpoint, {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+            });
+            const snapResult = await snapResponse.json();
+            
+            if (snapResult.success && snapResult.data) {
+              const snap = snapResult.data;
+              setCaAmount(snap.totalCA || 0);
+              setDevisCreated(snap.totalDevisCreated || 0);
+              setDevisValidated(snap.totalDevisValidated || 0);
+              setDevisVolee(snap.totalDevisLost || 0);
+              setDevisOuvert(snap.totalDevisOpened || 0);
+              setPanierMoyen(snap.avgBasket || 0);
+              setBonusScore(snap.totalBonus || 0);
+              setSnapTargets({
+                c: snap.conservativeCA || 0,
+                l: snap.likelyCA || 0,
+                e: snap.exceedCA || 0
+              });
+              
+              // If objectives are in the snapshot, we might want to override those too
+              // (Snapshot has conservativeCA, likelyCA, exceedCA)
+            } else {
+              // Reset values if no snapshot found for past month
+              setCaAmount(0);
+              setDevisCreated(0);
+              setDevisValidated(0);
+              setDevisVolee(0);
+              setDevisOuvert(0);
+              setPanierMoyen(0);
+              setBonusScore(0);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -375,7 +446,7 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     };
 
     fetchUserData();
-  }, [userId, isMagasin, viewMonth, viewYear]);
+  }, [userId, isMagasin, viewMonth, viewYear, isFrozen]);
 
   if (loading) {
     return (
@@ -389,9 +460,19 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
 
   // --- SCORING LOGIC (DYNAMIC) ---
   const monthObjective = userData?.objectives?.[0];
-  const conservativeCA = isMagasin ? (userData?.targets?.conservative || 30000) : (monthObjective?.conservativeCA || 30000);
-  const likelyCA = isMagasin ? (userData?.targets?.likely || 50000) : (monthObjective?.likelyCA || 50000);
-  const exceedCA = isMagasin ? (userData?.targets?.exceed || 70000) : (monthObjective?.exceedCA || 70000);
+  
+  // Use snapshot targets if frozen, otherwise use user's current objectives/targets
+  const conservativeCA = (isFrozen && snapTargets) 
+    ? snapTargets.c 
+    : (isMagasin ? (userData?.targets?.conservative || 30000) : (monthObjective?.conservativeCA || 30000));
+    
+  const likelyCA = (isFrozen && snapTargets) 
+    ? snapTargets.l 
+    : (isMagasin ? (userData?.targets?.likely || 50000) : (monthObjective?.likelyCA || 50000));
+    
+  const exceedCA = (isFrozen && snapTargets) 
+    ? snapTargets.e 
+    : (isMagasin ? (userData?.targets?.exceed || 70000) : (monthObjective?.exceedCA || 70000));
 
   // 1. Sales Score (35 pts for Commercial, 50 pts for Magasin by default)
   const getSalesScore = () => {
@@ -410,20 +491,16 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     }
     
     if (caAmount >= likelyCA) {
-        const progress = (caAmount - likelyCA) / (exceedCA - likelyCA);
-        const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
         return { 
-            points, 
+            points: pointsB, 
             status: getLevelName(metric, 'b', "BIEN"), 
             statusColor: getLevelColor(metric, 'b') || '#EAB308' 
         };
     }
 
     if (caAmount >= conservativeCA) {
-        const progress = (caAmount - conservativeCA) / (likelyCA - conservativeCA);
-        const points = pointsM + Math.floor(progress * (pointsB - pointsM));
         return { 
-            points, 
+            points: pointsM, 
             status: getLevelName(metric, 'm', "MOYEN"), 
             statusColor: getLevelColor(metric, 'm') || '#EA580C' 
         };
@@ -460,19 +537,15 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
         };
     }
     if (conversionRate >= 50) {
-        const progress = (conversionRate - 50) / (75 - 50);
-        const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
         return { 
-            points, 
+            points: pointsB, 
             status: getLevelName(metric, 'b', "BIEN"), 
             statusColor: getLevelColor(metric, 'b') || '#EAB308' 
         };
     }
-    if (conversionRate >= 25) {
-        const progress = (conversionRate - 25) / (50 - 25);
-        const points = pointsM + Math.floor(progress * (pointsB - pointsM));
+    if (conversionRate >= 35) {
         return { 
-            points, 
+            points: pointsM, 
             status: getLevelName(metric, 'm', "MOYEN"), 
             statusColor: getLevelColor(metric, 'm') || '#EA580C' 
         };
@@ -491,31 +564,28 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     const pointsB = getLevelPoints(metric, 'b', isMagasin ? 8 : 10);
     const pointsM = getLevelPoints(metric, 'm', isMagasin ? 4 : 5);
 
-    if (panierMoyen >= (isMagasin ? 20000 : exceedCA * 0.1)) {
+    // EXACT BAREME thresholds
+    const tbThreshold = 20000;
+    const bThreshold  = 15000;
+    const mThreshold  = 10000;
+
+    if (panierMoyen >= tbThreshold) {
         return { 
             points: pointsTB, 
             status: getLevelName(metric, 'tb', "TRÈS BIEN"), 
             statusColor: getLevelColor(metric, 'tb') || '#2A7D4F' 
         };
     }
-    if (panierMoyen >= (isMagasin ? 15000 : exceedCA * 0.08)) {
-        const threshold = isMagasin ? 15000 : exceedCA * 0.08;
-        const nextThreshold = isMagasin ? 20000 : exceedCA * 0.1;
-        const progress = (panierMoyen - threshold) / (nextThreshold - threshold);
-        const points = pointsB + Math.floor(progress * (pointsTB - pointsB));
+    if (panierMoyen >= bThreshold) {
         return { 
-            points, 
+            points: pointsB, 
             status: getLevelName(metric, 'b', "BIEN"), 
             statusColor: getLevelColor(metric, 'b') || '#EAB308' 
         };
     }
-    if (panierMoyen >= (isMagasin ? 10000 : exceedCA * 0.05)) {
-        const threshold = isMagasin ? 10000 : exceedCA * 0.05;
-        const nextThreshold = isMagasin ? 15000 : exceedCA * 0.08;
-        const progress = (panierMoyen - threshold) / (nextThreshold - threshold);
-        const points = pointsM + Math.floor(progress * (pointsB - pointsM));
+    if (panierMoyen >= mThreshold) {
         return { 
-            points, 
+            points: pointsM, 
             status: getLevelName(metric, 'm', "MOYEN"), 
             statusColor: getLevelColor(metric, 'm') || '#EA580C' 
         };
@@ -605,9 +675,8 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     // Process is handled by calculating deductions from TB base
     let totalDeductions = 0;
     processusList.forEach((p: any) => {
-        if (p.level === 1) totalDeductions += (pointsTB - pointsB);
-        else if (p.level === 2) totalDeductions += (pointsTB - pointsM);
-        else if (p.level >= 3) totalDeductions += pointsTB;
+        // Use the absolute value of pts (e.g. 2, 4, or 10) as the deduction
+        totalDeductions += Math.abs(p.pts || 0);
     });
 
     const finalPoints = Math.max(0, pointsTB - totalDeductions);
@@ -679,11 +748,16 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
 
 
     const presenceWeight = isMagasin ? 0 : (weights.presence || 0);
-    const totalPoints = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? (presenceData?.points || 0) : 0) + (isMagasin ? 0 : bonusScore);
+    
+    // Bonus contribution: actual amount capped at 5 pts (matches backend getGlobalScore logic)
+    const bonusContribution = isMagasin ? 0 : Math.min(bonusScore, 5);
+    
+    const totalPoints = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? (presenceData?.points || 0) : 0) + bonusContribution;
     const globalStatusObj = getGlobalStatus(totalPoints);
 
   const currentScores = {
     isMagasin,
+    isFrozen,
     totalScore: totalPoints,
     globalStatus: globalStatusObj.name,
     globalStatusColor: globalStatusObj.color,
@@ -699,8 +773,9 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     presenceMax: isMagasin ? 0 : presenceMax,
     presenceStatus: presenceData.status,
     presenceStatusColor: (presenceData.color || '#C0392B'),
-    bonus: bonusScore,
-    bonusMax: bonusMax,
+    bonus: bonusContribution,
+    bonusMax: 5,
+    bonusAmount: bonusScore, // Keep raw amount if needed
 
     details: {
       sales: { ...salesData, maxScore: salesMax, statusColor: salesData.statusColor },
@@ -753,7 +828,6 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             { id: 'ressources', label: 'Ressources' }
           ].filter(tab => {
             if (isMagasin) {
-                // Show Ventes, Behavior, and Calendar for Magasin.
                 return tab.id !== 'ressources';
             }
             return true;
@@ -767,17 +841,18 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             </button>
           ))}
         </nav>
-        
-        {(role === 'owner' || role === 'admin') && !isMagasin && (
-          <button 
+
+        {/* Attribuer Bonus — right side of navbar, visible only on current unfrozen month */}
+        {!isMagasin && !isFrozen && (
+          <button
             onClick={() => setIsBonusOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all shadow-md active:scale-95 mr-1 group transition-all"
+            style={{ backgroundColor: '#CA8A02' }}
+            className="mr-1 px-5 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl flex items-center gap-2 shadow-sm transition-all duration-200 hover:!bg-stone-900 active:scale-95"
           >
-            <span className="material-symbols-outlined text-[18px] group-hover:rotate-12 transition-transform">workspace_premium</span>
+            <span className="material-symbols-outlined text-[17px]">workspace_premium</span>
             Attribuer Bonus
           </button>
         )}
-
       </div>
 
 
@@ -794,24 +869,28 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
             {isMagasin ? userData?.name || 'Magasin' : showroomName}
           </h2>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center bg-white/60 backdrop-blur-md border border-stone-100 shadow-sm p-1 rounded-xl">
-            <button 
-              onClick={handlePrevMonth}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
-            >
-              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-            </button>
-            <span className="px-4 py-1 text-[12px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap min-w-[120px] text-center">
-              {monthNames[viewMonth - 1]} {viewYear}
+        {/* Month navigator — right-aligned */}
+        <div className="flex items-center bg-white/60 backdrop-blur-md border border-stone-100 shadow-sm p-1 rounded-xl">
+          <button 
+            onClick={handlePrevMonth}
+            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+          >
+            <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+          </button>
+          <div className="px-4 py-1 flex flex-col items-center min-w-[130px]">
+            <span className="text-[12px] font-black text-stone-900 font-mono tracking-tighter uppercase whitespace-nowrap leading-none">
+              {monthNames[viewMonth - 1]}
             </span>
-            <button 
-              onClick={handleNextMonth}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
-            >
-              <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-            </button>
+            <span className="text-[9px] font-bold text-stone-400 leading-tight">
+              {viewYear} {isFrozen && '• FIGÉ ❄️'}
+            </span>
           </div>
+          <button 
+            onClick={handleNextMonth}
+            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-900 transition-all active:scale-90"
+          >
+            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+          </button>
         </div>
       </div>
 
@@ -884,6 +963,21 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
               const result = await response.json();
               if (result.success) setUserData(result.data);
             }}
+          />
+        )}
+        {activeTab === 'bonus' && (
+          <BonusScorecard 
+            role={role} 
+            activeTab="bonus" 
+            hideNav={true} 
+            isDashboard={true} 
+            userData={userData} 
+            scores={currentScores}
+            bonuses={bonuses}
+            viewMonth={viewMonth}
+            viewYear={viewYear}
+            onPrevMonth={handlePrevMonth}
+            onNextMonth={handleNextMonth}
           />
         )}
         {activeTab === 'ressources' && (

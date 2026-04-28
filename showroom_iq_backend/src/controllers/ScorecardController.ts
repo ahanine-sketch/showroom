@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { MonthlyResetService } from '../services/MonthlyResetService';
+import { MonthlySnapshotService } from '../services/MonthlySnapshotService';
+import { DolibarrService } from '../services/DolibarrService';
 
 /**
  * Validates a date-range query pair.
@@ -58,10 +60,10 @@ export class ScorecardController {
       const { start, end } = range;
 
       // All queries run in parallel for performance
-      const [user, objectives, evaluations, dailyLogs, bonuses] = await Promise.all([
+      const [user, objectives, evaluations, dailyLogs, bonuses, clientReviews, salesMetrics] = await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
-          select: { id: true, name: true, email: true, role: true, showroomId: true, status: true },
+          select: { id: true, fullName: true, email: true, role: true, showroomId: true, status: true },
         }),
 
         prisma.objective.findMany({
@@ -110,14 +112,72 @@ export class ScorecardController {
           },
           orderBy: { date: 'desc' },
         }),
+
+        // Avis from ClientReview (source of truth — not ProcessEvaluation)
+        prisma.clientReview.findMany({
+          where: { userId, date: { gte: start, lte: end } },
+          orderBy: { date: 'desc' },
+        }),
+
+        // Sales metrics for the period
+        prisma.salesMetric.findMany({
+          where: { userId, date: { gte: start, lte: end } },
+          orderBy: { date: 'asc' },
+        }),
       ]);
 
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found' });
       }
 
-      // Aggregate bonus total for the period
+      // --- SNAPSHOT INTEGRATION ---
+      const isFullMonth = start.getDate() === 1 && end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+      const m = start.getMonth() + 1;
+      const y = start.getFullYear();
+      
+      let snapshot = null;
+      if (isFullMonth && MonthlySnapshotService.isClosedMonth(m, y)) {
+        snapshot = await MonthlySnapshotService.getCommercialSnapshot(userId, m, y);
+      }
+
+      // If snapshot exists, we can optionally override the live aggregates
+      // But for now, we'll return both so the frontend can decide or show a "FROZEN" badge.
+      
+      // --- LIVE AGGREGATIONS (Behavior & Calendar) ---
+      // These are ALWAYS live from DB tables even if a snapshot exists for Ventes
       const totalBonus = bonuses.reduce((sum, b) => sum + b.amount, 0);
+      
+      // Behavior Aggregation
+      const avisPositifs = clientReviews.filter(r => r.rating >= 4).length;
+      const avisNegatifs = clientReviews.filter(r => r.rating <= 2).length;
+      
+      const savTickets = evaluations
+        .filter(e => e.type === 'SAV')
+        .reduce((sum, e) => sum + (e.ticketsCount || 0), 0);
+      const savPlaintes = evaluations
+        .filter(e => e.type === 'SAV')
+        .reduce((sum, e) => sum + (e.complaintsCount || 0), 0);
+      
+      const processWarnings = evaluations.filter(e => e.type === 'PROCESS').length;
+
+      // Calendar Aggregation
+      const calendarStats = {
+        absences: dailyLogs.filter(l => l.status === 'Absence').length,
+        retards: dailyLogs.filter(l => l.status === 'Retard').length,
+        conges: dailyLogs.filter(l => l.status === 'Congé').length,
+        notesPositives: dailyLogs.filter(l => l.status === 'NotePositive').length,
+        notesNegatives: dailyLogs.filter(l => l.status === 'NoteNegative').length,
+      };
+
+      // Ventes Aggregation (Fallback if no snapshot)
+      const totalCA = salesMetrics.reduce((sum, s) => sum + (s.ca || 0), 0);
+      const totalDevisCreated = salesMetrics.reduce((sum, s) => sum + (s.devisCreated || 0), 0);
+      const totalDevisValidated = salesMetrics.reduce((sum, s) => sum + (s.devisValidated || 0), 0);
+      const totalDevisLost = salesMetrics.reduce((sum, s) => sum + (s.devisLost || 0), 0);
+      const totalDevisOpened = salesMetrics.reduce((sum, s) => sum + (s.devisOpened || 0), 0);
+      const avgBasket = salesMetrics.length > 0
+        ? salesMetrics.reduce((sum, s) => sum + (s.avgBasket || 0), 0) / salesMetrics.length
+        : 0;
 
       return res.json({
         success: true,
@@ -127,10 +187,29 @@ export class ScorecardController {
           objectives,
           evaluations,
           dailyLogs,
+          calendarStats, // Aggregated for the "Calendrier" tab
           bonuses,
           totalBonus,
-          // Dolibarr sales: reserved for future integration
-          salesMetrics: null,
+          clientReviews,
+          behaviorStats: {
+            avisPositifs,
+            avisNegatifs,
+            savTickets,
+            savPlaintes,
+            processWarnings,
+          },
+          salesMetrics,
+          snapshot, // Metadata for the UI (contains frozen Ventes)
+          totals: {
+            // Use snapshot for Ventes if it exists, otherwise live
+            ca: snapshot ? snapshot.totalCA : totalCA,
+            devisCreated: snapshot ? snapshot.totalDevisCreated : totalDevisCreated,
+            devisValidated: snapshot ? snapshot.totalDevisValidated : totalDevisValidated,
+            devisLost: snapshot ? snapshot.totalDevisLost : totalDevisLost,
+            devisOpened: snapshot ? snapshot.totalDevisOpened : totalDevisOpened,
+            avgBasket: snapshot ? snapshot.avgBasket : avgBasket,
+            caAchievedPct: snapshot ? snapshot.caAchievedPct : (objectives[0]?.conservativeCA ? Math.min(200, (totalCA / objectives[0].conservativeCA) * 100) : 0),
+          },
         },
       });
     } catch (err) {
@@ -173,7 +252,7 @@ export class ScorecardController {
         }),
         prisma.user.findMany({
           where: { showroomId, status: 'ACTIVE', role: 'COMMERCIAL' },
-          select: { id: true, name: true, email: true, role: true },
+          select: { id: true, fullName: true, email: true, role: true },
         }),
       ]);
 
@@ -214,12 +293,32 @@ export class ScorecardController {
         })
       );
 
+      // --- SNAPSHOT INTEGRATION ---
+      const isFullMonth = start.getDate() === 1 && end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+      const m = start.getMonth() + 1;
+      const y = start.getFullYear();
+      
+      let snapshot = null;
+      if (isFullMonth && MonthlySnapshotService.isClosedMonth(m, y)) {
+        snapshot = await MonthlySnapshotService.getShowroomSnapshot(showroomId, m, y);
+      }
+
       return res.json({
         success: true,
         data: {
           showroom,
           period: { startDate: start.toISOString(), endDate: end.toISOString() },
           team: teamData,
+          snapshot,
+          totals: snapshot ? {
+            ca: snapshot.totalCA,
+            devisCreated: snapshot.totalDevisCreated,
+            devisValidated: snapshot.totalDevisValidated,
+            devisLost: snapshot.totalDevisLost,
+            devisOpened: snapshot.totalDevisOpened,
+            avgBasket: snapshot.avgBasket,
+            score: snapshot.globalScore
+          } : null
         },
       });
     } catch (err) {
@@ -250,6 +349,29 @@ export class ScorecardController {
       return res.json({ success: true, data: result });
     } catch (err) {
       console.error('[ScorecardController.triggerMonthlyReset]', err);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  /**
+   * POST /api/admin/sync-dolibarr
+   * Body: { showroomId, month, year }
+   */
+  static async syncDolibarr(req: Request, res: Response) {
+    try {
+      const { showroomId, month, year } = req.body;
+      const now = new Date();
+      const m = month || now.getMonth() + 1;
+      const y = year || now.getFullYear();
+
+      if (!showroomId) {
+        return res.status(400).json({ success: false, message: 'showroomId is required' });
+      }
+
+      const result = await DolibarrService.syncShowroomData(showroomId, m, y);
+      return res.json({ success: true, data: result });
+    } catch (err) {
+      console.error('[ScorecardController.syncDolibarr]', err);
       return res.status(500).json({ success: false, message: 'Internal server error' });
     }
   }

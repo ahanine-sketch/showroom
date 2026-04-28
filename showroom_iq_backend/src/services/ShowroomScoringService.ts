@@ -20,18 +20,27 @@ export class ShowroomScoringService {
     const rawConservativeCA = (objective as any)?.conservativeCA ?? 0;
     const rawLikelyCA       = (objective as any)?.likelyCA       ?? 0;
     const rawExceedCA       = (objective as any)?.exceedCA        ?? 0;
-    const conservativeCA = rawConservativeCA > 0 ? rawConservativeCA : 100000;
-    const likelyCA       = rawLikelyCA       > 0 ? rawLikelyCA       : 150000;
-    const exceedCA       = rawExceedCA        > 0 ? rawExceedCA        : 200000;
 
-    // 2. Fetch all users in showroom
+    // Bug B9 fix: never fall back to magic hardcoded numbers.
+    // If objectives are not set (all zeros = DRAFT state), scoring is 0 for CA.
+    const conservativeCA = rawConservativeCA;
+    const likelyCA       = rawLikelyCA;
+    const exceedCA       = rawExceedCA;
+
+    // 2. Fetch only ACTIVE users in showroom — BLOCKED users must not affect scores (Bug B4)
     const users = await prisma.user.findMany({
-      where: { showroomId },
+      where: { showroomId, status: 'ACTIVE' },
       select: { id: true }
     });
     const userIds = users.map(u => u.id);
 
-    if (userIds.length === 0) return 0;
+    if (userIds.length === 0) return {
+      score: 0, salesScore: 0, behaviorScore: 0, presenceScore: 0,
+      totalCA: 0, totalDevisCreated: 0, totalDevisValidated: 0, totalDevisLost: 0, totalDevisOpened: 0,
+      avgBasket: 0, conservativeCA, likelyCA, exceedCA, caAchievedPct: 0,
+      avisPositifs: 0, avisNegatifs: 0, savTickets: 0, savPlaintes: 0,
+      processWarnings: 0, absences: 0, retards: 0, conges: 0, notesPositives: 0, notesNegatives: 0,
+    };
 
     // 2.5 Fetch Dynamic Scoring Configs
     const configs = await prisma.scoringConfig.findMany();
@@ -86,15 +95,8 @@ export class ShowroomScoringService {
     if (totalStats.ca > 0) {
       if (totalStats.ca >= exceedCA) caPoints = pointsTB_CA;
       else if (totalStats.ca >= likelyCA) caPoints = pointsB_CA;
-      else if (totalStats.ca >= conservativeCA) {
-        let progress = 0;
-        if (likelyCA > conservativeCA) {
-          progress = (totalStats.ca - conservativeCA) / (likelyCA - conservativeCA);
-        }
-        caPoints = pointsM_CA + Math.floor(progress * (pointsB_CA - pointsM_CA));
-      } else if (totalStats.ca >= conservativeCA * 0.5) {
-        caPoints = pointsM_CA;
-      }
+      else if (totalStats.ca >= conservativeCA) caPoints = pointsM_CA;
+      else if (totalStats.ca >= conservativeCA * 0.5) caPoints = pointsM_CA; // Minimum for conservative effort
     }
 
     // Devis (10 pts by default)
@@ -203,6 +205,9 @@ export class ShowroomScoringService {
     });
     const absences = presenceLogs.filter(l => l.status === 'Absence').length;
     const retards = presenceLogs.filter(l => l.status === 'Retard').length;
+    const conges = presenceLogs.filter(l => l.status === 'Congé').length;
+    const notesPositives = presenceLogs.filter(l => l.status === 'NotePositive').length;
+    const notesNegatives = presenceLogs.filter(l => l.status === 'NoteNegative').length;
     const totalFaults = absences + retards;
 
     const pointsTB_Pres = getLevelPoints('assiduite', 'tb', 5);
@@ -217,9 +222,39 @@ export class ShowroomScoringService {
     const presenceScoreFinal = presenceScore;
 
     const presenceWeight = weights.presence || 0;
-    const totalScore = totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? presenceScoreFinal : 0);
+    const totalScore = Math.min(100, totalSalesScore + totalBehaviorScore + (presenceWeight > 0 ? presenceScoreFinal : 0));
 
-    return Math.min(100, totalScore);
-
+    // Return rich object — controllers and snapshot service use what they need
+    return {
+      score: totalScore,
+      salesScore: totalSalesScore,
+      behaviorScore: totalBehaviorScore,
+      presenceScore: presenceScoreFinal,
+      // Ventes breakdown
+      totalCA: totalStats.ca,
+      totalDevisCreated: totalStats.devisCreated,
+      totalDevisValidated: totalStats.devisValidated,
+      totalDevisLost: totalStats.devisLost,
+      totalDevisOpened: salesMetrics.reduce((acc, m) => acc + ((m as any).devisOpened || 0), 0),
+      avgBasket,
+      // Objectif at compute time
+      conservativeCA,
+      likelyCA,
+      exceedCA,
+      caAchievedPct: conservativeCA > 0 ? Math.min(200, (totalStats.ca / conservativeCA) * 100) : 0,
+      // Comportement breakdown
+      avisPositifs,
+      avisNegatifs,
+      savTickets,
+      savPlaintes,
+      processWarnings: processWarningsCount,
+      // Calendrier summary
+      absences,
+      retards,
+      conges,
+      notesPositives,
+      notesNegatives,
+    };
   }
 }
+

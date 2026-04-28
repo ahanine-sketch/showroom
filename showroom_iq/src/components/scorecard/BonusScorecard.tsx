@@ -1,111 +1,133 @@
+'use client';
+
 import React from 'react';
 import ProfileHeader from './ProfileHeader';
 
-interface ScorecardProps {
-  role: 'admin' | 'owner';
-  activeTab: 'commercial' | 'behavior' | 'calendar' | 'bonus' | 'ressources';
+interface BonusHistory {
+  id: string;
+  date: string;
+  amount: number;
+  description: string;
+  month: number;
+  year: number;
 }
 
-const BonusScorecard = ({ role, activeTab }: ScorecardProps) => {
-  const basePath = `/${role}/scorecard`;
+interface ScorecardProps {
+  role: 'admin' | 'owner';
+  activeTab?: 'commercial' | 'behavior' | 'calendar' | 'bonus' | 'ressources';
+  hideNav?: boolean;
+  isDashboard?: boolean;
+  userData?: any;
+  scores?: any;
+  bonuses?: BonusHistory[];
+  viewMonth?: number;
+  viewYear?: number;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
+}
+
+const BonusScorecard = ({ 
+  role, 
+  isDashboard, 
+  userData, 
+  scores, 
+  bonuses = [],
+  viewMonth,
+  viewYear,
+  onPrevMonth,
+  onNextMonth
+}: ScorecardProps) => {
+  
+  const totalBonus = scores?.bonus || 0;
+  
+  // Format currency
+  const formatMAD = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD', maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const monthNames = [
+    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+  ];
+
+  const currentMonthName = viewMonth ? monthNames[viewMonth - 1] : '';
 
   return (
-    <>
-      <nav className="flex px-12 gap-10 border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'commercial' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/commercial`}
-        >
-          Ventes
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'behavior' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/behavior`}
-        >
-          Comportement
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'calendar' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/calendar`}
-        >
-          Calendrier
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'bonus' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/bonus`}
-        >
-          Bonus
-        </a>
-        <a 
-          className={`py-4 border-b-2 text-[14px] ${activeTab === 'ressources' ? 'border-yellow-700 text-yellow-700 font-medium' : 'border-transparent text-stone-400 hover:text-stone-900 transition-colors'}`} 
-          href={`${basePath}/ressources`}
-        >
-          Ressources
-        </a>
-      </nav>
-
-      <div className="p-12 space-y-6 max-w-[1400px] mx-auto">
-        <ProfileHeader role={role} />
-        
-        <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h4 className="font-headline text-3xl mb-1">Bonus & Gratifications</h4>
-              <p className="text-stone-400 text-[13px]">Récapitulatif des primes et objectifs exceptionnels atteints.</p>
-            </div>
-            <div className="bg-emerald-50 border border-emerald-100 px-6 py-3 rounded-2xl flex flex-col items-end">
-              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Total Cumulé 2025</span>
-              <span className="text-[24px] font-mono font-bold text-emerald-700">12,500 MAD</span>
-            </div>
+    <div className={`${isDashboard ? 'pt-0 px-2' : 'p-12'} space-y-12 max-w-[1400px] mx-auto relative text-sans`}>
+      <ProfileHeader 
+        role={role} 
+        user={userData || {
+          fullName: "...",
+          phone: "...",
+          seniority: "...",
+          showroomName: "...",
+          avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=placeholder`
+        }}
+        scores={scores}
+      />
+      
+      <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm">
+        <div className="flex justify-between items-center mb-10">
+          <div>
+            <h4 className="font-headline text-3xl italic mb-1">Bonus & Gratifications</h4>
+            <p className="text-stone-400 text-[13px] font-mono uppercase tracking-widest">
+              Récapitulatif des primes pour {currentMonthName} {viewYear}
+            </p>
           </div>
-
-          <div className="grid grid-cols-3 gap-6">
-            <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 relative group overflow-hidden">
-               <div className="relative z-10">
-                  <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-800 text-[9px] font-bold rounded-full uppercase tracking-tighter mb-4 inline-block">Objectif Atteint</span>
-                  <h5 className="font-bold text-[16px] mb-2 font-headline italic">Challenge Printemps</h5>
-                  <p className="text-[12px] text-stone-500 mb-4">Prime exceptionnelle pour avoir dépassé l'objectif de vente de 15% en Mars.</p>
-                  <div className="flex justify-between items-end">
-                    <span className="text-[20px] font-mono font-bold text-stone-900">+2,500 MAD</span>
-                    <span className="text-[10px] text-stone-400 font-mono">Payé: 05/04/2025</span>
-                  </div>
-               </div>
-               <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-yellow-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-            </div>
-
-            <div className="p-6 bg-stone-50 rounded-2xl border border-stone-100 relative group overflow-hidden">
-               <div className="relative z-10">
-                  <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-bold rounded-full uppercase tracking-tighter mb-4 inline-block">Qualité Service</span>
-                  <h5 className="font-bold text-[16px] mb-2 font-headline italic">Prime Avis Clients</h5>
-                  <p className="text-[12px] text-stone-500 mb-4">Bonus mensuel pour maintien d'une note client supérieure à 9/10.</p>
-                  <div className="flex justify-between items-end">
-                    <span className="text-[20px] font-mono font-bold text-stone-900">+1,000 MAD</span>
-                    <span className="text-[10px] text-stone-400 font-mono">En attente</span>
-                  </div>
-               </div>
-               <div className="absolute right-[-10%] top-[-10%] w-24 h-24 bg-emerald-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-            </div>
-
-            <div className="p-6 bg-stone-900 rounded-2xl border border-stone-800 relative group overflow-hidden text-white shadow-xl">
-               <div className="relative z-10">
-                  <span className="px-2.5 py-0.5 bg-white/20 text-white text-[9px] font-bold rounded-full uppercase tracking-tighter mb-4 inline-block">En cours</span>
-                  <h5 className="font-bold text-[16px] mb-2 font-headline italic">Grand Prix Annuel</h5>
-                  <p className="text-[12px] text-white/60 mb-4">Voyage offert pour le meilleur vendeur du showroom sur l'année complète.</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-white/40">
-                       <span>Progression</span>
-                       <span>65%</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-yellow-400 w-[65%]"></div>
-                    </div>
-                  </div>
-               </div>
-            </div>
+          <div className="bg-emerald-50 border border-emerald-100 px-8 py-4 rounded-2xl flex flex-col items-end shadow-sm">
+            <span className="text-[10px] text-emerald-600 font-black uppercase tracking-[0.2em] mb-1">Total Période</span>
+            <span className="text-[32px] font-mono font-bold text-emerald-700 leading-none">
+              {totalBonus > 5 ? formatMAD(totalBonus) : `+${totalBonus} pts`}
+            </span>
           </div>
         </div>
+
+        {bonuses.length === 0 ? (
+          <div className="py-20 text-center bg-stone-50/50 rounded-3xl border border-dashed border-stone-200">
+            <span className="material-symbols-outlined text-stone-200 text-[64px] mb-4">redeem</span>
+            <p className="text-stone-400 font-medium italic">Aucun bonus enregistré pour cette période.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {bonuses.map((bonus) => (
+              <div key={bonus.id} className="p-8 bg-stone-50 rounded-3xl border border-stone-100 relative group overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 hover:border-yellow-200/50">
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-6">
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-[9px] font-black rounded-full uppercase tracking-widest">
+                      PRIME PERFORMANCE
+                    </span>
+                    <span className="text-[10px] text-stone-400 font-mono font-bold">
+                      {new Date(bonus.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </span>
+                  </div>
+                  
+                  <h5 className="font-bold text-[18px] mb-3 font-headline italic text-stone-900 leading-tight">
+                    {bonus.description.length > 40 ? bonus.description.substring(0, 40) + '...' : bonus.description}
+                  </h5>
+                  
+                  <p className="text-[13px] text-stone-500 mb-8 line-clamp-2 italic leading-relaxed">
+                    "{bonus.description}"
+                  </p>
+                  
+                  <div className="flex justify-between items-end pt-4 border-t border-stone-200/50">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-stone-400 font-bold uppercase tracking-tighter">Montant</span>
+                      <span className="text-[26px] font-mono font-bold text-stone-900">
+                        {bonus.amount > 5 ? `+${formatMAD(bonus.amount)}` : `+${bonus.amount} pts`}
+                      </span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-yellow-600 border border-stone-100">
+                      <span className="material-symbols-outlined text-[20px]">verified</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute right-[-10%] top-[-10%] w-32 h-32 bg-yellow-400/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

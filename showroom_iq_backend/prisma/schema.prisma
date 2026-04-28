@@ -30,22 +30,25 @@ model User {
   managedShowrooms Showroom[]          @relation("Manager")
   status           UserStatus          @default(ACTIVE)
   showroom         Showroom?           @relation(fields: [showroomId], references: [id])
+  monthlySnapshots MonthlySnapshot[]
 }
 
 model Showroom {
-  id         String      @id @default(uuid())
-  name       String
-  location   String?
-  city       String?
-  managerId  String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  objectives Objective[]
-  manager    User?       @relation("Manager", fields: [managerId], references: [id])
-  users      User[]
-  evaluations ProcessEvaluation[]
-  logs        DailyLog[]
-  clientReviews ClientReview[]
+  id               String              @id @default(uuid())
+  name             String
+  location         String?
+  city             String?
+  managerId        String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  objectives       Objective[]
+  manager          User?               @relation("Manager", fields: [managerId], references: [id])
+  users            User[]
+  evaluations      ProcessEvaluation[]
+  logs             DailyLog[]
+  clientReviews    ClientReview[]
+  monthlySnapshots MonthlySnapshot[]
+  dolibarrSyncs    DolibarrSync[]
 }
 
 model Objective {
@@ -58,6 +61,11 @@ model Objective {
   likelyCA       Float
   exceedCA       Float
   type           String    @default("GLOBAL")
+  // Phase 1 fix: these fields were referenced in code but missing from schema
+  dateStart      DateTime?
+  dateEnd        DateTime?
+  // Phase 4: manager workflow — DRAFT until explicitly confirmed
+  status         String    @default("DRAFT")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   showroom       Showroom? @relation(fields: [showroomId], references: [id])
@@ -65,18 +73,24 @@ model Objective {
 }
 
 model SalesMetric {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   userId         String
-  date           DateTime @default(now())
-  ca             Float    @default(0)
-  savCount       Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  avgBasket      Float    @default(0)
-  devisCreated   Int      @default(0)
-  devisLost      Int      @default(0)
-  devisValidated Int      @default(0)
-  user           User     @relation(fields: [userId], references: [id])
+  date           DateTime  @default(now())
+  ca             Float     @default(0)
+  savCount       Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  avgBasket      Float     @default(0)
+  devisCreated   Int       @default(0)
+  devisLost      Int       @default(0)
+  devisValidated Int       @default(0)
+  // Phase 2 fix: was referenced in ShowroomController but missing
+  devisOpened    Int       @default(0)
+  // Phase 5: Dolibarr traceability
+  source         String    @default("MANUAL")
+  dolibarrRef    String?
+  syncedAt       DateTime?
+  user           User      @relation(fields: [userId], references: [id])
 }
 
 model DailyScore {
@@ -119,15 +133,15 @@ model ProcessEvaluation {
   ticketsCount    Int?
   type            EvaluationType
   warningLevel    Int?
-  user            User?           @relation(fields: [userId], references: [id])
-  showroom        Showroom?       @relation(fields: [showroomId], references: [id])
+  user            User?          @relation(fields: [userId], references: [id])
+  showroom        Showroom?      @relation(fields: [showroomId], references: [id])
 }
 
 model DailyLog {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String?
   showroomId String?
-  date       DateTime @default(now())
+  date       DateTime  @default(now())
   activity   String
   status     String
   notes      String?
@@ -172,25 +186,80 @@ model GlobalSettings {
 }
 
 model BonusHistory {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
   amount      Float
   description String
-  date        DateTime @default(now())
+  date        DateTime  @default(now())
   month       Int
   year        Int
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  // Phase 1 fix: these fields were referenced in ScorecardController but missing from schema
+  dateStart   DateTime?
+  dateEnd     DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
 }
+
 model ClientReview {
-  id          String   @id @default(uuid())
-  userId      String?
-  showroomId  String?
-  name        String
-  rating      Int
-  comment     String?
-  date        DateTime @default(now())
-  createdAt   DateTime @default(now())
-  user        User?     @relation(fields: [userId], references: [id])
-  showroom    Showroom? @relation(fields: [showroomId], references: [id])
+  id         String    @id @default(uuid())
+  userId     String?
+  showroomId String?
+  name       String
+  rating     Int
+  comment    String?
+  date       DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id])
+  showroom   Showroom? @relation(fields: [showroomId], references: [id])
+}
+
+// Phase 3: Frozen monthly snapshot — one row per commercial per closed month,
+// one row per showroom per closed month. Never mutated after creation.
+model MonthlySnapshot {
+  id                  String    @id @default(uuid())
+  // Either userId (COMMERCIAL) or showroomId (SHOWROOM) — never both
+  userId              String?
+  showroomId          String?
+  type                String    // "COMMERCIAL" | "SHOWROOM"
+  month               Int
+  year                Int
+
+  // Ventes
+  totalCA             Float     @default(0)
+  totalDevisCreated   Int       @default(0)
+  totalDevisValidated Int       @default(0)
+  totalDevisLost      Int       @default(0)
+  totalDevisOpened    Int       @default(0)
+  avgBasket           Float     @default(0)
+
+  // Objectif at freeze time
+  conservativeCA      Float     @default(0)
+  likelyCA            Float     @default(0)
+  exceedCA            Float     @default(0)
+  caAchievedPct       Float     @default(0)
+
+  // Freeze metadata
+  frozenAt            DateTime
+  status              String    @default("FROZEN")
+  createdAt           DateTime  @default(now())
+
+  user                User?     @relation(fields: [userId], references: [id])
+  showroom            Showroom? @relation(fields: [showroomId], references: [id])
+
+  @@unique([userId, month, year, type])
+  @@unique([showroomId, month, year, type])
+}
+
+// Phase 5: Track every Dolibarr sync attempt per showroom per month
+model DolibarrSync {
+  id             String   @id @default(uuid())
+  showroomId     String
+  month          Int
+  year           Int
+  status         String   // "PENDING" | "SUCCESS" | "FAILED"
+  recordsFetched Int      @default(0)
+  lastSyncAt     DateTime
+  errorMsg       String?
+  createdAt      DateTime @default(now())
+  showroom       Showroom @relation(fields: [showroomId], references: [id])
 }

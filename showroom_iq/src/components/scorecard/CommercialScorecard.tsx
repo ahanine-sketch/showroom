@@ -47,7 +47,7 @@ const CommercialScorecard = ({
   const setters = details?.setters;
   
   const totalDevisAmount = ((metrics?.devisValidated || 0) + (metrics?.devisVolee || 0) + (metrics?.devisOuvert || 0)) * 45000; 
-  const currentPanierMoyen = (metrics?.caAmount || 0) > 0 ? Math.round((metrics?.caAmount || 0) / 40) : (metrics?.panierMoyen || 0);
+  const currentPanierMoyen = metrics?.panierMoyen || 0;
 
   const handleStatClick = (status: string, count: number) => {
     setDrawerStatus(status);
@@ -99,6 +99,7 @@ const CommercialScorecard = ({
         <div className="grid grid-cols-12 gap-12">
             <ObjectiveSalesCard 
               className="col-span-8"
+              isFrozen={scores?.isFrozen}
               score={details?.sales?.points || 0}
               maxScore={details?.sales?.maxScore || (isMagasin ? 50 : 35)}
               status={details?.sales?.status || "MAUVAIS"}
@@ -157,6 +158,7 @@ const CommercialScorecard = ({
                       onChange={(e) => setters?.setDevisCreated(Number(e.target.value))}
                       className="bg-transparent font-mono text-[24px] font-black text-stone-800 w-full focus:outline-none focus:text-stone-900"
                       onClick={(e) => e.stopPropagation()}
+                      disabled={scores?.isFrozen}
                     />
                   </div>
                   <div 
@@ -170,6 +172,7 @@ const CommercialScorecard = ({
                       onChange={(e) => setters?.setDevisValidated(Number(e.target.value))}
                       className="bg-transparent font-mono text-[24px] font-black text-emerald-600 w-full focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
+                      disabled={scores?.isFrozen}
                     />
                   </div>
                   <div 
@@ -183,6 +186,7 @@ const CommercialScorecard = ({
                       onChange={(e) => setters?.setDevisVolee(Number(e.target.value))}
                       className="bg-transparent font-mono text-[24px] font-black text-blue-500 w-full focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
+                      disabled={scores?.isFrozen}
                     />
                   </div>
                   <div 
@@ -196,6 +200,7 @@ const CommercialScorecard = ({
                       onChange={(e) => setters?.setDevisOuvert(Number(e.target.value))}
                       className="bg-transparent font-mono text-[24px] font-black text-amber-600 w-full focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
+                      disabled={scores?.isFrozen}
                     />
                   </div>
                 </div>
@@ -259,6 +264,7 @@ const CommercialScorecard = ({
                 value={metrics?.panierMoyen || 0}
                 onChange={(e) => setters?.setPanierMoyen(Number(e.target.value))}
                 className="bg-transparent font-mono text-[20px] font-bold tracking-tighter text-center w-full focus:outline-none"
+                disabled={scores?.isFrozen}
               />
 
               <span className="text-[8px] text-stone-400 uppercase font-bold">MAD</span>

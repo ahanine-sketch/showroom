@@ -18,6 +18,7 @@ interface ObjectiveSalesCardProps {
   iconColor?: string;
   iconBgColor?: string;
   onValueChange?: (value: number) => void;
+  isFrozen?: boolean;
 }
 
 const ObjectiveSalesCard = ({
@@ -35,7 +36,8 @@ const ObjectiveSalesCard = ({
   icon = "target",
   iconColor = "text-yellow-600",
   iconBgColor = "bg-yellow-50",
-  onValueChange
+  onValueChange,
+  isFrozen = false
 }: ObjectiveSalesCardProps) => {
   // Constants for SVG
   const totalArcLength = 125.66; // PI * r where r = 40
@@ -86,7 +88,7 @@ const ObjectiveSalesCard = ({
   const pLikely = getPointOnArc(likelyValue, 48);
   const pTotal = getPointOnArc(totalValue, 48);
 
-  const displayValue = Math.min(currentValue, totalValue);
+  const displayValue = currentValue;
 
   return (
     <div className={`bg-white p-10 rounded-2xl border border-stone-200/60 shadow-sm flex flex-col items-center relative min-h-[430px] justify-between ${className}`}>
@@ -116,15 +118,17 @@ const ObjectiveSalesCard = ({
                   <span>{displayValue.toLocaleString('en-US')}</span>
                   <span className="text-[10px] opacity-60 ml-0.5">MAD</span>
                 </span>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max={totalValue} 
-                  step="1000"
-                  value={currentValue}
-                  onChange={(e) => onValueChange?.(Number(e.target.value))}
-                  className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-yellow-600 shadow-inner"
-                />
+                {!isFrozen && (
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max={totalValue} 
+                    step="1000"
+                    value={currentValue}
+                    onChange={(e) => onValueChange?.(Number(e.target.value))}
+                    className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-yellow-600 shadow-inner"
+                  />
+                )}
               </div>
             </div>
          </div>

@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
-import BonusScorecard from '@/components/scorecard/BonusScorecard';
+import React, { Suspense } from 'react';
+import ScorecardWrapper from '@/components/scorecard/ScorecardWrapper';
 
 export default function BonusPage() {
   return (
-    <div className="min-h-screen bg-stone-50/30">
-      <BonusScorecard role="owner" activeTab="bonus" />
-    </div>
+    <Suspense fallback={<div className="pt-32 px-14 flex justify-center text-stone-400 font-mono text-[11px] uppercase tracking-widest">Chargement...</div>}>
+      <ScorecardWrapper initialTab="bonus" role="owner" />
+    </Suspense>
   );
 }
