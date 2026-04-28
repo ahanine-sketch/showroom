@@ -316,8 +316,7 @@ export class ScorecardController {
             devisValidated: snapshot.totalDevisValidated,
             devisLost: snapshot.totalDevisLost,
             devisOpened: snapshot.totalDevisOpened,
-            avgBasket: snapshot.avgBasket,
-            score: snapshot.globalScore
+            avgBasket: snapshot.avgBasket
           } : null
         },
       });

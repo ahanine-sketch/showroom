@@ -7,6 +7,7 @@ exports.PerformanceController = void 0;
 const ScoringService_1 = require("../services/ScoringService");
 const prisma_1 = __importDefault(require("../config/prisma"));
 const client_1 = require("@prisma/client");
+const MonthlySnapshotService_1 = require("../services/MonthlySnapshotService");
 class PerformanceController {
     /**
      * Add a sales metric and update the daily score.
@@ -76,7 +77,13 @@ class PerformanceController {
             }
             const month = bonusDate.getMonth() + 1;
             const year = bonusDate.getFullYear();
-            // Simplified: Allow multiple entries in BonusHistory, we sum them in the evaluations view.
+            // Ensure only one bonus per month
+            const existingMonthBonus = await prisma_1.default.bonusHistory.findFirst({
+                where: { userId, month, year }
+            });
+            if (existingMonthBonus) {
+                return res.status(400).json({ success: false, error: "Un bonus a déjà été attribué à cet utilisateur pour ce mois." });
+            }
             // 1. Create Bonus History Entry
             const bonus = await prisma_1.default.bonusHistory.create({
                 data: {
@@ -136,7 +143,8 @@ class PerformanceController {
             const userId = req.params.userId;
             const history = await prisma_1.default.bonusHistory.findMany({
                 where: { userId },
-                orderBy: { date: 'desc' }
+                orderBy: { date: 'desc' },
+                take: 3
             });
             return res.json({ success: true, data: history });
         }
@@ -299,7 +307,7 @@ class PerformanceController {
             }
             const startDate = new Date(y, m - 1, 1);
             const endDate = new Date(y, m, 0, 23, 59, 59, 999);
-            // Fetch all evaluations for the month
+            // --- DATA FETCHING (Always Live for Behavior/Presence/Bonus) ---
             const evaluations = await prisma_1.default.processEvaluation.findMany({
                 where: { userId, date: { gte: startDate, lte: endDate } },
             });
@@ -312,21 +320,39 @@ class PerformanceController {
             const presenceLogs = await prisma_1.default.dailyLog.findMany({
                 where: { userId, activity: 'PRESENCE', date: { gte: startDate, lte: endDate } },
             });
-            // --- Ventes Score (65 pts) ---
-            // Mirror exact frontend ScorecardWrapper logic: fetch sales metrics, use same fallbacks
-            const salesMetrics = await prisma_1.default.salesMetric.findMany({
-                where: { userId, date: { gte: startDate, lte: endDate } },
-                orderBy: { date: 'desc' },
-            });
-            // Aggregate for the month
-            const totalCA = salesMetrics.reduce((sum, s) => sum + (s.ca || 0), 0);
-            const totalDevisCreated = salesMetrics.reduce((sum, s) => sum + (s.devisCreated || 0), 0);
-            const totalDevisValidated = salesMetrics.reduce((sum, s) => sum + (s.devisValidated || 0), 0);
-            const totalDevisLost = salesMetrics.reduce((sum, s) => sum + (s.devisLost || 0), 0);
-            const avgBasket = salesMetrics.length > 0
-                ? salesMetrics.reduce((sum, s) => sum + (s.avgBasket || 0), 0) / salesMetrics.length
-                : 0;
-            // User objectives for CA scoring
+            // --- Ventes Data (Snapshot if closed, else Live) ---
+            let totalCA = 0;
+            let totalDevisCreated = 0;
+            let totalDevisValidated = 0;
+            let totalDevisLost = 0;
+            let avgBasket = 0;
+            let isSnapshot = false;
+            let frozenAt = null;
+            const isClosed = MonthlySnapshotService_1.MonthlySnapshotService.isClosedMonth(m, y);
+            const snapshot = isClosed ? await MonthlySnapshotService_1.MonthlySnapshotService.getCommercialSnapshot(userId, m, y) : null;
+            if (snapshot) {
+                totalCA = snapshot.totalCA || 0;
+                totalDevisCreated = snapshot.totalDevisCreated || 0;
+                totalDevisValidated = snapshot.totalDevisValidated || 0;
+                totalDevisLost = snapshot.totalDevisLost || 0;
+                avgBasket = snapshot.avgBasket || 0;
+                isSnapshot = true;
+                frozenAt = snapshot.frozenAt;
+            }
+            else {
+                const salesMetrics = await prisma_1.default.salesMetric.findMany({
+                    where: { userId, date: { gte: startDate, lte: endDate } },
+                    orderBy: { date: 'desc' },
+                });
+                totalCA = salesMetrics.reduce((sum, s) => sum + (s.ca || 0), 0);
+                totalDevisCreated = salesMetrics.reduce((sum, s) => sum + (s.devisCreated || 0), 0);
+                totalDevisValidated = salesMetrics.reduce((sum, s) => sum + (s.devisValidated || 0), 0);
+                totalDevisLost = salesMetrics.reduce((sum, s) => sum + (s.devisLost || 0), 0);
+                avgBasket = salesMetrics.length > 0
+                    ? salesMetrics.reduce((sum, s) => sum + (s.avgBasket || 0), 0) / salesMetrics.length
+                    : 0;
+            }
+            // --- Objective (Used for CA score) ---
             const objective = await prisma_1.default.objective.findFirst({
                 where: { userId, month: m, year: y, type: 'GLOBAL' },
             });
@@ -353,7 +379,7 @@ class PerformanceController {
                     caPoints = 10;
                 }
             }
-            // 2. Devis Score (15 pts) - aligned with ScoringService (rate > 75)
+            // 2. Devis Score (15 pts)
             const convRate = totalDevisCreated > 0
                 ? ((totalDevisValidated + totalDevisLost) / totalDevisCreated) * 100 : 0;
             let devisPoints = 0;
@@ -363,7 +389,7 @@ class PerformanceController {
                 devisPoints = 10;
             else if (convRate >= 35)
                 devisPoints = 5;
-            // 3. Panier Moyen Score (15 pts) - aligned with ScoringService (20k / 15k / 10k)
+            // 3. Panier Moyen Score (15 pts)
             let panierPoints = 0;
             if (avgBasket >= 20000)
                 panierPoints = 15;
@@ -373,7 +399,6 @@ class PerformanceController {
                 panierPoints = 5;
             const cappedSalesScore = Math.min(caPoints + devisPoints + panierPoints, 65);
             // --- Comportement Score (30 pts) ---
-            // Avis
             const avisPositifs = clientReviews.filter((r) => r.rating >= 4).length;
             const avisNegatifs = clientReviews.filter((r) => r.rating <= 2).length;
             let avisPoints = 4;
@@ -383,7 +408,6 @@ class PerformanceController {
                 avisPoints = 10;
             else if (avisPositifs > 0)
                 avisPoints = 8;
-            // SAV
             const savTickets = evaluations.filter((e) => e.type === 'SAV').reduce((sum, e) => sum + (e.ticketsCount || 0), 0);
             const savPlaintes = evaluations.filter((e) => e.type === 'SAV').reduce((sum, e) => sum + (e.complaintsCount || 0), 0);
             let savPoints = 10;
@@ -393,7 +417,6 @@ class PerformanceController {
                 savPoints = 4;
             else if (savTickets > 0)
                 savPoints = 8;
-            // Processus
             const warnings = evaluations.filter((e) => e.type === 'PROCESS').length;
             let processPoints = 10;
             if (warnings === 1)
@@ -407,17 +430,17 @@ class PerformanceController {
             const absences = presenceLogs.filter((l) => l.status === 'Absence').length;
             const retards = presenceLogs.filter((l) => l.status === 'Retard').length;
             const totalFaults = absences + retards;
-            let presenceScore = 5;
+            let presencePoints = 5;
             if (totalFaults >= 5)
-                presenceScore = 0;
+                presencePoints = 0;
             else if (totalFaults >= 2)
-                presenceScore = 1;
+                presencePoints = 1;
             else if (totalFaults >= 1)
-                presenceScore = 3;
+                presencePoints = 3;
             // --- Bonus ---
             const bonusTotal = bonusHistory.reduce((sum, b) => sum + b.amount, 0);
             const cappedBonus = Math.min(bonusTotal, 5);
-            const globalScore = Math.min(100, cappedSalesScore + behaviorScore + presenceScore + cappedBonus);
+            const globalScore = Math.min(100, cappedSalesScore + behaviorScore + presencePoints + cappedBonus);
             return res.json({
                 success: true,
                 data: {
@@ -425,9 +448,11 @@ class PerformanceController {
                     breakdown: {
                         sales: cappedSalesScore,
                         behavior: behaviorScore,
-                        presence: presenceScore,
+                        presence: presencePoints,
                         bonus: cappedBonus,
                     },
+                    isSnapshot,
+                    frozenAt
                 },
             });
         }
@@ -449,6 +474,12 @@ class PerformanceController {
             }
             const startDate = new Date(y, m - 1, 1);
             const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+            // --- SNAPSHOT CHECK ---
+            const isClosed = MonthlySnapshotService_1.MonthlySnapshotService.isClosedMonth(m, y);
+            let snapshot = null;
+            if (isClosed) {
+                snapshot = await MonthlySnapshotService_1.MonthlySnapshotService.getCommercialSnapshot(userId, m, y);
+            }
             const evaluations = await prisma_1.default.processEvaluation.findMany({
                 where: {
                     userId,
@@ -495,7 +526,9 @@ class PerformanceController {
                 success: true,
                 data: [...evaluations, ...formattedReviews],
                 dailyLogs,
-                bonusTotal
+                bonusTotal,
+                bonuses: bonusHistory,
+                snapshot // Include snapshot if it exists
             });
         }
         catch (error) {
@@ -517,6 +550,12 @@ class PerformanceController {
             }
             const startDate = new Date(y, m - 1, 1);
             const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+            // --- SNAPSHOT CHECK ---
+            const isClosed = MonthlySnapshotService_1.MonthlySnapshotService.isClosedMonth(m, y);
+            let snapshot = null;
+            if (isClosed) {
+                snapshot = await MonthlySnapshotService_1.MonthlySnapshotService.getShowroomSnapshot(showroomId, m, y);
+            }
             // 1. Get all users in this showroom
             const users = await prisma_1.default.user.findMany({
                 where: {
@@ -529,25 +568,31 @@ class PerformanceController {
             if (userIds.length === 0) {
                 return res.json({ success: true, data: [], dailyLogs: [], bonusTotal: 0 });
             }
-            // 2. Fetch evaluations (Selective: PROCESS = Magasin only, SAV = Team aggregation)
-            const evaluations = await prisma_1.default.processEvaluation.findMany({
+            // 2a. SAV: from ALL commerciaux in the showroom (team aggregate)
+            const savEvaluations = await prisma_1.default.processEvaluation.findMany({
                 where: {
-                    OR: [
-                        { showroomId: showroomId },
-                        { userId: { in: userIds } }
-                    ],
-                    type: { in: [client_1.EvaluationType.PROCESS, client_1.EvaluationType.SAV] },
+                    userId: { in: userIds },
+                    type: client_1.EvaluationType.SAV,
                     date: { gte: startDate, lte: endDate },
                 },
                 orderBy: { date: 'desc' },
             });
-            // 3. Fetch client reviews (Strictly Magasin only per user request)
+            // 2b. PROCESS (Magasin warnings): ONLY showroom-level records, never from individual commerciaux
+            const processEvaluations = await prisma_1.default.processEvaluation.findMany({
+                where: {
+                    showroomId: showroomId,
+                    userId: null,
+                    type: client_1.EvaluationType.PROCESS,
+                    date: { gte: startDate, lte: endDate },
+                },
+                orderBy: { date: 'desc' },
+            });
+            const evaluations = [...savEvaluations, ...processEvaluations];
+            // 3. Avis: ONLY showroom-level ClientReviews (not from individual commerciaux)
             const clientReviews = await prisma_1.default.clientReview.findMany({
                 where: {
-                    OR: [
-                        { showroomId: showroomId },
-                        { userId: { in: userIds } }
-                    ],
+                    showroomId: showroomId,
+                    userId: null,
                     date: { gte: startDate, lte: endDate },
                 },
                 orderBy: { date: 'desc' },
@@ -588,7 +633,8 @@ class PerformanceController {
                 success: true,
                 data: [...evaluations, ...formattedReviews],
                 dailyLogs,
-                bonusTotal
+                bonusTotal,
+                snapshot // Include snapshot if it exists
             });
         }
         catch (error) {

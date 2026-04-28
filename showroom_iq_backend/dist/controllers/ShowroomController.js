@@ -60,7 +60,7 @@ class ShowroomController {
             // Calculate performance for each showroom
             const formatted = await Promise.all(showrooms.map(async (s) => {
                 try {
-                    const performance = await ShowroomScoringService_1.ShowroomScoringService.calculatePerformance(s.id, currentMonth, currentYear);
+                    const perf = await ShowroomScoringService_1.ShowroomScoringService.calculatePerformance(s.id, currentMonth, currentYear);
                     return {
                         id: s.id,
                         name: s.name,
@@ -87,8 +87,8 @@ class ShowroomController {
                                 exceed: u.objectives[0].exceedCA
                             } : null
                         })),
-                        performance: performance,
-                        score: Math.round(performance),
+                        performance: perf,
+                        score: Math.round(perf.score),
                         status: 'Ouvert',
                         targets: s.objectives.length > 0 ? {
                             conservative: s.objectives[0].conservativeCA,
@@ -160,28 +160,8 @@ class ShowroomController {
             if (!s) {
                 return res.status(404).json({ success: false, message: 'Magasin introuvable' });
             }
-            // Compute period-specific score using the SAME engine as getAll
-            const score = await ShowroomScoringService_1.ShowroomScoringService.calculatePerformance(id, month, year);
-            // Fetch real sales metrics for this period so the frontend dashboard is accurate
-            const userIds = s.users.map(u => u.id);
-            let caAmount = 0, devisCreated = 0, devisValidated = 0;
-            let devisLost = 0, devisOpened = 0, avgBasket = 0;
-            if (userIds.length > 0) {
-                const salesMetrics = await prisma_1.default.salesMetric.findMany({
-                    where: {
-                        userId: { in: userIds },
-                        date: { gte: startOfMonth, lte: endOfMonth }
-                    }
-                });
-                caAmount = salesMetrics.reduce((sum, m) => sum + m.ca, 0);
-                devisCreated = salesMetrics.reduce((sum, m) => sum + m.devisCreated, 0);
-                devisValidated = salesMetrics.reduce((sum, m) => sum + m.devisValidated, 0);
-                devisLost = salesMetrics.reduce((sum, m) => sum + m.devisLost, 0);
-                devisOpened = salesMetrics.reduce((sum, m) => sum + (m.devisOpened || 0), 0);
-                avgBasket = salesMetrics.length > 0
-                    ? salesMetrics.reduce((sum, m) => sum + m.avgBasket, 0) / salesMetrics.length
-                    : 0;
-            }
+            // Compute period-specific score using the rich object from the scoring service
+            const perf = await ShowroomScoringService_1.ShowroomScoringService.calculatePerformance(id, month, year);
             const formatted = {
                 id: s.id,
                 name: s.name,
@@ -208,16 +188,25 @@ class ShowroomController {
                         exceed: u.objectives[0].exceedCA
                     } : null
                 })),
-                // Period-specific metrics (used by ScorecardWrapper dashboard)
-                caAmount,
-                devisCreated,
-                devisValidated,
-                devisLost,
-                devisOpened,
-                avgBasket,
-                // Backend-computed score — identical to list page
-                performance: score,
-                score: Math.round(score),
+                // Ventes data — sourced from the rich perf object (already aggregated)
+                caAmount: perf.totalCA,
+                devisCreated: perf.totalDevisCreated,
+                devisValidated: perf.totalDevisValidated,
+                devisLost: perf.totalDevisLost,
+                devisOpened: perf.totalDevisOpened,
+                avgBasket: perf.avgBasket,
+                // Comportement
+                avisPositifs: perf.avisPositifs,
+                avisNegatifs: perf.avisNegatifs,
+                savTickets: perf.savTickets,
+                savPlaintes: perf.savPlaintes,
+                processWarnings: perf.processWarnings,
+                // Calendrier
+                absences: perf.absences,
+                retards: perf.retards,
+                // Score
+                performance: perf,
+                score: Math.round(perf.score),
                 targets: s.objectives && s.objectives.length > 0 ? {
                     conservative: s.objectives[0].conservativeCA,
                     likely: s.objectives[0].likelyCA,
