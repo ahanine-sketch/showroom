@@ -491,24 +491,33 @@ const ScorecardWrapper = ({ initialTab, role, type = 'commercial', id: propId, h
     }
     
     if (caAmount >= likelyCA) {
+        const gap = exceedCA - likelyCA;
+        const progress = gap > 0 ? (caAmount - likelyCA) / gap : 0;
+        const extra = Math.floor(progress / 0.2) * 1; // 1 pt per 20% for the 5pt gap
         return { 
-            points: pointsB, 
+            points: Math.min(pointsTB, pointsB + extra), 
             status: getLevelName(metric, 'b', "BIEN"), 
             statusColor: getLevelColor(metric, 'b') || '#EAB308' 
         };
     }
 
     if (caAmount >= conservativeCA) {
+        const gap = likelyCA - conservativeCA;
+        const progress = gap > 0 ? (caAmount - conservativeCA) / gap : 0;
+        const extra = Math.floor(progress / 0.2) * 2; // 2 pts per 20%
         return { 
-            points: pointsM, 
+            points: Math.min(pointsB, pointsM + extra), 
             status: getLevelName(metric, 'm', "MOYEN"), 
             statusColor: getLevelColor(metric, 'm') || '#EA580C' 
         };
     }
     
     if (caAmount >= conservativeCA * 0.5) {
+        const gap = conservativeCA - (conservativeCA * 0.5);
+        const progress = gap > 0 ? (caAmount - (conservativeCA * 0.5)) / gap : 0;
+        const extra = Math.floor(progress / 0.2) * 2; // 2 pts per 20%
         return { 
-            points: pointsMV, 
+            points: Math.min(pointsM, pointsMV + extra), 
             status: getLevelName(metric, 'mv', "MAUVAIS"), 
             statusColor: getLevelColor(metric, 'mv') || '#C0392B' 
         };

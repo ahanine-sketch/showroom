@@ -38,16 +38,27 @@ export class ScoringService {
 
     // Bien: Above Likely
     if (ca >= likelyCA) {
-      return { points: pointsB_Max, label: 'Bien' };
+      const gap = exceedCA - likelyCA;
+      const progress = gap > 0 ? (ca - likelyCA) / gap : 0;
+      const extra = Math.floor(progress / 0.2) * 1;
+      return { points: Math.min(pointsTB, pointsB_Max + extra), label: 'Bien' };
     }
 
     // Moyen: Above Conservative
     if (ca >= conservativeCA) {
-      return { points: pointsM_Max, label: 'Moyen' };
+      const gap = likelyCA - conservativeCA;
+      const progress = gap > 0 ? (ca - conservativeCA) / gap : 0;
+      const extra = Math.floor(progress / 0.2) * 2;
+      return { points: Math.min(pointsB_Max, pointsM_Max + extra), label: 'Moyen' };
     }
 
     // Mauvais: Close to Conservative (>= 50%)
-    if (ca >= 0.5 * conservativeCA) return { points: pointsMV_Points, label: 'Mauvais' };
+    if (ca >= 0.5 * conservativeCA) {
+      const gap = conservativeCA - (0.5 * conservativeCA);
+      const progress = gap > 0 ? (ca - (0.5 * conservativeCA)) / gap : 0;
+      const extra = Math.floor(progress / 0.2) * 2;
+      return { points: Math.min(pointsM_Max, pointsMV_Points + extra), label: 'Mauvais' };
+    }
 
     // Tres Mauvais: Below 0.5 * Conservative
     return { points: 0, label: 'Mauvais' };
